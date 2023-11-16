@@ -4,11 +4,14 @@
 #include <algorithm>	// sort
 #include <memory>		// unique_ptr
 
-// Combined splicer
+// sliding spliner
 class SSpliner {
-	using BYTE = uint8_t;
+public: 
+	using slen_t = uint16_t;	// length of moving window
+
+private:
 	using spline_t = uint32_t;
-	using splinesum_t = unsigned long;	// float;
+	using splinesum_t = uint64_t;	// float;
 
 	// Moving window (Sliding subset)
 	class MW : protected std::vector<spline_t>
@@ -17,7 +20,7 @@ class SSpliner {
 		MW() {}
 
 		// Constructor by half of moving window length ("base")
-		MW(size_t base) { Init(base); }
+		MW(slen_t base) { Init(base); }
 
 		// Add last value and pop the first one (QUEUE functionality)
 		void PushVal(spline_t val)
@@ -27,7 +30,7 @@ class SSpliner {
 		}
 
 	public:
-		void Init(size_t base) { insert(begin(), base * 2 + 1, 0); }
+		void Init(slen_t base) { insert(begin(), size_t(base) * 2 + 1, 0); }
 	};
 
 	// Simple Moving Average splicer
@@ -56,7 +59,7 @@ class SSpliner {
 	public:
 		// Constructor
 		//	@param base: half-length of moving window
-		MM(spline_t base) : MW(base) { _ss.insert(_ss.begin(), size(), 0); }
+		MM(slen_t base) : MW(base) { _ss.insert(_ss.begin(), size(), 0); }
 
 		// Add value and return median
 		//	@param val: input raw value
@@ -74,32 +77,24 @@ class SSpliner {
 		spline_t PushStub(spline_t val, bool) { return val; }
 	};
 
-	const BYTE		_spiked;		// 0: smooth curve, 1: spiked curve
-	const spline_t	_base;			// half of moving window length
-	const spline_t	_silentLen;		// length of inner buffer that must be filled before the first valid output
-	spline_t		_valCnt = 0;	// value counter, limited by _silentLen
-	MA				_ma;
-	unique_ptr<MM>	_mm;
-	spline_t(MM::* _push)(spline_t, bool) = &MM::PushStub;	// pointer to MM:Push function: real or empty (stub)
-
 public:
 	enum eCurveType { SMOOTH = 0, SPIKED };
-	const static spline_t ReadSplineBase = 10;	//half-length of moving window for reads spline
+	//const static slen_t ReadSplineBase = 10;	//half-length of moving window for reads spline
 
-	static spline_t SilentLength(eCurveType type, spline_t base = ReadSplineBase)
+	static slen_t SilentLength(eCurveType type, slen_t base)// = ReadSplineBase)
 	{
-		return base * 2 + base * BYTE(type) - 1;
+		return base * 2 + base * type - 1;
 	}
 
 	// Constructor
 	//	@param type: curve type
 	//	@param base: half-length of moving window
-	SSpliner(eCurveType type, spline_t base = ReadSplineBase) :
-		_base(base), _spiked(type),
+	SSpliner(eCurveType type, slen_t base/* = ReadSplineBase*/) :
+		_base(base), _curveType(type),
 		_silentLen(SilentLength(type, base))
 	{
 		_ma.Init(base);
-		if (_spiked) {
+		if (_curveType) {
 			_mm.reset(new MM(base));
 			_push = &MM::Push;
 		}
@@ -114,8 +109,17 @@ public:
 	}
 
 	// Returns true X position
-	chrlen CorrectX(chrlen x) const { return x - (_base << _spiked); }
+	chrlen CorrectX(chrlen x) const { return x - (_base << _curveType); }
 
 	// Returns length of inner buffer that must be filled before the first valid output 
 	spline_t SilentLength() const { return _silentLen; }
+
+private:
+	const eCurveType	_curveType;
+	const slen_t	_base;			// half of moving window length
+	const slen_t	_silentLen;		// length of inner buffer that must be filled before the first valid output
+	slen_t			_valCnt = 0;	// value counter, limited by _silentLen
+	MA				_ma;
+	unique_ptr<MM>	_mm;
+	spline_t(MM::* _push)(spline_t, bool) = &MM::PushStub;	// pointer to MM:Push function: real or empty (stub)
 };
