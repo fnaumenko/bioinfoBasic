@@ -4,20 +4,22 @@
 #include <algorithm>	// sort
 #include <memory>		// unique_ptr
 
+enum eCurveType {
+	SMOOTH = 0,		// sequential averaging by moving median and average
+	SPIKED			// averaging by moving average only
+};
+
 // sliding spliner
+template<typename T>	// T - type of smoothed values, assumed to be unsigned integer
 class SSpliner {
-	using spline_t = uint32_t;
-	using splinesum_t = uint64_t;	// float;
+	using splinesum_t = uint64_t;	// float is more versatile - for the future
+	using slen_t = uint16_t;		// length type of moving window
 
 public:
-	using slen_t = uint16_t;	// length of moving window
-
-	enum eCurveType { SMOOTH = 0, SPIKED };
-
-	static slen_t SilentLength(eCurveType type, slen_t base)
-	{
-		return base * 2 + base * type - 1;
-	}
+	// Returns 'silent zone length' - number of values pushed in after which the output is non-zero
+	//	@param type: curve type
+	//	@param base: half-length of moving window
+	static slen_t SilentLength(eCurveType type, slen_t base) { return base * (2 + type) - 1; }
 
 	// Constructor
 	//	@param type: curve type
@@ -28,14 +30,14 @@ public:
 	{
 		_ma.Init(base);
 		if (_curveType) {
-			_mm.reset(new MM(base));
-			_push = &MM::Push;
+			_mm.reset(new MM<T>(base));
+			_push = &MM<T>::Push;
 		}
 	}
 
 	// Adds value and returns combined average
 	//	@param val: input raw value
-	float Push(spline_t val) {
+	float Push(T val) {
 		_filledLen += (_filledLen <= _silentLen);
 		return _ma.Push((_mm.get()->*_push)(val, _filledLen < _baseLen), _filledLen < _silentLen);
 	}
@@ -43,12 +45,13 @@ public:
 	// Returns true X position
 	chrlen CorrectX(chrlen x) const { return x - (_baseLen << _curveType); }
 
-	// Returns length of inner buffer that must be filled before the first valid output 
-	spline_t SilentLength() const { return _silentLen; }
+	// Returns 'silent zone length' - number of values pushed in after which the output is non-zero
+	slen_t SilentLength() const { return _silentLen; }
 
 private:
 	// Moving window (Sliding subset)
-	class MW : protected std::vector<spline_t>
+	template<typename T>
+	class MW : protected std::vector<T>
 	{
 	protected:
 		MW() {}
@@ -57,21 +60,22 @@ private:
 		MW(slen_t base) { Init(base); }
 
 		// Adds last value and pops the first one (QUEUE functionality)
-		void PushVal(spline_t val)
+		void PushVal(T val)
 		{
-			std::move(begin() + 1, end(), begin());
-			*(end() - 1) = val;
+			std::move(this->begin() + 1, this->end(), this->begin());
+			*(this->end() - 1) = val;
 		}
 
 	public:
 		// Initializes the instance to zeros
 		//	@param base: half-length of moving window
-		void Init(slen_t base) { insert(begin(), size_t(base) * 2 + 1, 0); }
+		void Init(slen_t base) { this->insert(this->begin(), size_t(base) * 2 + 1, 0); }
 	};
 
 	// Simple Moving Average spliner
 	// https://en.wikipedia.org/wiki/Moving_average
-	class MA : public MW
+	template<typename T>
+	class MA : public MW<T>
 	{
 		splinesum_t	_sum = 0;		// sum of adding values
 
@@ -79,45 +83,46 @@ private:
 		// Adds value and returns average
 		//	@param val: input raw value
 		//	@param zeroOutput: if true than return 0 (silent zone)
-		float Push(spline_t val, bool zeroOutput)
+		float Push(T val, bool zeroOutput)
 		{
-			_sum += int64_t(val) - *begin();
-			PushVal(val);
-			return zeroOutput ? 0 : float(_sum) / size();
+			_sum += int64_t(val) - *this->begin();
+			this->PushVal(val);
+			return zeroOutput ? 0 : float(_sum) / this->size();
 		}
 	};
 
 	// Simple Moving Median spliner
-	class MM : protected MW
+	template<typename T>
+	class MM : protected MW<T>
 	{
-		std::vector<spline_t> _ss;		// sorted moving window (sliding subset)
+		std::vector<T> _ss;		// sorted moving window (sliding subset)
 
 	public:
 		// Constructor
 		//	@param base: half-length of moving window
-		MM(slen_t base) : MW(base) { _ss.insert(_ss.begin(), size(), 0); }
+		MM(slen_t base) : MW<T>(base) { _ss.insert(_ss.begin(), this->size(), 0); }
 
 		// Adds value and returns median
 		//	@param val: input raw value
 		//	@param zeroOutput: if true than return 0 (silent zone)
-		spline_t Push(spline_t val, bool zeroOutput)
+		T Push(T val, bool zeroOutput)
 		{
-			PushVal(val);
+			this->PushVal(val);
 			if (zeroOutput)	return 0;
-			std::copy(begin(), end(), _ss.begin());
+			std::copy(this->begin(), this->end(), _ss.begin());
 			std::sort(_ss.begin(), _ss.end());
-			return _ss[size() >> 1];		// mid-size
+			return _ss[this->size() >> 1];		// mid-size
 		}
 
 		// Empty (stub) 'Push' method
-		spline_t PushStub(spline_t val, bool) { return val; }
+		T PushStub(T val, bool) { return val; }
 	};
 
-	const eCurveType	_curveType;
-	const slen_t	_baseLen;		// half of moving window length
-	const slen_t	_silentLen;		// length of inner buffer that must be filled before the first valid output
-	slen_t			_filledLen = 0;	// number of filled values; limited by _silentLen
-	MA				_ma;
-	unique_ptr<MM>	_mm;
-	spline_t(MM::* _push)(spline_t, bool) = &MM::PushStub;	// pointer to MM:Push function: real, or empty (stub) by default
+	const eCurveType  _curveType;
+	const slen_t	  _baseLen;			// half of moving window length
+	const slen_t	  _silentLen;		// length of inner buffer that must be filled before the first valid output
+	slen_t			  _filledLen = 0;	// number of filled values; limited by _silentLen
+	MA<T>			  _ma;
+	unique_ptr<MM<T>> _mm;
+	T(MM<T>::* _push)(T, bool) = &MM<T>::PushStub;	// pointer to MM:Push function: real, or empty (stub) by default
 };
