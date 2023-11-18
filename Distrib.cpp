@@ -1,47 +1,14 @@
 #include "Distrib.h"
+#include "spline.h"
 #include <algorithm>    // std::sort
-
-
-// Add last value and pop the first one (QUEUE functionality)
-void LenFreq::MW::PushVal(ULONG x)
-{
-	move(begin() + 1, end(), begin());
-	*(end() - 1) = x;
-}
-
-//	Add value and return average
-float LenFreq::MA::Push(ULONG x)
-{
-	_sum += x - *begin();
-	PushVal(x);
-	return float(_sum) / size();
-}
-
-//	Add value and return median
-ULONG LenFreq::MM::GetMedian(ULONG x)
-{
-	PushVal(x);
-	copy(begin(), end(), _ss.begin());
-	sort(_ss.begin(), _ss.end());
-	return _ss[size() >> 1];		// mid-size
-}
-
-// Constructor
-//	@base: moving window half-length;
-//	if 0 then empty instance (initialized by empty Push() method)
-LenFreq::MM::MM(fraglen base) : MW(base)
-{
-	if (base)	_ss.insert(_ss.begin(), size(), 0);
-	else		_push = &MM::GetMedianStub;
-}
 
 const float SDPI = float(sqrt(3.1415926 * 2));		// square of doubled Pi
 
 const float LenFreq::DParams::UndefPCC = -1;
+const char* LenFreq::sTitle[] = { "Norm", "Lognorm", "Gamma" };
 const float LenFreq::lghRatio = float(log(LenFreq::hRatio));	// log of ratio of the summit height to height of the measuring point
 const string LenFreq::sParams = "parameters";
 const string LenFreq::sInaccurate = " may be inaccurate";
-const char* LenFreq::sTitle[] = { "Norm", "Lognorm", "Gamma" };
 const string LenFreq::sSpec[] = {
 	"is degenerate",
 	"is smooth",
@@ -55,7 +22,7 @@ const string LenFreq::sSpec[] = {
 
 
 // Returns two constant terms of the distrib equation of type, supplied as an index
-//	@p: distrib params: mean/alpha and sigma/beta
+//	@param p: distrib params: mean/alpha and sigma/beta
 //	@return: two initialized constant terms of the distrib equation
 //	Implemeted as an array of lambdas treated like a regular function and assigned to a function pointer.
 fpair(*InitEqTerms[])(const fpair& p) = {
@@ -65,9 +32,9 @@ fpair(*InitEqTerms[])(const fpair& p) = {
 };
 
 // Returns y-coordinate by x-coordinate of the distrib of type, supplied as an index
-//	@p: distrib params: mean/alpha and sigma/beta
-//	@x: x-coordinate
-//	@eqTerms: two constant terms of the distrib equation
+//	@param p: distrib params: mean/alpha and sigma/beta
+//	@param x: x-coordinate
+//	@param eqTerms: two constant terms of the distrib equation
 double (*Distrs[])(const fpair& p, fraglen x, const fpair& eqTerms) = {
 	[](const fpair& p, fraglen x, const fpair& eqTerms) ->	double { return 		// normal
 		exp(-pow(((x - p.first) / p.second), 2) / 2) / eqTerms.first; },
@@ -78,7 +45,7 @@ double (*Distrs[])(const fpair& p, fraglen x, const fpair& eqTerms) = {
 };
 
 // Returns distribution mode
-//	@p: distrib params: mean/alpha and sigma/beta
+//	@param p: distrib params: mean/alpha and sigma/beta
 float(*GetMode[])(const fpair& p) = {
 	[](const fpair& p) -> float { return 0; },									// normal
 	[](const fpair& p) -> float { return exp(p.first - p.second * p.second); },	// lognormal
@@ -86,7 +53,7 @@ float(*GetMode[])(const fpair& p) = {
 };
 
 // Returns distribution Mean (expected value)
-//	@p: distrib params: mean/alpha and sigma/beta
+//	@param p: distrib params: mean/alpha and sigma/beta
 float(*GetMean[])(const fpair& p) = {
 	[](const fpair& p) -> float { return 0; },										// normal
 	[](const fpair& p) -> float { return exp(p.first + p.second * p.second / 2); },	// lognormal
@@ -94,8 +61,8 @@ float(*GetMean[])(const fpair& p) = {
 };
 
 // Calls distribution parameters by consecutive distribution type as index
-//	@keypts: key points: X-coord of highest point, X-coord of right middle hight point
-//	@p: returned params: mean(alpha) & sigma(beta)
+//	@param keypts: key points: X-coord of highest point, X-coord of right middle hight point
+//	@param p: returned params: mean(alpha) & sigma(beta)
 //	Defined as a member of the class only to use the private short 'lghRatio'
 void (*LenFreq::SetParams[])(const fpair& keypts, fpair& p) = {
 	[](const fpair& keypts, fpair& p) {	//** normal
@@ -115,9 +82,6 @@ void (*LenFreq::SetParams[])(const fpair& keypts, fpair& p) = {
 	}
 };
 
-// Prints restored distr parameters
-//	@s: print stream
-//	@maxPCC: masimum PCC to print relative PCC percentage
 void LenFreq::AllDParams::QualDParams::Print(dostream& s, float maxPCC) const
 {
 	if (IsSet()) {
@@ -140,7 +104,6 @@ void LenFreq::AllDParams::QualDParams::Print(dostream& s, float maxPCC) const
 	}
 }
 
-// Returns true if distribution parameters set in sorted instance
 bool LenFreq::AllDParams::IsSetInSorted(eCType ctype) const
 {
 	for (const QualDParams& dp : _allParams)
@@ -149,7 +112,6 @@ bool LenFreq::AllDParams::IsSetInSorted(eCType ctype) const
 	return false;
 }
 
-// Returns number of distribution parameters set in sorted instance
 int LenFreq::AllDParams::SetCntInSorted() const
 {
 	int cnt = 0;
@@ -158,7 +120,6 @@ int LenFreq::AllDParams::SetCntInSorted() const
 	return cnt;
 }
 
-// Sorts in PCC descending order
 void LenFreq::AllDParams::Sort()
 {
 	if (!_sorted) {
@@ -170,7 +131,6 @@ void LenFreq::AllDParams::Sort()
 	}
 }
 
-// Default constructor
 LenFreq::AllDParams::AllDParams()
 {
 	int i = 0;
@@ -180,9 +140,6 @@ LenFreq::AllDParams::AllDParams()
 	//	_allParams[i].SetTitle(i);
 }
 
-// Returns parameters of distribution with the highest (best) PCC
-//	@dParams: returned PCC, mean(alpha) & sigma(beta)
-//	return: consecutive distribution type with the highest (best) PCC
 LenFreq::dtype LenFreq::AllDParams::GetBestParams(DParams& dParams)
 {
 	Sort();
@@ -191,8 +148,6 @@ LenFreq::dtype LenFreq::AllDParams::GetBestParams(DParams& dParams)
 	return GetDType(QualDParams.Type);
 }
 
-// Prints sorted distibutions params
-//	@s: print stream
 void LenFreq::AllDParams::Print(dostream& s)
 {
 	static const char* N[] = { sMean, sSigma };
@@ -223,27 +178,24 @@ void LenFreq::AllDParams::Print(dostream& s)
 	}
 }
 
-// Returns estimated moving window half-length ("base")
-//	return: estimated base, or 0 in case of degenerate distribution
 fraglen LenFreq::GetBase()
 {
 	const int CutoffFrac = 100;	// fraction of the maximum height below which scanning stops on the first pass
-	ULONG	cutoffY = 0;			// Y-value below which scanning stops on the first pass
+	ULONG	cutoffY = 0;		// Y-value below which scanning stops on the first pass
 	fraglen halfX = 0;
 	USHORT peakCnt = 0;
 	bool up = false;
 	auto it = begin();
 	spoint p0(*it), p;			// previous, current point
 	spoint pMin(0, 0), pMax(pMin), pMMax(pMin);	// current, previous, maximum point
-	MA	sma(1);
 	vector<spoint> extr;		// local extremums
+	SSpliner<size_t> spliner(eCurveType::SPIKED, 1);
 
 	//== define pMMax and halfX
 	extr.reserve(20);
 	for (it++; it != end(); p0 = p, it++) {
 		p.first = it->first;
-		p.second = ULONG(sma.Push(it->second));
-		//cout << p.first << TAB << p.second << LF;
+		p.second = ULONG(spliner.Push(it->second));
 		if (p.second > p0.second) {		// increasing part
 			if (!up) {					// treat pit
 				extr.push_back(pMax); pMin = p0; up = true;
@@ -272,7 +224,7 @@ fraglen LenFreq::GetBase()
 		Err(Spec(_spec) + SepSCl + sParams + " are not called").Throw(false);	// even distribution
 		return 0;
 	}
-#ifdef _DEBUG
+#ifdef MY_DEBUG
 	cout << "pMMax: " << pMMax.first << TAB << pMMax.second << LF;
 #endif
 	//== define splined max point
@@ -311,7 +263,7 @@ fraglen LenFreq::GetBase()
 
 	if (!halfX)		return smoothBase;
 	fraglen diffX = halfX - pMMax.first;
-#ifdef _DEBUG
+#ifdef MY_DEBUG
 	fraglen base = fraglen((isPeakAfterDip ? 0.9F : (diffX > 20 ? 0.1F : 0.35F)) * diffX);
 	cout << "isPeakAfterDip: " << isPeakAfterDip << "\thalfX: " << halfX << "\tdiffX: " << diffX << "\tbase: " << base << LF;
 	return base;
@@ -320,37 +272,34 @@ fraglen LenFreq::GetBase()
 #endif
 }
 
-// Defines key points
-//	@base: moving window half-length
-//	@summit: returned X,Y coordinates of spliced (smoothed) summit
-//	return: key points: X-coord of highest point, X-coord of right middle hight point
 fpair LenFreq::GetKeyPoints(fraglen base, point& summit) const
 {
-	const fraglen baseSMM = base <= smoothBase ? 0 : base;
-	//point p0(*begin());	// previous point
 	point p0 = make_pair(begin()->first, float(begin()->second));	// previous point
 	point p{};					// current point
-	MA ma(base);
-	MM mm(baseSMM);
+	SSpliner<size_t> spliner(
+#ifdef MY_DEBUG					// to visualize SPIKED or SMOOTH distributions individually
+		eCurveType::SPIKED, 
+		//eCurveType::SMOOTH,
+#else
+		base <= smoothBase ? eCurveType::SPIKED : eCurveType::SMOOTH,
+#endif
+		base);
 
 	summit.second = 0;
-#ifdef _DEBUG
+#ifdef MY_DEBUG
 	_spline.clear();
 	fpair keyPts(0, 0);
 #endif
 	for (const value_type& f : *this) {
-		p.first = f.first - base - baseSMM;		// X: minus MA & MM base back shift
-		p.second = ma.Push(mm.Push(f.second));	// Y: splined
-#ifdef _DEBUG
-		// *** to print splicing individually
-		//p.first = f.first - base;		p.second = sma.Push(f.second);	// spline by MA
-		//p.first = f.first - baseSMM;	p.second = smm.Push(f.second);	// spline by MM
-		if (_fillSpline)	_spline.push_back(p);
+		p.first = spliner.CorrectX(f.first);		// X: minus MA & MM base back shift
+		p.second = spliner.Push(f.second);	// Y: splined
+#ifdef MY_DEBUG
+		if (_fillSpline)	_spline.push_back(p);	// to print
 #endif
 		if (p.second >= summit.second)	summit = p;
 		else {
 			if (p.second < summit.second / hRatio) {
-#ifdef _DEBUG
+#ifdef MY_DEBUG
 				if (!keyPts.first) {
 					keyPts.first = float(summit.first);
 					keyPts.second = p0.first + p0.second / (p.second + p0.second);
@@ -364,7 +313,7 @@ fpair LenFreq::GetKeyPoints(fraglen base, point& summit) const
 		}
 	}
 
-#ifdef _DEBUG
+#ifdef MY_DEBUG
 	return keyPts;
 #else
 	return fpair(
@@ -374,12 +323,6 @@ fpair LenFreq::GetKeyPoints(fraglen base, point& summit) const
 #endif
 }
 
-// Compares this sequence with calculated one by given mean & sigma, and returns PCC
-//	@type: consecutive distribution type
-//	@dParams: returned PCC, input mean(alpha) & sigma(beta)
-//	@Mode: X-coordinate of summit
-//	@full: if true then correlate from the beginning, otherwiase from summit
-//	calculated on the basis of the "start of the sequence" – "the first value less than 0.1% of the maximum".
 void LenFreq::CalcPCC(dtype type, DParams& dParams, fraglen Mode, bool full) const
 {
 	const fpair eqTerms = InitEqTerms[type](dParams.Params);		// two constant terms of the distrib equation
@@ -409,28 +352,19 @@ void LenFreq::CalcPCC(dtype type, DParams& dParams, fraglen Mode, bool full) con
 	if (!isNaN(pcc))	dParams.PCC = pcc;
 }
 
-// Calculates distribution parameters
-//	@type: consecutive distribution type
-//	@keyPts: key points: X-coord of highest point, X-coord of right middle hight point
-//	@dParams: returned PCC, mean(alpha) & sigma(beta)
-//	@Mode: X-coordinate of summit
 void LenFreq::SetPCC(dtype type, const fpair& keypts, DParams& dParams, fraglen Mode) const
 {
 	SetParams[type](keypts, dParams.Params);
 	CalcPCC(type, dParams, Mode);
 }
 
-// Calculates and print called distribution parameters
-//	@type: consecutive distribution type
-//	@base: moving window half-length
-//	@summit: returned X,Y coordinates of spliced (smoothed) summit
 void LenFreq::CallParams(dtype type, fraglen base, point& summit)
 {
 	const BYTE failCntLim = 2;	// max count of base's decreasing steps after which PCC is considered only decreasing
 	BYTE failCnt = 0;			// counter of base's decreasing steps after which PCC is considered only decreasing
 	point summit0;				// temporary summit
 	DParams dParams0, dParams;	// temporary, final  PCC & mean(alpha) & sigma(beta)
-#ifdef _DEBUG
+#ifdef MY_DEBUG
 	int i = 0;					// counter of steps
 #endif
 
@@ -440,7 +374,7 @@ void LenFreq::CallParams(dtype type, fraglen base, point& summit)
 		//for (int i=0; !i; i++) {	// to print spline for fixed base
 		const fpair keypts = GetKeyPoints(base, summit0);
 		SetPCC(type, keypts, dParams0, summit0.first);
-#ifdef _DEBUG
+#ifdef MY_DEBUG
 		* _s << setw(4) << setfill(SPACE) << left << ++i;
 		*_s << "base: " << setw(2) << base << "  summitX: " << keypts.first << "\tpcc: " << dParams0.PCC;
 		if (dParams0 > dParams)	*_s << "\t>";
@@ -463,20 +397,16 @@ void LenFreq::CallParams(dtype type, fraglen base, point& summit)
 	}
 	_allParams.SetParams(type, dParams);
 
-#ifdef _DEBUG
+#ifdef MY_DEBUG
 	* _s << LF;
 #endif
 }
 
-// Prints original distrib features
-//	@s: print stream
-//	@base: moving window half-length
-//	@summit: X,Y coordinates of spliced (smoothed) summit
 void LenFreq::PrintTraits(dostream& s, fraglen base, const LenFreq::point& summit)
 {
 	if (base == smoothBase)		s << Spec(eSpec::SMOOTH) << LF;
-	if (summit.first - begin()->first < MA::Size(base)
-		|| begin()->second / summit.second > 0.95)
+	if (summit.first - begin()->first < SSpliner<size_t>::SilentLength(eCurveType::SMOOTH, base)
+	|| begin()->second / summit.second > 0.95)
 		Err(Spec(eSpec::HCROP) + SepSCl + sParams + sInaccurate).Warning();
 	else if (_spec == eSpec::MODUL)
 		s << Spec(_spec) << LF;
@@ -486,7 +416,7 @@ void LenFreq::PrintTraits(dostream& s, fraglen base, const LenFreq::point& summi
 		DParams dParams, dParams0;
 		CalcPCC(_allParams.GetBestParams(dParams), dParams0, summit.first, false);	// sorts params
 		float diffPCC = dParams0.PCC - dParams.PCC;
-#ifdef _DEBUG
+#ifdef MY_DEBUG
 		s << "summit: " << summit.first << "\tPCCsummit: " << dParams.PCC << "\tdiff PCC: " << diffPCC << LF;
 #endif
 		if (diffPCC > 0.01)
@@ -496,7 +426,6 @@ void LenFreq::PrintTraits(dostream& s, fraglen base, const LenFreq::point& summi
 	}
 }
 
-// Prints original distribution as a set of <frequency>-<size> pairs
 void LenFreq::PrintSeq(dostream& s) const
 {
 	const chrlen maxLen = INT_MAX / 10;
@@ -508,8 +437,6 @@ void LenFreq::PrintSeq(dostream& s) const
 	}
 }
 
-// Constructor by pre-prepared frequency distribution file
-//	@fname: name of pre-prepared frequency distribution file
 LenFreq::LenFreq(const char* fName)
 {
 	TabFile file(fName, FT::eType::DIST);
@@ -525,10 +452,6 @@ LenFreq::LenFreq(const char* fName)
 using namespace std::chrono;
 #endif
 
-// Calculate and print dist params
-//	@s: print stream
-//	@ctype: combined type of distribution
-//	@prDistr: if true then print distribution additionally
 void LenFreq::Print(dostream& s, eCType ctype, bool prDistr)
 {
 	if (empty())		s << "empty " << sDistrib << LF;
@@ -546,7 +469,7 @@ void LenFreq::Print(dostream& s, eCType ctype, bool prDistr)
 			// and use them on subsequent calls to avoid repeated PCC iterations.
 			// However, the same base (and, as a consequence, keypts & summit) only works well for LNORM and GAMMA.
 			// For the best NORM, base may be less, therefore, for simplicity and reliability, all parameters are always recalculated
-#ifdef _DEBUG
+#ifdef MY_DEBUG
 			_s = &s;
 			if (_fillSpline)	_spline.reserve(size() / 2);
 #endif

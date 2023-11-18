@@ -1,3 +1,10 @@
+/**********************************************************
+spline 2023 Fedor Naumenko (fedor.naumenko@gmail.com)
+-------------------------
+Last modified: 11/18/2023
+-------------------------
+Two-modes spline (smoothing curve) based in moving window
+***********************************************************/
 #pragma once
 
 #include <vector>

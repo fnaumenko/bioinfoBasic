@@ -10,6 +10,7 @@ Provides frequency distribution functionality
 #include "DataInFile.h"
 #include <array>
 
+//#define MY_DEBUG
 
 typedef pair<float, float> fpair;
 
@@ -26,58 +27,6 @@ public:
 	};
 
 private:
-	// Moving window (Sliding subset)
-	class MW : protected vector<ULONG>
-	{
-	protected:
-		// Constructor by half of moving window length ("base")
-		MW(unsigned base) { insert(begin(), Size(base), 0); }
-
-		// Add last value and pop the first one (QUEUE functionality)
-		void PushVal(ULONG x);
-
-	public:
-		// Returns length of moving window
-		//	@base: moving window half-length
-		static fraglen Size(fraglen base) { return 2 * base + 1; }
-	};
-
-	// Simple Moving Average splicer
-	// https://en.wikipedia.org/wiki/Moving_average
-	class MA : public MW
-	{
-		ULONG	_sum = 0;		// sum of adding values
-
-	public:
-		// Constructor by half of moving window length ("base")
-		MA(fraglen base) : MW(base) {}
-
-		// Add value and return average
-		float Push(ULONG x);
-	};
-
-	// Simple Moving Median splicer
-	class MM : public MW
-	{
-		vector<ULONG> _ss;		// sorted moving window (sliding subset)
-		ULONG(MM::* _push)(ULONG) = &MM::GetMedian;	// pointer to GetMedian function: real or empty (stub)
-
-		//	Return stub median
-		ULONG GetMedianStub(ULONG x) { return x; }
-
-		//	Add value and return median
-		ULONG GetMedian(ULONG x);
-
-	public:
-		// Constructor
-		//	@base: moving window half-length;
-		//	if 0 then empty instance (initialized by empty Push() method)
-		MM(fraglen base);
-
-		// Add value and return median
-		ULONG Push(ULONG x) { return (*this.*_push)(x); }
-	};
-
 	using dtype = int;	// consecutive distribution type: just to designate dist type, used as an index
 	using spoint = pair<chrlen, ULONG>;	// initial sequence point
 	using point = pair<chrlen, float>;	// distribution point 
@@ -140,8 +89,8 @@ private:
 			bool IsSet() const { return dParams.PCC != 0; }
 
 			// Prints restored distr parameters
-			//	@s: print stream
-			//	@maxPCC: masimum PCC to print relative PCC percentage
+			//	@param s: print stream
+			//	@param maxPCC: masimum PCC to print relative PCC percentage
 			void Print(dostream& s, float maxPCC) const;
 		};
 
@@ -165,8 +114,8 @@ private:
 		AllDParams();
 
 		// Set distribution parameters by type
-		//	@type: consecutive distribution type
-		//	@dp: PCC, mean(alpha) & sigma(beta)
+		//	@param type: consecutive distribution type
+		//	@param dp: PCC, mean(alpha) & sigma(beta)
 		void SetParams(dtype type, const DParams& dp) { _allParams[type].dParams = dp; }
 
 		// Clear normal distribution if its PCC is less then lognorm PCC by the threshold
@@ -176,12 +125,12 @@ private:
 		}
 
 		// Returns parameters of distribution with the highest (best) PCC
-		//	@dParams: returned PCC, mean(alpha) & sigma(beta)
-		//	return: consecutive distribution type with the highest (best) PCC
+		//	@param dParams: returned PCC, mean(alpha) & sigma(beta)
+		//	@return: consecutive distribution type with the highest (best) PCC
 		dtype GetBestParams(DParams& dParams);
 
 		// Prints sorted distibutions params
-		//	@s: print stream
+		//	@param s: print stream
 		void Print(dostream& s);
 	};
 
@@ -195,58 +144,58 @@ private:
 	static bool IsType(eCType cType, eCType type) { return cType & type; }
 
 	// Calls distribution parameters by consecutive distribution type
-	//	@keypts: key points: X-coord of highest point, X-coord of right middle hight point
-	//	@params: returned mean(alpha) & sigma(beta)
+	//	@param keypts: key points: X-coord of highest point, X-coord of right middle hight point
+	//	@param params: returned mean(alpha) & sigma(beta)
 	//	Defined as a member of the class only to use the private short name lghRatio
 	static void (*SetParams[])(const fpair& keypts, fpair& params);
 
 	eSpec _spec = eSpec::CLEAR;		// distribution specification
 	AllDParams	_allParams;			// distributions parameters
-#ifdef _DEBUG
+#ifdef MY_DEBUG
 	mutable vector<point> _spline;		// splining curve (container) to visualize splining
 	mutable bool _fillSpline = true;	// true if fill splining curve (container)
 	dostream* _s = NULL;				// print stream
 #endif
 
 	// Returns estimated moving window half-length ("base")
-	//	return: estimated base, or 0 in case of degenerate distribution
+	//	@return: estimated base, or 0 in case of degenerate distribution
 	fraglen GetBase();
 
 	// Defines key points
-	//	@base: moving window half-length
-	//	@summit: returned X,Y coordinates of spliced (smoothed) summit
-	//	return: key points: X-coord of highest point, X-coord of right middle hight point
+	//	@param base: moving window half-length
+	//	@param summit: returned X,Y coordinates of spliced (smoothed) summit
+	//	@return: key points: X-coord of highest point, X-coord of right middle hight point
 	fpair GetKeyPoints(fraglen base, point& summit) const;
 
 	// Compares this sequence with calculated one by given mean & sigma, and returns PCC
-	//	@type: consecutive distribution type
-	//	@dParams: returned PCC, input mean(alpha) & sigma(beta)
-	//	@Mode: X-coordinate of summit
-	//	@full: if true then correlate from the beginning, otherwiase from summit
+	//	@param type: consecutive distribution type
+	//	@param dParams: returned PCC, input mean(alpha) & sigma(beta)
+	//	@param Mode: X-coordinate of summit
+	//	@param full: if true then correlate from the beginning, otherwiase from summit
 	//	calculated on the basis of the "start of the sequence" – "the first value less than 0.1% of the maximum".
 	void CalcPCC(dtype type, DParams& dParams, fraglen Mode, bool full = true) const;
 
 	// Calculates distribution parameters
-	//	@type: consecutive distribution type
-	//	@keyPts: key points: X-coord of highest point, X-coord of right middle hight point
-	//	@dParams: returned PCC, mean(alpha) & sigma(beta)
-	//	@Mode: X-coordinate of summit
+	//	@param type: consecutive distribution type
+	//	@param keyPts: key points: X-coord of highest point, X-coord of right middle hight point
+	//	@param dParams: returned PCC, mean(alpha) & sigma(beta)
+	//	@param Mode: X-coordinate of summit
 	void SetPCC(dtype type, const fpair& keypts, DParams& dParams, fraglen Mode) const;
 
 	// Calculates and print called distribution parameters
-	//	@type: consecutive distribution type
-	//	@base: moving window half-length
-	//	@summit: returned X,Y coordinates of best spliced (smoothed) summit
+	//	@param type: consecutive distribution type
+	//	@param base: moving window half-length
+	//	@param summit: returned X,Y coordinates of best spliced (smoothed) summit
 	void CallParams(dtype type, fraglen base, point& summit);
 
 	// Prints original distribution features
-	//	@s: print stream
-	//	@base: moving window half-length
-	//	@summit: X,Y coordinates of spliced (smoothed) summit
+	//	@param s: print stream
+	//	@param base: moving window half-length
+	//	@param summit: X,Y coordinates of spliced (smoothed) summit
 	void PrintTraits(dostream& s, fraglen base, const point& summit);
 
 	// Prints original distribution as a set of <frequency>-<size> pairs
-	//	@s: print stream
+	//	@param s: print stream
 	void PrintSeq(dostream& s) const;
 
 public:
@@ -254,19 +203,19 @@ public:
 	LenFreq() {}
 
 	// Constructor by pre-prepared frequency distribution file
-	//	@fname: name of pre-prepared frequency distribution file
+	//	@param fname: name of pre-prepared frequency distribution file
 	LenFreq(const char* fname);
 
 	// Returns true if distribution has not enough size
 	//bool IsDegenerate() const { return size() < 5; }
 
 	// Adds fragment/read to statistics
-	//	@len: frag's length
+	//	@param len: frag's length
 	void AddLen(fraglen len) { (*this)[len]++; }
 
 	// Calculate and print dist fpair
-	//	@s: print stream
-	//	@type: combined type of distribution
-	//	@prDistr: if true then print distribution additionally
+	//	@param s: print stream
+	//	@param type: combined type of distribution
+	//	@param prDistr: if true then print distribution additionally
 	void Print(dostream& s, eCType type, bool prDistr = true);
 };
