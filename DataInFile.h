@@ -2,7 +2,7 @@
 DataInFile.h (c) 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
 All rights reserved.
 -------------------------
-Last modified: 11/12/2023
+Last modified: 11/19/2023
 -------------------------
 Provides read|write text file functionality
 ***********************************************************/
@@ -12,6 +12,8 @@ Provides read|write text file functionality
 #include <map>
 #include <functional>
 //#include <variant>
+
+static const char* sTotal = "total";
 
 // 'eOInfo' defines types of outputted oinfo
 enum class eOInfo {

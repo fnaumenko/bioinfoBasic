@@ -2,7 +2,7 @@
 common.h (c) 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
 All rights reserved.
 -------------------------
-Last modified: 11/12/2023
+Last modified: 11/19/2023
 -------------------------
 Provides common functionality
 ***********************************************************/
@@ -129,8 +129,6 @@ static const char* SepCl = ": ";		// colon separator
 static const char* SepSCl = "; ";		// semicolon separator
 static const char* SepCm = ", ";		// comma separator
 static const char* SepDCl = ":: ";		// double colon separator
-//static const char* SepClTab = ":\t";	// colon + tab separator
-//static const char* Equel = " = ";
 
 static const std::string ZipFileExt = ".gz";
 static const string strEmpty = "";
@@ -139,29 +137,15 @@ static const string strEmpty = "";
 static const char* sTime = "time";
 static const char* sVers = "version";
 static const char* sHelp = "help";
-static const char* sGen = "gen";		// isChIP, readDens
+static const char* sGen = "gen";
 static const char* sOutput = "out";
-
-//static const char* Done = " done";
-static const char* sUnitDens = "r/kbp";	// unit of density measure; isChIP, readDens
-static const char* sTotal = "total";
-//static const string sTotal = "total";
 
 //#ifdef _DUP_OUTPUT
 static const char* sSumm = "summ";		// to invoke app from bioStat
 static const string sFileDuplBegin = "duplicate standard output to specified file\nor to ";
 static const string sFileDuplEnd = " if file is not specified";
-//#endif
-//#if defined _ISCHIP || defined _CALLDIST
-//static const char* SepGroup = ";  ";
-//static const char* sMean = "mean";
-//static const char* sSigma = "sigma";
-//static const char* sDistrib = "distribution";
-//#endif	// _ISCHIP || _CALLDIST
-// 
-//#if !defined _WIGREG && !defined _FQSTATN
+
 static const char* sTemplate = "template";
-//#endif
 
 /*** COMMON MACROS & FUNCTION ***/
 
