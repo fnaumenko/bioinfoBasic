@@ -4,8 +4,9 @@
 
 const float SDPI = float(sqrt(3.1415926 * 2));		// square of doubled Pi
 
-const float LenFreq::DParams::UndefPCC = -1;
+const char* LenFreq::sDistrib = "distribution";
 const char* LenFreq::sTitle[] = { "Norm", "Lognorm", "Gamma" };
+const float LenFreq::DParams::UndefPCC = -1;
 const float LenFreq::lghRatio = float(log(LenFreq::hRatio));	// log of ratio of the summit height to height of the measuring point
 const string LenFreq::sParams = "parameters";
 const string LenFreq::sInaccurate = " may be inaccurate";
@@ -150,7 +151,7 @@ LenFreq::dtype LenFreq::AllDParams::GetBestParams(DParams& dParams)
 
 void LenFreq::AllDParams::Print(dostream& s)
 {
-	static const char* N[] = { sMean, sSigma };
+	static const char* N[] = { "mean", "sigma" };
 	static const char* G[] = { "alpha", "beta" };
 	static const char* P[] = { "p1", "p2" };
 	static const char* a[] = { "*", "**" };

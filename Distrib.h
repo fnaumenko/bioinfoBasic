@@ -26,6 +26,8 @@ public:
 		CNT = 3,
 	};
 
+	static const char* sDistrib;
+
 private:
 	using dtype = int;	// consecutive distribution type: just to designate dist type, used as an index
 	using spoint = pair<chrlen, ULONG>;	// initial sequence point

@@ -152,12 +152,13 @@ static const char* sSumm = "summ";		// to invoke app from bioStat
 static const string sFileDuplBegin = "duplicate standard output to specified file\nor to ";
 static const string sFileDuplEnd = " if file is not specified";
 //#endif
-#if defined _ISCHIP || defined _CALLDIST
+//#if defined _ISCHIP || defined _CALLDIST
 //static const char* SepGroup = ";  ";
-static const char* sMean = "mean";
-static const char* sSigma = "sigma";
-static const char* sDistrib = "distribution";
-#endif	// _ISCHIP || _CALLDIST
+//static const char* sMean = "mean";
+//static const char* sSigma = "sigma";
+//static const char* sDistrib = "distribution";
+//#endif	// _ISCHIP || _CALLDIST
+// 
 //#if !defined _WIGREG && !defined _FQSTATN
 static const char* sTemplate = "template";
 //#endif
