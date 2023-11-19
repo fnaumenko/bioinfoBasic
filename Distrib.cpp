@@ -4,13 +4,13 @@
 
 const float SDPI = float(sqrt(3.1415926 * 2));		// square of doubled Pi
 
-const char* LenFreq::sDistrib = "distribution";
-const char* LenFreq::sTitle[] = { "Norm", "Lognorm", "Gamma" };
-const float LenFreq::DParams::UndefPCC = -1;
-const float LenFreq::lghRatio = float(log(LenFreq::hRatio));	// log of ratio of the summit height to height of the measuring point
-const string LenFreq::sParams = "parameters";
-const string LenFreq::sInaccurate = " may be inaccurate";
-const string LenFreq::sSpec[] = {
+const char* Distrib::sDistrib = "distribution";
+const char* Distrib::sTitle[] = { "Norm", "Lognorm", "Gamma" };
+const float Distrib::DParams::UndefPCC = -1;
+const float Distrib::lghRatio = float(log(Distrib::hRatio));	// log of ratio of the summit height to height of the measuring point
+const string Distrib::sParams = "parameters";
+const string Distrib::sInaccurate = " may be inaccurate";
+const string Distrib::sSpec[] = {
 	"is degenerate",
 	"is smooth",
 	"is modulated",
@@ -65,7 +65,7 @@ float(*GetMean[])(const fpair& p) = {
 //	@param keypts: key points: X-coord of highest point, X-coord of right middle hight point
 //	@param p: returned params: mean(alpha) & sigma(beta)
 //	Defined as a member of the class only to use the private short 'lghRatio'
-void (*LenFreq::SetParams[])(const fpair& keypts, fpair& p) = {
+void (*Distrib::SetParams[])(const fpair& keypts, fpair& p) = {
 	[](const fpair& keypts, fpair& p) {	//** normal
 		p.first = keypts.first;														// mean
 		p.second = float(sqrt(pow(keypts.second - p.first, 2) / lghRatio / 2));		// sigma
@@ -83,7 +83,7 @@ void (*LenFreq::SetParams[])(const fpair& keypts, fpair& p) = {
 	}
 };
 
-void LenFreq::AllDParams::QualDParams::Print(dostream& s, float maxPCC) const
+void Distrib::AllDParams::QualDParams::Print(dostream& s, float maxPCC) const
 {
 	if (IsSet()) {
 		s << Title << TAB;
@@ -105,7 +105,7 @@ void LenFreq::AllDParams::QualDParams::Print(dostream& s, float maxPCC) const
 	}
 }
 
-bool LenFreq::AllDParams::IsSetInSorted(eCType ctype) const
+bool Distrib::AllDParams::IsSetInSorted(eCType ctype) const
 {
 	for (const QualDParams& dp : _allParams)
 		if (dp.Type == ctype)
@@ -113,7 +113,7 @@ bool LenFreq::AllDParams::IsSetInSorted(eCType ctype) const
 	return false;
 }
 
-int LenFreq::AllDParams::SetCntInSorted() const
+int Distrib::AllDParams::SetCntInSorted() const
 {
 	int cnt = 0;
 	for (const QualDParams& dp : _allParams)
@@ -121,7 +121,7 @@ int LenFreq::AllDParams::SetCntInSorted() const
 	return cnt;
 }
 
-void LenFreq::AllDParams::Sort()
+void Distrib::AllDParams::Sort()
 {
 	if (!_sorted) {
 		sort(_allParams.begin(), _allParams.end(),
@@ -132,7 +132,7 @@ void LenFreq::AllDParams::Sort()
 	}
 }
 
-LenFreq::AllDParams::AllDParams()
+Distrib::AllDParams::AllDParams()
 {
 	int i = 0;
 	for (QualDParams& dp : _allParams)
@@ -141,7 +141,7 @@ LenFreq::AllDParams::AllDParams()
 	//	_allParams[i].SetTitle(i);
 }
 
-LenFreq::dtype LenFreq::AllDParams::GetBestParams(DParams& dParams)
+Distrib::dtype Distrib::AllDParams::GetBestParams(DParams& dParams)
 {
 	Sort();
 	const QualDParams& QualDParams = _allParams[0];
@@ -149,7 +149,7 @@ LenFreq::dtype LenFreq::AllDParams::GetBestParams(DParams& dParams)
 	return GetDType(QualDParams.Type);
 }
 
-void LenFreq::AllDParams::Print(dostream& s)
+void Distrib::AllDParams::Print(dostream& s)
 {
 	static const char* N[] = { "mean", "sigma" };
 	static const char* G[] = { "alpha", "beta" };
@@ -175,14 +175,14 @@ void LenFreq::AllDParams::Print(dostream& s)
 		s << LF;
 		for (int i = 0; i < 2; i++)
 			s << setw(3) << a[i] << P[i] << " - " << N[i] << ", or "
-			<< G[i] << " for " << LenFreq::sTitle[GetDType(eCType::GAMMA)] << LF;
+			<< G[i] << " for " << Distrib::sTitle[GetDType(eCType::GAMMA)] << LF;
 	}
 }
 
-fraglen LenFreq::GetBase()
+fraglen Distrib::GetBase()
 {
 	const int CutoffFrac = 100;	// fraction of the maximum height below which scanning stops on the first pass
-	ULONG	cutoffY = 0;		// Y-value below which scanning stops on the first pass
+	dVal_t	cutoffY = 0;		// Y-value below which scanning stops on the first pass
 	fraglen halfX = 0;
 	USHORT peakCnt = 0;
 	bool up = false;
@@ -190,13 +190,13 @@ fraglen LenFreq::GetBase()
 	spoint p0(*it), p;			// previous, current point
 	spoint pMin(0, 0), pMax(pMin), pMMax(pMin);	// current, previous, maximum point
 	vector<spoint> extr;		// local extremums
-	SSpliner<size_t> spliner(eCurveType::SPIKED, 1);
+	SSpliner<dVal_t> spliner(eCurveType::SPIKED, 1);
 
 	//== define pMMax and halfX
 	extr.reserve(20);
 	for (it++; it != end(); p0 = p, it++) {
 		p.first = it->first;
-		p.second = ULONG(spliner.Push(it->second));
+		p.second = dVal_t(spliner.Push(it->second));
 		if (p.second > p0.second) {		// increasing part
 			if (!up) {					// treat pit
 				extr.push_back(pMax); pMin = p0; up = true;
@@ -273,11 +273,11 @@ fraglen LenFreq::GetBase()
 #endif
 }
 
-fpair LenFreq::GetKeyPoints(fraglen base, point& summit) const
+fpair Distrib::GetKeyPoints(fraglen base, dpoint& summit) const
 {
-	point p0 = make_pair(begin()->first, float(begin()->second));	// previous point
-	point p{};					// current point
-	SSpliner<size_t> spliner(
+	dpoint p0 = make_pair(begin()->first, float(begin()->second));	// previous point
+	dpoint p{};					// current point
+	SSpliner<dVal_t> spliner(
 #ifdef MY_DEBUG					// to visualize SPIKED or SMOOTH distributions individually
 		eCurveType::SPIKED, 
 		//eCurveType::SMOOTH,
@@ -324,7 +324,7 @@ fpair LenFreq::GetKeyPoints(fraglen base, point& summit) const
 #endif
 }
 
-void LenFreq::CalcPCC(dtype type, DParams& dParams, fraglen Mode, bool full) const
+void Distrib::CalcPCC(dtype type, DParams& dParams, fraglen Mode, bool full) const
 {
 	const fpair eqTerms = InitEqTerms[type](dParams.Params);		// two constant terms of the distrib equation
 	const double cutoffY = Distrs[type](dParams.Params, Mode, eqTerms) / 1000;	// break when Y became less then 0.1% of max value
@@ -353,17 +353,17 @@ void LenFreq::CalcPCC(dtype type, DParams& dParams, fraglen Mode, bool full) con
 	if (!isNaN(pcc))	dParams.PCC = pcc;
 }
 
-void LenFreq::SetPCC(dtype type, const fpair& keypts, DParams& dParams, fraglen Mode) const
+void Distrib::SetPCC(dtype type, const fpair& keypts, DParams& dParams, fraglen Mode) const
 {
 	SetParams[type](keypts, dParams.Params);
 	CalcPCC(type, dParams, Mode);
 }
 
-void LenFreq::CallParams(dtype type, fraglen base, point& summit)
+void Distrib::CallParams(dtype type, fraglen base, dpoint& summit)
 {
 	const BYTE failCntLim = 2;	// max count of base's decreasing steps after which PCC is considered only decreasing
 	BYTE failCnt = 0;			// counter of base's decreasing steps after which PCC is considered only decreasing
-	point summit0;				// temporary summit
+	dpoint summit0;				// temporary summit
 	DParams dParams0, dParams;	// temporary, final  PCC & mean(alpha) & sigma(beta)
 #ifdef MY_DEBUG
 	int i = 0;					// counter of steps
@@ -380,7 +380,7 @@ void LenFreq::CallParams(dtype type, fraglen base, point& summit)
 		*_s << "base: " << setw(2) << base << "  summitX: " << keypts.first << "\tpcc: " << dParams0.PCC;
 		if (dParams0 > dParams)	*_s << "\t>";
 		*_s << LF;
-		if (_fillSpline) { for (point p : _spline)	*_s << p.first << TAB << p.second << LF; _fillSpline = false; }
+		if (_fillSpline) { for (dpoint p : _spline)	*_s << p.first << TAB << p.second << LF; _fillSpline = false; }
 #endif
 		if (dParams0 > dParams) {
 			dParams = dParams0;
@@ -403,10 +403,10 @@ void LenFreq::CallParams(dtype type, fraglen base, point& summit)
 #endif
 }
 
-void LenFreq::PrintTraits(dostream& s, fraglen base, const LenFreq::point& summit)
+void Distrib::PrintTraits(dostream& s, fraglen base, const Distrib::dpoint& summit)
 {
 	if (base == smoothBase)		s << Spec(eSpec::SMOOTH) << LF;
-	if (summit.first - begin()->first < SSpliner<size_t>::SilentLength(eCurveType::SMOOTH, base)
+	if (summit.first - begin()->first < SSpliner<dVal_t>::SilentLength(eCurveType::SMOOTH, base)
 	|| begin()->second / summit.second > 0.95)
 		Err(Spec(eSpec::HCROP) + SepSCl + sParams + sInaccurate).Warning();
 	else if (_spec == eSpec::MODUL)
@@ -427,9 +427,9 @@ void LenFreq::PrintTraits(dostream& s, fraglen base, const LenFreq::point& summi
 	}
 }
 
-void LenFreq::PrintSeq(dostream& s) const
+void Distrib::PrintSeq(dostream& s) const
 {
-	const chrlen maxLen = INT_MAX / 10;
+	const fraglen maxLen = INT_MAX / 10;
 
 	s << "\nOriginal " << sDistrib << COLON << "\nlength\tfrequency\n";
 	for (const value_type& f : *this) {
@@ -438,7 +438,7 @@ void LenFreq::PrintSeq(dostream& s) const
 	}
 }
 
-LenFreq::LenFreq(const char* fName)
+Distrib::Distrib(const char* fName)
 {
 	TabFile file(fName, FT::eType::DIST);
 
@@ -453,7 +453,7 @@ LenFreq::LenFreq(const char* fName)
 using namespace std::chrono;
 #endif
 
-void LenFreq::Print(dostream& s, eCType ctype, bool prDistr)
+void Distrib::Print(dostream& s, eCType ctype, bool prDistr)
 {
 	if (empty())		s << "empty " << sDistrib << LF;
 	else {
@@ -477,7 +477,7 @@ void LenFreq::Print(dostream& s, eCType ctype, bool prDistr)
 #ifdef _TIME
 			for (int i = 0; i < tmCycleCnt; i++)
 #endif
-				point summit;				// returned value
+				dpoint summit;				// returned value
 			for (dtype i = 0; i < eCType::CNT; i++)
 				if (IsType(ctype, i))
 					CallParams(i, base, summit);

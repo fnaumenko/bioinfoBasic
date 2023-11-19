@@ -1,9 +1,9 @@
 /**********************************************************
 Distrib 2023 Fedor Naumenko (fedor.naumenko@gmail.com)
 -------------------------
-Last modified: 11/18/2023
+Last modified: 11/19/2023
 -------------------------
-Provides frequency distribution functionality
+Provides value (typically frequency) distribution functionality
 ***********************************************************/
 #pragma once
 
@@ -12,10 +12,11 @@ Provides frequency distribution functionality
 
 //#define MY_DEBUG
 
-typedef pair<float, float> fpair;
+using dVal_t = size_t;
+using fpair = pair<float, float>;
 
-// 'LenFreq' represents a fragment's/read's length frequency statistics
-class LenFreq : map<fraglen, ULONG>
+// 'Distrib' represents a value (typically fragment's/read's length frequency) distribution statistics
+class Distrib : map<fraglen, dVal_t>
 {
 public:
 	// combined type of distribution
@@ -25,13 +26,12 @@ public:
 		GAMMA = 1 << 2,
 		CNT = 3,
 	};
-
 	static const char* sDistrib;
 
 private:
 	using dtype = int;	// consecutive distribution type: just to designate dist type, used as an index
-	using spoint = pair<chrlen, ULONG>;	// initial sequence point
-	using point = pair<chrlen, float>;	// distribution point 
+	using spoint = pair<fraglen, dVal_t>;	// initial raw sequence point
+	using dpoint = pair<fraglen, float>;	// distribution point 
 
 	// Returns combined distribution type by consecutive distribution type
 	static eCType GetCType(dtype type) { return eCType(1 << type); }
@@ -154,7 +154,7 @@ private:
 	eSpec _spec = eSpec::CLEAR;		// distribution specification
 	AllDParams	_allParams;			// distributions parameters
 #ifdef MY_DEBUG
-	mutable vector<point> _spline;		// splining curve (container) to visualize splining
+	mutable vector<dpoint> _spline;		// splining curve (container) to visualize splining
 	mutable bool _fillSpline = true;	// true if fill splining curve (container)
 	dostream* _s = NULL;				// print stream
 #endif
@@ -167,7 +167,7 @@ private:
 	//	@param base: moving window half-length
 	//	@param summit: returned X,Y coordinates of spliced (smoothed) summit
 	//	@return: key points: X-coord of highest point, X-coord of right middle hight point
-	fpair GetKeyPoints(fraglen base, point& summit) const;
+	fpair GetKeyPoints(fraglen base, dpoint& summit) const;
 
 	// Compares this sequence with calculated one by given mean & sigma, and returns PCC
 	//	@param type: consecutive distribution type
@@ -188,34 +188,33 @@ private:
 	//	@param type: consecutive distribution type
 	//	@param base: moving window half-length
 	//	@param summit: returned X,Y coordinates of best spliced (smoothed) summit
-	void CallParams(dtype type, fraglen base, point& summit);
+	void CallParams(dtype type, fraglen base, dpoint& summit);
 
 	// Prints original distribution features
 	//	@param s: print stream
 	//	@param base: moving window half-length
 	//	@param summit: X,Y coordinates of spliced (smoothed) summit
-	void PrintTraits(dostream& s, fraglen base, const point& summit);
+	void PrintTraits(dostream& s, fraglen base, const dpoint& summit);
 
-	// Prints original distribution as a set of <frequency>-<size> pairs
+	// Prints original distribution as a set of <value>-<size> pairs
 	//	@param s: print stream
 	void PrintSeq(dostream& s) const;
 
 public:
 	// Default constructor
-	LenFreq() {}
+	Distrib() {}
 
-	// Constructor by pre-prepared frequency distribution file
-	//	@param fname: name of pre-prepared frequency distribution file
-	LenFreq(const char* fname);
+	// Constructor by ready distribution file
+	//	@param fname: name of ready distribution file
+	Distrib(const char* fname);
 
 	// Returns true if distribution has not enough size
 	//bool IsDegenerate() const { return size() < 5; }
 
-	// Adds fragment/read to statistics
-	//	@param len: frag's length
-	void AddLen(fraglen len) { (*this)[len]++; }
+	// Adds value to the instance
+	void AddVal(fraglen val) { (*this)[val]++; }
 
-	// Calculate and print dist fpair
+	// Calculate and print distribution
 	//	@param s: print stream
 	//	@param type: combined type of distribution
 	//	@param prDistr: if true then print distribution additionally
