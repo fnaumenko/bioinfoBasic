@@ -398,7 +398,7 @@ void ChromSizes::Print() const
 chrlen ChromSizesExt::DefEffLength(cIter it) const
 {
 	if (Data(it).Defined)	return Data(it).Defined;	// def.eff. length is initialized
-	if (RefSeq::LetGaps)		return SetEffLength(it);	// initialize def.eff. length by real size
+	if (ChromSeq::LetGaps)		return SetEffLength(it);	// initialize def.eff. length by real size
 	// initialize def.eff. length by chrN.region file
 	ChromDefRegions rgns(RefName(CID(it)));
 	if (rgns.Empty())		return SetEffLength(it);
@@ -473,17 +473,17 @@ void ChromSizesExt::PrintTreatedChroms() const
 /************************  end of ChromSizesExt ************************/
 #endif	// _ISCHIP
 
-/************************ class RefSeq ************************/
+/************************ class ChromSeq ************************/
 
-bool RefSeq::LetGaps = true;	// if true then include gaps at the edges of the ref chrom while reading
-bool RefSeq::StatGaps = false;	// if true sum gaps for statistic output
+bool ChromSeq::LetGaps = true;	// if true then include gaps at the edges of the ref chrom while reading
+bool ChromSeq::StatGaps = false;	// if true sum gaps for statistic output
 
 // Initializes instance and/or chrom's defined regions
 //	@fName: file name
 //	@rgns: chrom's defined regions: ripe or new
 //	@fill: if true fill sequence and def regions, otherwise def regions only
 //	return: true if chrom def regions are stated
-bool RefSeq::Init(const string& fName, ChromDefRegions& rgns, bool fill)
+bool ChromSeq::Init(const string& fName, ChromDefRegions& rgns, bool fill)
 {
 	_seq = nullptr;
 	bool getN = StatGaps || LetGaps || rgns.Empty();	// if true then chrom def regions should be recorded
@@ -510,7 +510,7 @@ bool RefSeq::Init(const string& fName, ChromDefRegions& rgns, bool fill)
 #if defined _ISCHIP || defined _VALIGN
 
 // Creates and fills new instance
-RefSeq::RefSeq(chrid cID, const ChromSizes& cSizes)
+ChromSeq::ChromSeq(chrid cID, const ChromSizes& cSizes)
 {
 	_ID = cID;
 	ChromDefRegions rgns(cSizes.ServName(cID));	// read from file or new (empty)
@@ -528,7 +528,7 @@ RefSeq::RefSeq(chrid cID, const ChromSizes& cSizes)
 //	@fName: FA file name with extension
 //	@rgns: new chrom's defined regions
 //	@minGapLen: minimal length which defines gap as a real gap
-RefSeq::RefSeq(const string& fName, ChromDefRegions& rgns, short minGapLen)
+ChromSeq::ChromSeq(const string& fName, ChromDefRegions& rgns, short minGapLen)
 {
 	Init(fName, rgns, false);
 	rgns.Combine(minGapLen);
@@ -538,7 +538,7 @@ RefSeq::RefSeq(const string& fName, ChromDefRegions& rgns, short minGapLen)
 //#if defined _FILE_WRITE && defined DEBUG
 //#define FA_LINE_LEN	50	// length of wrtied lines
 //
-//void RefSeq::Write(const string & fName, const char *chrName) const
+//void ChromSeq::Write(const string & fName, const char *chrName) const
 //{
 //	FaFile file(fName, chrName);
 //	chrlen i, cnt = _len / FA_LINE_LEN;
@@ -549,7 +549,7 @@ RefSeq::RefSeq(const string& fName, ChromDefRegions& rgns, short minGapLen)
 //}
 //#endif	// DEBUG
 
-/************************ end of class RefSeq ************************/
+/************************ end of class ChromSeq ************************/
 
 #if defined _READDENS || defined _BIOCC
 
@@ -581,7 +581,7 @@ const Regions& DefRegions::operator[] (chrid cID)
 		if (!ext.length())	// no .fa[.gz] file, empty service dir: _cSizes should be initialized by BAM
 			return AddElem(cID, Regions(0, _cSizes[cID])).Data;
 		//Err(Err::F_NONE, (_cSizes.ServName(cID) + ChromDefRegions::Ext).c_str()).Throw();
-		RefSeq rs(_cSizes.RefName(cID) + ext, rgns, _minGapLen);
+		ChromSeq rs(_cSizes.RefName(cID) + ext, rgns, _minGapLen);
 	}
 	return AddElem(cID, rgns).Data;
 }

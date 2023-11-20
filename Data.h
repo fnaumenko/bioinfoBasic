@@ -661,14 +661,14 @@ public:
 
 #endif	// _ISCHIP
 
-// 'RefSeq' represented reference chromosome as an array of nucleotides
-class RefSeq
+// 'ChromSeq' represented chromosome as an array of nucleotides
+class ChromSeq
 {
 private:
-	chrid	_ID;			// chrom ID
-	char* _seq = NULL;	// the nucleotides buffer
-	chrlen	_len,			// length of chromosome
-		_gapLen;		// total length of gaps
+	chrid	_ID;			// ID of chromosome
+	char*	 _seq = NULL;	// the nucleotides buffer
+	chrlen	_len;			// length of chromosome
+	chrlen	_gapLen;		// total length of gaps
 	Region	_effDefRgn;		// effective defined region (except 'N' at the begining and at the end)
 
 	// Initializes instance and/or chrom's defined regions
@@ -682,7 +682,7 @@ public:
 	static bool	LetGaps;	// if true then include gaps at the edges of the ref chrom while reading
 	static bool	StatGaps;	// if true count sum gaps for statistic output
 
-	~RefSeq() { delete[] _seq; }
+	~ChromSeq() { delete[] _seq; }
 
 	// Gets chrom legth
 	chrlen Length()	const { return _len; }
@@ -699,13 +699,13 @@ public:
 
 	// Creates a stub instance (for sampling cutting)
 	//	@len: chrom length
-	RefSeq(chrlen len) : _ID(Chrom::UnID), _seq(NULL), _len(len), _gapLen(0)
+	ChromSeq(chrlen len) : _ID(Chrom::UnID), _seq(NULL), _len(len), _gapLen(0)
 	{
 		_effDefRgn.Set(0, len);
 	}
 
 	// Creates and fills new instance
-	RefSeq(chrid cID, const ChromSizes& cSizes);
+	ChromSeq(chrid cID, const ChromSizes& cSizes);
 
 #endif
 #ifdef _ISCHIP
@@ -735,7 +735,7 @@ public:
 	//	@fName: FA file name with extension
 	//	@rgns: new chrom's defined regions
 	//	@minGapLen: minimal length which defines gap as a real gap
-	RefSeq(const string& fName, ChromDefRegions& rgns, short minGapLen);
+	ChromSeq(const string& fName, ChromDefRegions& rgns, short minGapLen);
 
 #endif	// _ISCHIP
 
