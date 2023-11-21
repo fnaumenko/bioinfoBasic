@@ -8,6 +8,7 @@ Provides chromosomally sorted data files functionality
 ***********************************************************/
 #pragma once
 #include "Data.h"
+#include "DataInFile.h"
 #include <assert.h>
 
 enum eStrand { TOTAL = 0, POS, NEG, CNT };
