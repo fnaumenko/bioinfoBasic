@@ -1,6 +1,5 @@
 /**********************************************************
-Data.h (c) 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-All rights reserved.
+ChromData.h 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
 -------------------------
 Last modified: 11/21/2023
 -------------------------

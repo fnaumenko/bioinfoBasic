@@ -174,7 +174,7 @@ public:
 	bool ItemStrand() const { return _getStrand(); }
 };
 
-class ChromSizes;	// Data.h
+class ChromSizes;	// ChromData.h
 
 #ifdef _BAM
 #ifdef _BIOSTAT		// defined in bioStat makefile

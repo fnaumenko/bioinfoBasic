@@ -4,7 +4,7 @@ Last modified: 11/21/2023
 ***********************************************************/
 #pragma once
 
-#include "Data.h"
+#include "ChromData.h"
 
 // 'ChromSeq' represented chromosome as an array of nucleotides
 class ChromSeq

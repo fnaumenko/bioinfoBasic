@@ -4,7 +4,7 @@ Last modified: 11/21/2023
 ***********************************************************/
 #pragma once
 
-#include "Data.h"
+#include "ChromData.h"
 #include "DataInFile.h"
 
 struct Featr : public Region

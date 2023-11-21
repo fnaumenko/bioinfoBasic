@@ -1,4 +1,12 @@
-#include "Data.h"
+/**********************************************************
+ChromData.cpp 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
+-------------------------
+Last modified: 11/21/2023
+-------------------------
+Provides common data functionality
+***********************************************************/
+
+#include "ChromData.h"
 #include <algorithm>    // std::sort
 #include <fstream>		// to write ChromSizes without defined _FILE_WRITE
 

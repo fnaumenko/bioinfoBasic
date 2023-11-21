@@ -8,7 +8,7 @@ Provides read|write text file functionality
 ***********************************************************/
 
 #include "DataInFile.h"
-#include "Data.h"
+#include "ChromData.h"
 
 /************************ DataInFile ************************/
 

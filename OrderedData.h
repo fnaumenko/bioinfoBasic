@@ -7,7 +7,7 @@ Last modified: 11/12/2023
 Provides chromosomally sorted data files functionality
 ***********************************************************/
 #pragma once
-#include "Data.h"
+#include "ChromData.h"
 #include "DataInFile.h"
 #include <assert.h>
 
