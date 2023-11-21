@@ -67,7 +67,7 @@ public:
 	// Gets total length of gaps
 	chrlen GapLen()	const { return _gapLen; }
 
-#ifdef _READDENS
+#if defined _READDENS || defined _BIOCC
 
 	// Creates an empty instance and fills chrom's defined regions
 	//	@param fName: FA file name with extension

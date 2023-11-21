@@ -2,7 +2,6 @@
 #include <algorithm>    // std::sort
 #include <fstream>		// to write ChromSizes without defined _FILE_WRITE
 
-/************************  class ChromSizes ************************/
 
 inline int ChromSizes::CommonPrefixLength(const string& fName, BYTE extLen)
 {
@@ -127,16 +126,9 @@ void ChromSizes::Init(const string& headerSAM)
 {
 	if (!IsFilled())
 		Chrom::ValidateIDs(headerSAM,
-			[this](chrid cID, const char* header) { AddValue(cID, atol(header));  }
-	);
+			[this](chrid cID, const char* header) { AddValue(cID, atol(header)); }
+		);
 }
-
-//void ChromSizesInit(ChromSizes* cs, const string& headerSAM)
-//{
-//	if (!cs->IsFilled())
-//		Chrom::ValidateIDs(headerSAM,
-//			[cs](chrid cID, const char* header) { cs->AddValue(cID, atol(header));  });
-//};
 
 genlen ChromSizes::GenSize() const
 {
@@ -167,76 +159,4 @@ void ChromSizes::Print() const
 	for (const auto& c : *this)
 		printf("%2d  %-8s%9d  %d\n", c.first, Chrom::AbbrName(c.first).c_str(), c.second.Data.Real, c.second.Treated);
 }
-#endif	// DEBUG
-
-/************************  end of ChromSizes ************************/
-
-#if defined _READDENS || defined _BIOCC
-
-/************************ DefRegions ************************/
-
-void DefRegions::Init()
-{
-	if (IsEmpty())
-		if (_cSizes.IsFilled()) {
-			// initialize instance from chrom sizes
-			if (Chrom::IsCustom())
-				for (ChromSizes::cIter it = _cSizes.cBegin(); it != _cSizes.cEnd(); it++)
-					AddElem(CID(it), Regions(0, _cSizes[CID(it)]));
-			else
-				AddElem(Chrom::CustomID(), Regions(0, _cSizes[Chrom::CustomID()]));
-			//_isEmpty = false;
-		}
-}
-
-// Gets chrom regions by chrom ID; lazy for real chrom regions
-const Regions& DefRegions::operator[] (chrid cID)
-{
-	if (FindChrom(cID))	return At(cID).Data;
-	ChromDefRegions rgns(_cSizes.ServName(cID), _minGapLen);
-	if (rgns.Empty())		// file with def regions doesn't exist?
-	{
-		//_cSizes.IsFilled();
-		const string ext = _cSizes.RefExt();
-		if (!ext.length())	// no .fa[.gz] file, empty service dir: _cSizes should be initialized by BAM
-			return AddElem(cID, Regions(0, _cSizes[cID])).Data;
-		//Err(Err::F_NONE, (_cSizes.ServName(cID) + ChromDefRegions::Ext).c_str()).Throw();
-		ChromSeq rs(_cSizes.RefName(cID) + ext, rgns, _minGapLen);
-	}
-	return AddElem(cID, rgns).Data;
-}
-
-#ifdef _BIOCC
-// Gets total genome's size: for represented chromosomes only
-genlen DefRegions::GenSize() const
-{
-	genlen gsize = 0;
-	for (cIter it = cBegin(); it != cEnd(); it++)
-		gsize += Size(it);
-	return gsize;
-}
-
-// Gets miminal size of chromosome: for represented chromosomes only
-chrlen DefRegions::MinSize() const
-{
-	cIter it = cBegin();
-	chrlen	minsize = Size(it);
-	for (it++; it != cEnd(); it++)
-		if (minsize > Size(it))
-			minsize = Size(it);
-	return	minsize;
-}
-#endif	// _BIOCC
-
-#ifdef MY_DEBUG
-void DefRegions::Print() const
-{
-	cout << "DefRegions:\n";
-	for (DefRegions::cIter it = cBegin(); it != cEnd(); it++)
-		cout << Chrom::TitleName(CID(it))
-		<< TAB << Data(it).FirstStart()
-		<< TAB << Size(it) << LF;
-}
 #endif	// MY_DEBUG
-/************************ DefRegions: end ************************/
-#endif	// _READDENS || _BIOCC

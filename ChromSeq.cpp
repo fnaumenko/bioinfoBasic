@@ -43,7 +43,7 @@ ChromSeq::ChromSeq(chrid cID, const ChromSizes& cSizes)
 	_gapLen = rgns.GapLen();
 }
 
-#ifdef _READDENS
+#if defined _READDENS || defined _BIOCC
 
 ChromSeq::ChromSeq(const string& fName, ChromDefRegions& rgns, short minGapLen)
 {
