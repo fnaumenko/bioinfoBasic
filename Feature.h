@@ -25,7 +25,7 @@ struct Featr : public Region
 // 'Features' represents a collection of crhoms features
 class Features : public Items<Featr>
 {
-	FBedInFile* _file = nullptr;		// valid only in constructor!
+	FBedReader* _file = nullptr;		// valid only in constructor!
 #ifdef _ISCHIP
 	readlen	_minFtrLen;			// minimal length of feature
 	float	_maxScore = 0;		// maximal feature score after reading
@@ -64,8 +64,8 @@ public:
 		BYTE scoreInd, readlen bsLen, bool prfName)
 		: _minFtrLen(bsLen), _uniScore(!scoreInd)
 	{
-		FBedInFile file(fName, &cSizes, scoreInd,
-			joinOvrl ? UniBedInFile::eAction::JOIN : UniBedInFile::eAction::OMIT,
+		FBedReader file(fName, &cSizes, scoreInd,
+			joinOvrl ? UniBedReader::eAction::JOIN : UniBedReader::eAction::OMIT,
 			eOInfo::LAC, prfName, true);
 #else
 	// Creates new instance by bed-file name
@@ -77,8 +77,8 @@ public:
 	Features(const char* fName, ChromSizes & cSizes, bool joinOvrl,
 		eOInfo oinfo, bool prfName, bool abortInvalid = true)
 	{
-		FBedInFile file(fName, &cSizes, 5,
-			joinOvrl ? UniBedInFile::eAction::JOIN : UniBedInFile::eAction::OMIT,
+		FBedReader file(fName, &cSizes, 5,
+			joinOvrl ? UniBedReader::eAction::JOIN : UniBedReader::eAction::OMIT,
 			oinfo, prfName, abortInvalid);
 #endif
 		size_t estItemCnt = file.EstItemCount();
@@ -171,7 +171,7 @@ public:
 	//	@param cSizes: chrom sizes
 	//	@param action: action for overlapping features
 	//	@return: true if positions have been changed
-	bool Extend(chrlen extLen, const ChromSizes & cSizes, UniBedInFile::eAction action);
+	bool Extend(chrlen extLen, const ChromSizes & cSizes, UniBedReader::eAction action);
 
 	// Checks whether all features length exceed given length, throws exception otherwise.
 	//	@param len: given control length
