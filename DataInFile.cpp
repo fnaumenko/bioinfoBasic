@@ -1,33 +1,29 @@
 /**********************************************************
-DataInFile.cpp (c) 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-All rights reserved.
--------------------------
-Last modified: 11/12/2023
--------------------------
-Provides read|write text file functionality
+DataInFile.cpp
+Last modified: 11/22/2023
 ***********************************************************/
 
 #include "DataInFile.h"
 #include "ChromData.h"
 
-/************************ DataInFile ************************/
+/************************ DataReader ************************/
 
 // Sets the next chromosome as the current one if they are different
 //	@cID: next chrom ID
 //	@return: true, if new chromosome is set as current one
-bool DataInFile::SetNextChrom(chrid cID)
+bool DataReader::SetNextChrom(chrid cID)
 {
 	if (cID == _cID || cID == Chrom::UnID)	return false;
 	_cID = cID;
 	return true;
 }
 
-/************************ end of DataInFile ************************/
+/************************ end of DataReader ************************/
 
-/************************ BedInFile ************************/
+/************************ BedReader ************************/
 
 // Reset WIG type, score index, chrom mark position offset and estimated number of lines
-void BedInFile::ResetWigType(FT::eType type, BYTE scoreInd, size_t cMarkPosOffset)
+void BedReader::ResetWigType(FT::eType type, BYTE scoreInd, size_t cMarkPosOffset)
 {
 	ResetType(type);
 	_scoreInd = scoreInd;
@@ -35,7 +31,7 @@ void BedInFile::ResetWigType(FT::eType type, BYTE scoreInd, size_t cMarkPosOffse
 }
 
 // Inserts '0' after chrom in current line and returns point to the next decl parameter if exists
-//const char* BedInFile::SplitLineOnChrom()
+//const char* BedReader::SplitLineOnChrom()
 //{
 //	char* line = strchr(ChromMark(), SPACE);
 //	if (!line)	return NULL;
@@ -44,7 +40,7 @@ void BedInFile::ResetWigType(FT::eType type, BYTE scoreInd, size_t cMarkPosOffse
 
 // Returns true if item contains the strand sign
 //	Is invoked in the Feature constructor only.
-//bool BedInFile::IsItemHoldStrand() const
+//bool BedReader::IsItemHoldStrand() const
 //{
 //	if (StrandFieldInd){
 //		const char s = *StrField(StrandFieldInd);
@@ -56,7 +52,7 @@ void BedInFile::ResetWigType(FT::eType type, BYTE scoreInd, size_t cMarkPosOffse
 	// Checks for Fixed or Variable step wiggle type and corrects it if found
 	//	@line: possible declaration line
 	//	return: true if Fixed or Variable step type is specified
-bool BedInFile::DefineWigType(const char* line)
+bool BedReader::DefineWigType(const char* line)
 {
 	FT::eType type = FT::eType::UNDEF;
 
@@ -78,7 +74,7 @@ bool BedInFile::DefineWigType(const char* line)
 //	@scoreNumb: number of 'score' filed (0 by default for ABED and BAM)
 //	@msgFName: true if file name should be printed in exception's message
 //	@abortInval: true if invalid instance should be completed by throwing exception
-BedInFile::BedInFile(const char* fName, FT::eType type, BYTE scoreNumb, bool msgFName, bool abortInval) :
+BedReader::BedReader(const char* fName, FT::eType type, BYTE scoreNumb, bool msgFName, bool abortInval) :
 	_scoreInd(scoreNumb ? scoreNumb - 1 : 4),	// default score index for ABED and BAM
 	_chrMarkPos(BYTE(strlen(Chrom::Abbr))),
 	TabFile(fName, type, eAction::READ, false, msgFName, abortInval)
@@ -124,16 +120,16 @@ BedInFile::BedInFile(const char* fName, FT::eType type, BYTE scoreNumb, bool msg
 		else SetEstLineCount();			// ordinary bed
 }
 
-/************************ end of BedInFile ************************/
+/************************ end of BedReader ************************/
 
 #ifdef _BAM
-/************************ BamInFile ************************/
+/************************ BamReader ************************/
 
 // Creates new instance for reading and open file
 //	@fName: name of file
 //	@cSizes: chrom sizes to be initialized or NULL
 //	@prName: true if file name should be printed in exception's message
-BamInFile::BamInFile(const char* fName, ChromSizes* cSizes, bool prName) : _prFName(prName)
+BamReader::BamReader(const char* fName, ChromSizes* cSizes, bool prName) : _prFName(prName)
 {
 	_reader.Open(fName);
 
@@ -152,22 +148,22 @@ BamInFile::BamInFile(const char* fName, ChromSizes* cSizes, bool prName) : _prFN
 #endif // _NO_CUSTOM_CHROM
 }
 
-/************************ end of BamInFile ************************/
+/************************ end of BamReader ************************/
 #endif	// _BAM
 
-/************************ UniBedInFile ************************/
+/************************ UniBedReader ************************/
 
-bool UniBedInFile::IsTimer = false;	// if true then manage timer by Timer::Enabled, otherwise no timer
+bool UniBedReader::IsTimer = false;	// if true then manage timer by Timer::Enabled, otherwise no timer
 
 // Returns chrom size
 //	Defined in cpp because of call in template function (otherwise ''ChromSize' is no defined')
-chrlen UniBedInFile::ChromSize(chrid cID) const
+chrlen UniBedReader::ChromSize(chrid cID) const
 {
 	return (*_cSizes)[cID];
 }
 
 // Resets the current accounting of items
-void UniBedInFile::ResetChrom()
+void UniBedReader::ResetChrom()
 {
 	_rgn0.Set();
 	_issues[DUPL].Cnt += _cDuplCnt;
@@ -178,7 +174,7 @@ void UniBedInFile::ResetChrom()
 // Validate item
 //	@cLen: current chrom length or 0 if _cSizes is undefined
 //	return: true if item is valid
-bool UniBedInFile::CheckItem(chrlen cLen)
+bool UniBedReader::CheckItem(chrlen cLen)
 {
 	bool res = true;
 	if (_checkSorted && _rgn.Start < _rgn0.Start)
@@ -210,7 +206,7 @@ bool UniBedInFile::CheckItem(chrlen cLen)
 // Prints count of items
 //	@cnt: total count of items
 //	@title: item title
-void UniBedInFile::PrintItemCount(ULONG cnt, const string& title)
+void UniBedReader::PrintItemCount(ULONG cnt, const string& title)
 {
 	dout << SepCl;
 	if (Chrom::CustomID() == Chrom::UnID)
@@ -221,7 +217,7 @@ void UniBedInFile::PrintItemCount(ULONG cnt, const string& title)
 
 // Prints items statistics
 //	@cnt: total count of items
-void UniBedInFile::PrintStats(ULONG cnt)
+void UniBedReader::PrintStats(ULONG cnt)
 {
 	PrintItemCount(cnt, FT::ItemTitle(_type, cnt != 1));
 	if (cnt) {
@@ -258,7 +254,7 @@ void PrintValAndPercent(ULONG part, ULONG total, BYTE fwidth = 1)
 //	@issCnt: count of item issues
 //	@issues: issue info collection
 //	@prStat: it TRUE then print issue statsistics
-void UniBedInFile::PrintStats(ULONG cnt, ULONG issCnt, const vector<Issue>& issues, bool prStat)
+void UniBedReader::PrintStats(ULONG cnt, ULONG issCnt, const vector<Issue>& issues, bool prStat)
 {
 	static const char* sActions[] = { "accepted", "truncated", "joined", "omitted" };
 	const BYTE pWidth = 4;		// padding width
@@ -272,7 +268,7 @@ void UniBedInFile::PrintStats(ULONG cnt, ULONG issCnt, const vector<Issue>& issu
 				if (iss.Ext)	dout << iss.Ext;
 				dout << LF;
 			}
-			if (iss.Action <= UniBedInFile::eAction::TRUNC)
+			if (iss.Action <= UniBedReader::eAction::TRUNC)
 				issCnt -= iss.Cnt;
 		}
 	if (prStat)	dout << setw(pWidth) << SPACE << sTotal;
@@ -280,7 +276,7 @@ void UniBedInFile::PrintStats(ULONG cnt, ULONG issCnt, const vector<Issue>& issu
 	dout << SPACE << sActions[0], PrintValAndPercent(cnt - issCnt, cnt);
 };
 
-UniBedInFile::UniBedInFile(const char* fName, const FT::eType type, ChromSizes* cSizes,
+UniBedReader::UniBedReader(const char* fName, const FT::eType type, ChromSizes* cSizes,
 	BYTE scoreNumb, char dupLevel, eOInfo oinfo, bool prName, bool checkSorted, bool abortInval) :
 	_type(type), _MaxDuplCnt(dupLevel), _checkSorted(checkSorted), _abortInv(abortInval), _oinfo(oinfo), _cSizes(cSizes)
 {
@@ -288,12 +284,12 @@ UniBedInFile::UniBedInFile(const char* fName, const FT::eType type, ChromSizes* 
 
 #ifdef _BAM
 	if (type == FT::eType::BAM)
-		_file = new BamInFile(fName, cSizes, prName);
+		_file = new BamReader(fName, cSizes, prName);
 	else
 #endif	//_BAM
 		if (type <= FT::eType::ABED || type == FT::eType::BGRAPH) {
-			_file = new BedInFile(fName, type, scoreNumb, !prName, abortInval);
-			_type = ((BedInFile*)_file)->Type();	// possible change of BGRAPH with WIG_FIX or WIG_VAR
+			_file = new BedReader(fName, type, scoreNumb, !prName, abortInval);
+			_type = ((BedReader*)_file)->Type();	// possible change of BGRAPH with WIG_FIX or WIG_VAR
 		}
 		else
 			Err(
@@ -305,39 +301,39 @@ UniBedInFile::UniBedInFile(const char* fName, const FT::eType type, ChromSizes* 
 			).Throw(abortInval);
 }
 
-UniBedInFile::~UniBedInFile()
+UniBedReader::~UniBedReader()
 {
 #ifdef _BAM
 	if (_type == FT::eType::BAM)
-		delete (BamInFile*)_file;
+		delete (BamReader*)_file;
 	else
 #endif
-		delete (BedInFile*)_file;
+		delete (BedReader*)_file;
 }
 
 // Returns estimated number of items
-ULONG UniBedInFile::EstItemCount() const
+size_t UniBedReader::EstItemCount() const
 {
-	const ULONG extCnt = _file->EstItemCount();
+	const size_t extCnt = _file->EstItemCount();
 
 	//cout << LF << extCnt << TAB << _cSizes->GenSize() << TAB << Chrom::AbbrName(Chrom::CustomID()) << TAB << ChromSize(Chrom::CustomID()) <<LF;
 	if (!_cSizes)	return extCnt;
 	if (!Chrom::IsCustom()) {				// user stated chrom
-		ULONG cnt = ULONG((double(extCnt) / _cSizes->GenSize()) * ChromSize(Chrom::CustomID()));
+		size_t cnt = size_t((double(extCnt) / _cSizes->GenSize()) * ChromSize(Chrom::CustomID()));
 		return cnt < 2 ? extCnt : cnt;		// if data contains only one chrom, cnt can by near to 0
 	}
 	return extCnt;
 }
 
-/************************ end of UniBedInFile ************************/
+/************************ end of UniBedReader ************************/
 
 #ifdef _FEATURES
-/************************ FBedInFile ************************/
+/************************ FBedReader ************************/
 
 // Returns: true if feature is valid
-bool FBedInFile::ChildCheckItem()
+bool FBedReader::ChildCheckItem()
 {
-	_issues[UniBedInFile::eIssue::OVERL].Cnt += (_isOverlap = IsOverlap());
+	_issues[UniBedReader::eIssue::OVERL].Cnt += (_isOverlap = IsOverlap());
 	return _action();
 }
 
@@ -348,11 +344,11 @@ bool FBedInFile::ChildCheckItem()
 //	@action: action for overlapping features
 //	@prName: true if file name should be printed unconditionally
 //	@abortInval: true if invalid instance should be completed by throwing exception
-FBedInFile::FBedInFile(const char* fName, ChromSizes* cSizes,
+FBedReader::FBedReader(const char* fName, ChromSizes* cSizes,
 	BYTE scoreNmb, eAction action, eOInfo oinfo, bool prName, bool abortInval) :
 	_isJoin(action == eAction::JOIN),
 	_overlAction(action),
-	UniBedInFile(fName, FT::eType::BED, cSizes, scoreNmb, 0, oinfo, prName, true, abortInval)
+	UniBedReader(fName, FT::eType::BED, cSizes, scoreNmb, 0, oinfo, prName, true, abortInval)
 {
 	switch (action) {
 	case eAction::ACCEPT:
@@ -366,7 +362,7 @@ FBedInFile::FBedInFile(const char* fName, ChromSizes* cSizes,
 }
 
 // Returns true if features length distribution is degenerate
-bool FBedInFile::NarrowLenDistr() const
+bool FBedReader::NarrowLenDistr() const
 {
 	if (!_lenFreq.size())		return false;		// no readed features
 	if (_lenFreq.size() == 1)	return true;		// all features have the same length
@@ -375,7 +371,7 @@ bool FBedInFile::NarrowLenDistr() const
 	return prev(_lenFreq.cend())->second / sum > 0.9;
 }
 
-/************************ end of FBedInFile ************************/
+/************************ end of FBedReader ************************/
 #endif	// _FEATURES
 
 #if !defined _WIGREG && !defined _FQSTATN
@@ -385,7 +381,7 @@ bool FBedInFile::NarrowLenDistr() const
 static const string TipNoFind = "Cannot find ";
 
 #ifdef _READS
-long GetNumber(const char* str, const RBedInFile& file, const string& tipEnd)
+long GetNumber(const char* str, const RBedReader& file, const string& tipEnd)
 {
 	if (!str || !isdigit(*(++str)))
 		file.ThrowExceptWithLineNumb(TipNoFind + tipEnd);
@@ -464,7 +460,7 @@ void Read::PrintParams(const char* signOut, bool isRVL)
 }
 #else
 
-void Read::InitBase(const RBedInFile& file)
+void Read::InitBase(const RBedReader& file)
 {
 	const Region& rgn = file.ItemRegion();
 	Pos = rgn.Start;
@@ -475,7 +471,7 @@ void Read::InitBase(const RBedInFile& file)
 #ifdef _PE_READ
 
 // PE Read constructor
-Read::Read(const RBedInFile& file)
+Read::Read(const RBedReader& file)
 {
 	Numb = GetNumber(
 		strrchr(file.ItemName() + 1, Read::NmNumbDelimiter),
@@ -488,7 +484,7 @@ Read::Read(const RBedInFile& file)
 #elif defined _VALIGN
 
 // Extended (with saved chrom & position in name) Read constructor
-Read::Read(const RBedInFile& file)
+Read::Read(const RBedReader& file)
 {
 	//static const string tip1 = " in the read's name. It should be '*:<pos>.<number>'";
 

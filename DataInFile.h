@@ -1,10 +1,8 @@
 /**********************************************************
-DataInFile.h (c) 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-All rights reserved.
--------------------------
-Last modified: 11/19/2023
--------------------------
+DataInFile.h
 Provides read|write text file functionality
+2021 Fedor Naumenko (fedor.naumenko@gmail.com)
+Last modified: 11/22/2023
 ***********************************************************/
 #pragma once
 
@@ -24,8 +22,8 @@ enum class eOInfo {
 	STAT,	// statistics:	print file name, items number and statistics
 };
 
-// 'DataInFile' is a common program interface (PI) of bed/bam input files
-class DataInFile
+// 'DataReader' is a common program interface (PI) of bed/bam input files
+class DataReader
 {
 protected:
 	int	_cID = Chrom::UnID;			// current readed chrom ID; int for BAM PI compatibility
@@ -37,7 +35,7 @@ protected:
 
 public:
 	// Returns estimated number of items
-	virtual ULONG EstItemCount() const = 0;
+	virtual size_t EstItemCount() const = 0;
 
 	// Sets the next chromosome as the current one if they are different
 	// @cID: returned next chrom ID
@@ -84,8 +82,8 @@ public:
 	virtual bool ItemStrand() const = 0;
 };
 
-// 'BedInFile' represents unified PI for reading bed file
-class BedInFile : public DataInFile, public TabFile
+// 'BedReader' represents unified PI for reading bed file
+class BedReader : public DataReader, public TabFile
 {
 	const BYTE	NameFieldInd = 3;	// inner index of name field
 	const BYTE	StrandFieldInd = 5;	// inner index of strand field
@@ -112,13 +110,13 @@ public:
 	//	@scoreNumb: number of 'score' filed (0 by default for ABED and BAM)
 	//	@msgFName: true if file name should be printed in exception's message
 	//	@abortInval: true if invalid instance should be completed by throwing exception
-	BedInFile(const char* fName, FT::eType type, BYTE scoreNumb, bool msgFName, bool abortInval);
+	BedReader(const char* fName, FT::eType type, BYTE scoreNumb, bool msgFName, bool abortInval);
 
 	// Gets pointer to the chrom mark in current line without check up
 	const char* ChromMark() const { return GetLine() + _chrMarkPos; }
 
 	// Returns estimated number of items
-	ULONG EstItemCount() const { return EstLineCount(); }
+	size_t EstItemCount() const { return EstLineCount(); }
 
 	// Gets file bioinfo type
 	FT::eType Type() const { return TabFile::Type(); }
@@ -135,7 +133,7 @@ public:
 	// Sets the next chromosome as the current one if they are different
 	//	@cID: returned next chrom ID
 	//	@return: true, if new chromosome is set as current one
-	//	To implement DataInFile virtual GetNextChrom(chrid& cID)
+	//	To implement DataReader virtual GetNextChrom(chrid& cID)
 	bool GetNextChrom(chrid& cID) { return SetNextChrom(cID = Chrom::ValidateID(ChromMark())); }
 
 	// Retrieves next item's record
@@ -177,24 +175,18 @@ public:
 class ChromSizes;	// ChromData.h
 
 #ifdef _BAM
-#ifdef _BIOSTAT		// defined in bioStat makefile
-#include "../bam/BamReader.h"	// path in bioStat package
-#else
 #include "bam/BamReader.h"
-#endif	// _BIOSTAT
-#include <algorithm>
-using namespace BamTools;
 
-// 'BamInFile' represents unified PI for reading bam file
-class BamInFile : public DataInFile
+// 'BamReader' represents unified PI for reading bam file
+class BamReader : public DataReader
 {
 	// BamTools: http://pezmaster31.github.io/bamtools/struct_bam_tools_1_1_bam_alignment.html
 
+	BamTools::BamReader		_reader;
+	BamTools::BamAlignment	_read;
 	bool			_prFName;
-	BamReader		_reader;
-	BamAlignment	_read;
 	mutable string	_rName;
-	ULONG _estItemCnt = vUNDEF;	// estimated number of items
+	size_t _estItemCnt = vUNDEF;	// estimated number of items
 
 	// Returns SAM header data
 	const string GetHeaderText() const { return _reader.GetHeaderText(); }
@@ -204,10 +196,10 @@ public:
 	//	@fName: name of file
 	//	@cSizes: chrom sizes to be initialized or NULL
 	//	@prName: true if file name should be printed in exception's message
-	BamInFile(const char* fName, ChromSizes* cSizes, bool prName);
+	BamReader(const char* fName, ChromSizes* cSizes, bool prName);
 
 	// Returns estimated number of items
-	ULONG EstItemCount() const { return _estItemCnt; }
+	size_t EstItemCount() const { return _estItemCnt; }
 
 	// returns chroms count
 	chrid ChromCount() const { return _reader.GetReferenceCount(); }
@@ -251,7 +243,7 @@ public:
 	// Gets conditional file name: name if it's printable, otherwise empty string.
 	const string CondFileName() const { return _prFName ? _reader.GetFilename() : strEmpty; }
 
-	// DataInFile method empty implementation.
+	// DataReader method empty implementation.
 	//bool IsItemHoldStrand() const { return true; }
 
 	// Returns current item strand: true - positive, false - negative
@@ -260,7 +252,7 @@ public:
 };
 #endif	// _BAM
 
-class UniBedInFile
+class UniBedReader
 {
 public:
 	// Action types
@@ -296,8 +288,8 @@ private:
 	bool	_strand = true;		// current item's strand
 	bool	_strand0 = true;	// previous item's strand; first sorted read is always negative
 	bool	_checkSorted = true;// checking for unsorted items 
-	DataInFile* _file = nullptr;// data file; unique_ptr is useless because of different type in constructor/destructor
-	//variant<BedInFile, BamInFile> file;
+	DataReader* _file = nullptr;// data file; unique_ptr is useless because of different type in constructor/destructor
+	//variant<BedReader, BamReader> file;
 	const ChromSizes* _cSizes;
 
 	// Resets the current accounting of items
@@ -368,11 +360,11 @@ public:
 	//	@param prName: true if file name should be printed unconditionally
 	//	@param checkSorted: true if items should be sorted within chrom
 	//	@param abortInval: true if invalid instance should be completed by throwing exception
-	UniBedInFile(const char* fName, const FT::eType type, ChromSizes* cSizes,
+	UniBedReader(const char* fName, const FT::eType type, ChromSizes* cSizes,
 		BYTE scoreNumb, char dupLevel, eOInfo oinfo, bool prName, bool checkSorted, bool abortInval);
 
 	// explicit destructor
-	~UniBedInFile();
+	~UniBedReader();
 
 	// pass through records
 	template<typename Functor>
@@ -416,10 +408,10 @@ public:
 		timer.Stop(1, true, _oinfo > eOInfo::NM);
 	}
 
-	DataInFile& BaseFile() const { return *_file; }
+	DataReader& BaseFile() const { return *_file; }
 
 	// Returns estimated number of items
-	ULONG EstItemCount() const;
+	size_t EstItemCount() const;
 
 	// Gets file bioinfo type
 	FT::eType Type() const { return _type; }
@@ -477,7 +469,7 @@ public:
 
 #ifdef _READS
 
-class RBedInFile : public UniBedInFile
+class RBedReader : public UniBedReader
 {
 	mutable readlen _rLen = 0;		// most frequent (common) read length
 
@@ -490,9 +482,9 @@ public:
 	//	@param prName: true if file name should be printed unconditionally
 	//	@param checkSorted: true if reads should be sorted within chrom
 	//	@param abortInval: true if invalid instance should be completed by throwing exception
-	RBedInFile(const char* fName, ChromSizes* cSizes,
+	RBedReader(const char* fName, ChromSizes* cSizes,
 		char dupLevel, eOInfo oinfo, bool prName, bool checkSorted = true, bool abortInval = true) :
-		UniBedInFile(fName, FT::GetType(fName, true), cSizes, 0, dupLevel, oinfo, prName, checkSorted, abortInval)
+		UniBedReader(fName, FT::GetType(fName, true), cSizes, 0, dupLevel, oinfo, prName, checkSorted, abortInval)
 	{}
 
 	// Returns the most frequent Read length
@@ -506,7 +498,7 @@ public:
 #endif	// _READS
 #ifdef _FEATURES
 
-class FBedInFile : public UniBedInFile
+class FBedReader : public UniBedReader
 {
 private:
 	const eAction _overlAction;	// set overlapping action
@@ -528,7 +520,7 @@ public:
 	//	@action: action for overlapping features
 	//	@prName: true if file name should be printed unconditionally
 	//	@abortInval: true if invalid instance should be completed by throwing exception
-	FBedInFile(const char* fName, ChromSizes* cSizes,
+	FBedReader(const char* fName, ChromSizes* cSizes,
 		BYTE scoreNmb, eAction action, eOInfo oinfo, bool prName, bool abortInval);
 
 	// If true then join overlapping feature
@@ -633,14 +625,14 @@ public:
 	readlen Len;		// Read's length
 	bool	Strand;		// true if strand is positive
 
-	void InitBase(const RBedInFile& file);
+	void InitBase(const RBedReader& file);
 
 	chrlen Centre() const { return Pos + (Len >> 1); }
 #ifdef _PE_READ
 	ULONG	Numb;		// read number keeped in name
 
 	// PE Read constructor
-	Read(const RBedInFile& file);
+	Read(const RBedReader& file);
 
 	chrlen Start()	const { return Pos; }
 
@@ -658,7 +650,7 @@ public:
 	float	Score;		// Read's score
 
 	// Extended (with saved chrom & position in name) Read constructor
-	Read(const RBedInFile& file);
+	Read(const RBedReader& file);
 
 	void Print() const;
 #endif
