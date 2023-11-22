@@ -7,7 +7,7 @@ Provides value (typically frequency) distribution functionality
 ***********************************************************/
 #pragma once
 
-#include "DataInFile.h"
+#include "DataReader.h"
 #include <array>
 
 //#define MY_DEBUG

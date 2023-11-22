@@ -1,9 +1,9 @@
 /**********************************************************
-DataInFile.cpp
+DataReader.cpp
 Last modified: 11/22/2023
 ***********************************************************/
 
-#include "DataInFile.h"
+#include "DataReader.h"
 #include "ChromData.h"
 
 /************************ DataReader ************************/

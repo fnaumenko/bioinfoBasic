@@ -7,7 +7,7 @@ Last modified: 11/22/2023
 #pragma once
 
 #include "ChromData.h"
-#include "DataInFile.h"
+#include "DataReader.h"
 
 struct Featr : public Region
 {

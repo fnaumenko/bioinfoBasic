@@ -1,5 +1,5 @@
 /**********************************************************
-DataInFile.h
+DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
 Last modified: 11/22/2023
