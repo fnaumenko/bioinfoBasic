@@ -1,14 +1,12 @@
 /**********************************************************
-OrderedData.h (c) 2022 Fedor Naumenko (fedor.naumenko@gmail.com)
-All rights reserved.
--------------------------
-Last modified: 11/12/2023
--------------------------
+OrderedData.h
 Provides chromosomally sorted data files functionality
+2022 Fedor Naumenko (fedor.naumenko@gmail.com)
+Last modified: 11/22/2023
 ***********************************************************/
 #pragma once
 #include "ChromData.h"
-#include "DataInFile.h"
+#include "DataReader.h"
 #include <assert.h>
 
 enum eStrand { TOTAL = 0, POS, NEG, CNT };
