@@ -1,14 +1,14 @@
 /**********************************************************
 Feature.cpp
-Last modified: 11/21/2023
+Last modified: 11/22/2023
 ***********************************************************/
 #include "Feature.h"
 
 void Features::AddChrom(chrid cID, size_t cnt)
 {
 	if (!cnt)	return;
-	const chrlen lastInd = chrlen(_items.size());
-	AddVal(cID, ItemIndices(lastInd - chrlen(cnt), lastInd));
+	const size_t lastInd = _items.size();
+	AddVal(cID, ItemIndices(lastInd - cnt, lastInd));
 }
 
 bool Features::operator()()
@@ -35,7 +35,7 @@ bool Features::operator()()
 chrlen Features::FeaturesLength(cIter cit) const
 {
 	chrlen res = 0;
-	ForChrItems(cit, [&res](cItemsIter it) { res += it->Length(); });
+	DoForChrItems( cit, [&res](cItemsIter it) { res += it->Length(); } );
 	return res;
 }
 
@@ -45,47 +45,34 @@ chrlen Features::EnrRegnLength(chrid cID, BYTE multiplier, float fLen) const
 	return it != cEnd() ? EnrRegnLength(it, multiplier, fLen) : 0;
 }
 
+//void Features::ScaleScores()
+//{
+//	for (auto& c : Container()) {
+//		const auto itEnd = ItemsEnd(c.second.Data);
+//
+//		for (auto it = ItemsBegin(c.second.Data); it != itEnd; it++)
+//			it->Value /= _maxScore;		// if score is undef then it become 1
+//	}
+//}
+
+
 #ifdef _ISCHIP
-
-// Scales defined score through all features to the part of 1.
-void Features::ScaleScores()
-{
-	for (auto& c : Container()) {
-		const auto itEnd = ItemsEnd(c.second.Data);
-
-		for (auto it = ItemsBegin(c.second.Data); it != itEnd; it++)
-			it->Value /= _maxScore;		// if score is undef then it become 1
-	}
-}
-#else	// NO _ISCHIP
-
-// Copies feature coordinates to external DefRegions.
-void Features::FillRegions(chrid cID, Regions& regn) const
-{
-	const auto& data = At(cID).Data;
-	const auto itEnd = ItemsEnd(data);
-
-	regn.Reserve(ItemsCount(data));
-	for (auto it = ItemsBegin(data); it != itEnd; it++)
-		regn.Add(*it);
-}
-#endif	// _ISCHIP
-
 chrlen Features::GetMinFeatureLength() const
 {
 	chrlen len, minLen = CHRLEN_MAX;
 
-	ForAllItems([&](cItemsIter it) { if ((len = it->Length()) < minLen) minLen = len; });
+	DoForItems([&](cItemsIter it) { if ((len = it->Length()) < minLen) minLen = len; });
 	return minLen;
 }
+#endif
 
-
+#ifdef _BIOCC
 chrlen Features::GetMinDistance() const
 {
 	chrlen dist, minDist = CHRLEN_MAX;
 
 	for (const auto& c : Container()) {
-		const auto itEnd = ItemsEnd(c.second.Data);	// ref ???
+		const auto itEnd = ItemsEnd(c.second.Data);
 		auto it = ItemsBegin(c.second.Data);
 
 		for (chrlen end = it++->End; it != itEnd; end = it++->End)
@@ -93,6 +80,7 @@ chrlen Features::GetMinDistance() const
 	}
 	return minDist;
 }
+#endif
 
 //const chrlen UNDEFINED  = std::numeric_limits<int>::max();
 #define UNDEFINED	vUNDEF
@@ -151,7 +139,7 @@ bool Features::Extend(chrlen extLen, const ChromSizes& cSizes, UniBedInFile::eAc
 
 void Features::CheckFeaturesLength(chrlen len, const string& lenDef, const char* sender) const
 {
-	ForAllItems([&](cItemsIter it) {
+	DoForItems([&](cItemsIter it) {
 		if (it->Length() < len) {
 			ostringstream oss("Feature size ");
 			oss << it->Length() << " is less than stated " << lenDef << SPACE << len;
@@ -159,3 +147,13 @@ void Features::CheckFeaturesLength(chrlen len, const string& lenDef, const char*
 		}
 		});
 }
+
+//void Features::FillRegions(chrid cID, Regions& regn) const
+//{
+//	const auto& data = At(cID).Data;
+//	const auto itEnd = ItemsEnd(data);
+//
+//	regn.Reserve(ItemsCount(data));
+//	for (auto it = ItemsBegin(data); it != itEnd; it++)
+//		regn.Add(*it);
+//}

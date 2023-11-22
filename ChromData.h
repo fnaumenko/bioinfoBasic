@@ -1,9 +1,8 @@
 /**********************************************************
-ChromData.h 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
--------------------------
-Last modified: 11/21/2023
--------------------------
-Provides common data functionality
+ChromData.h
+Provides chromosomes data functionality
+Fedor Naumenko (fedor.naumenko@gmail.com)
+Last modified: 11/22/2023
 ***********************************************************/
 #pragma once
 
@@ -55,7 +54,7 @@ public:
 	//void EmplaceVal(chrid cID, BYTE val) { _cMap.emplace(cID, T(val)); }
 	////void EmplaceVal(T&&... args) { _cMap.emplace(cID, args); }
 
-	// Removes from the container an element
+	// Removes an element from the container
 	//	@param cID: chromosome's ID
 	void Erase(chrid cID) { _cMap.erase(cID); }
 
@@ -171,10 +170,10 @@ public:
 // 'ItemIndices' representes a range of chromosome's indices
 struct ItemIndices
 {
-	chrlen	FirstInd;	// first index in items container
-	chrlen	LastInd;	// last index in items container
+	size_t	FirstInd;	// first index in items container
+	size_t	LastInd;	// last index in items container
 
-	ItemIndices(chrlen first = 0, chrlen last = 1) : FirstInd(first), LastInd(last - 1) {}
+	ItemIndices(size_t first = 0, size_t last = 1) : FirstInd(first), LastInd(last - 1) {}
 
 	// Returns count of items
 	size_t ItemsCount() const { return LastInd - FirstInd + 1; }
@@ -189,26 +188,20 @@ public:
 protected:
 	typedef typename vector<I>::iterator ItemsIter;
 
-	vector<I> _items;	// vector of bed items
+	vector<I> _items;
 
-	// Applies function fn to each of the item for chrom defined by cit
-	void ForChrItems(cIter cit, function<void(cItemsIter)> fn) const {
+	// Applies a function to each item of the specified chromosome
+	//	@param cit: chromosome's iterator
+	//	@param fn: function accepted item iterator
+	void DoForChrItems(cIter cit, function<void(cItemsIter)> fn) const {
 		const auto itEnd = ItemsEnd(Data(cit));
 		for (auto it = ItemsBegin(Data(cit)); it != itEnd; it++)
 			fn(it);
 	}
 
-	// Applies function fn to each of the item for chrom defined by cit
-	//void ForChrItems(const value_type& c, function<void(cItemsIter)> fn) const {
-	//	//const ItemIndices& data = 
-	//	const auto itEnd = ItemsEnd(c.Data.
-	//		//Data(cit));
-	//	for (auto it = ItemsBegin(Data(cit)); it != itEnd; it++)
-	//		fn(it);
-	//}
-
-	// Applies function fn to each of the item for all chroms
-	void ForAllItems(function<void(cItemsIter)> fn) const {		// change to 'Do...' ???
+	// Applies a function to each item of the whole collection
+	//	@param fn: function accepted item iterator
+	void DoForItems(function<void(cItemsIter)> fn) const {
 		for (const auto& c : Container()) {
 			const auto itEnd = ItemsEnd(c.second.Data);
 			for (auto it = ItemsBegin(c.second.Data); it != itEnd; it++)
@@ -261,24 +254,25 @@ public:
 	//	@param data: item indices
 	cItemsIter ItemsEnd(const ItemIndices& data) const { return _items.begin() + data.LastInd + 1; }
 
-	// Returns a constan iterator referring to the first item of specified chrom
+	// Returns a constant iterator referring to the first item of specified chrom
 	//	@param cit: chromosome's iterator
 	cItemsIter ItemsBegin(cIter cit) const { return ItemsBegin(Data(cit)); }
-
-	// Returns a constan iterator referring to the first item of specified chrom
-	//	@param cID: chromosome's ID
-	cItemsIter ItemsBegin(chrid cID) const { return ItemsBegin(GetIter(cID)); }
 
 	// Returns a constant iterator referring to the past-the-end item of specified chrom
 	//	@param cit: chromosome's iterator
 	cItemsIter ItemsEnd(cIter cit) const { return ItemsEnd(Data(cit)); }
 
+	// Returns a constant iterator referring to the first item of specified chrom
+	//	@param cID: chromosome's ID
+	//cItemsIter ItemsBegin(chrid cID) const { return ItemsBegin(GetIter(cID)); }
+
 	// Returns a constant iterator referring to the past-the-end item of specified chrom
 	//	@param cID: chromosome's ID
-	cItemsIter ItemsEnd(chrid cID) const { return ItemsEnd(GetIter(cID)); }
+	//cItemsIter ItemsEnd(chrid cID) const { return ItemsEnd(GetIter(cID)); }
 
-	// Returns a constan iterator referring to the first item of specified chrom
-	//	@data: item indexes
+
+	// Returns a constant iterator referring to the first item of specified chrom
+	//	@data: item indices
 	ItemsIter ItemsBegin(ItemIndices& data) { return _items.begin() + data.FirstInd; }
 
 	// Returns a constant iterator referring to the past-the-end item of specified chrom
@@ -287,11 +281,11 @@ public:
 
 	// Returns an iterator referring to the first item of specified chrom
 	//	@param cit: chromosome's iterator
-	ItemsIter ItemsBegin(Iter cit) { return ItemsBegin(Data(cit)); }
+	//ItemsIter ItemsBegin(Iter cit) { return ItemsBegin(Data(cit)); }
 
 	// Returns an iterator referring to the past-the-end item of specified chrom
 	//	@param cit: chromosome's iterator
-	ItemsIter ItemsEnd(Iter cit) { return ItemsEnd(Data(cit)); }
+	//ItemsIter ItemsEnd(Iter cit) { return ItemsEnd(Data(cit)); }
 
 	// === print
 
@@ -299,8 +293,8 @@ public:
 
 #ifdef _ISCHIP
 	// Prints items name and count, adding chrom name if the instance holds only one chrom
-	//	@ftype: file type
-	//	@prLF: if true then print line feed
+	//	@param ftype: file type
+	//	@param prLF: if true then print line feed at the end
 	void PrintItemCount(FT::eType ftype, bool prLF = true) const
 	{
 		size_t iCnt = ItemsCount();

@@ -1,9 +1,6 @@
 /**********************************************************
-ChromData.cpp 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
--------------------------
-Last modified: 11/21/2023
--------------------------
-Provides common data functionality
+ChromData.cpp
+Last modified: 11/22/2023
 ***********************************************************/
 
 #include "ChromData.h"

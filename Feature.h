@@ -1,6 +1,8 @@
 /**********************************************************
-Feature.h  2023 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/21/2023
+Feature.h
+BED feature and features collection
+Fedor Naumenko (fedor.naumenko@gmail.com)
+Last modified: 11/22/2023
 ***********************************************************/
 #pragma once
 
@@ -46,10 +48,8 @@ class Features : public Items<Featr>
 	//	@param cnt: count of chrom items
 	void AddChrom(chrid cID, size_t cnt);
 
-#ifdef _ISCHIP
 	// Scales defined score through all features to the part of 1.
-	void ScaleScores();
-#endif
+	//void ScaleScores();
 
 public:
 #ifdef _ISCHIP
@@ -94,9 +94,8 @@ public:
 		//PrintEst(estItemCnt);
 	}
 
-
 	// Treats current item
-	//	return: true if item is accepted
+	//	@return: true if item is accepted
 	bool operator()();
 
 	// Closes current chrom, open next one
@@ -149,11 +148,22 @@ public:
 	//	@return: chrom's total enriched regions length, or 0 if chrom is absent
 	chrlen EnrRegnLength(chrid cID, BYTE multiplier, float fLen) const;
 
+#ifdef _ISCHIP
+	bool IsUniScore() const { return _uniScore; }
+
 	// Return min feature length
 	chrlen GetMinFeatureLength() const;
+#endif	// _ISCHIP
+
+#ifdef _BIOCC
+	// Returns true if features length distribution is degenerate
+	bool NarrowLenDistr() const { return _narrowLenDistr; }
 
 	// Return min distance between features boundaries
 	chrlen GetMinDistance() const;
+
+	friend class JointedBeds;	// to access GetIter(chrid)
+#endif
 
 	// Expands all features positions on the fixed length in both directions.
 	// If extended feature starts from negative, or ends after chrom length, it is fitted.
@@ -169,19 +179,8 @@ public:
 	//	@param sender: exception sender to print in exception message
 	void CheckFeaturesLength(chrlen len, const string & lenDefinition, const char* sender) const;
 
-#ifdef _ISCHIP
-	bool IsUniScore() const { return _uniScore; }
-#else
 	// Copies features coordinates to external DefRegions.
-	void FillRegions(chrid cID, Regions & regn) const;
-#endif	// _ISCHIP
-
-#ifdef _BIOCC
-	// Returns true if features length distribution is degenerate
-	bool NarrowLenDistr() const { return _narrowLenDistr; }
-
-	friend class JointedBeds;	// to access GetIter(chrid)
-#endif
+	//void FillRegions(chrid cID, Regions& regn) const;
 
 #ifdef MY_DEBUG
 	void Print(size_t cnt = 0) const { Items::Print("features", cnt); }
