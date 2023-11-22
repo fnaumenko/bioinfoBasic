@@ -813,15 +813,13 @@ class FaFile : public TxtInFile
 	class DefRgnMaker
 	{
 		chrlen	_minGapLen,			// minimal length which defines gap as a real gap
-			_currPos;			// current readed nt position
+				_currPos;			// current readed nt position
 		Region	_defRgn;			// current defined region
 		ChromDefRegions& _defRgns;	// external chrom's defined regions
 
 	public:
 		DefRgnMaker(ChromDefRegions& rgns, chrlen minGapLen)
-			: _minGapLen(minGapLen), _currPos(0), _defRgns(rgns) {
-			_defRgns.Clear();
-		}
+			: _minGapLen(minGapLen), _currPos(0), _defRgns(rgns) { _defRgns.Clear(); }
 
 		// Adds last readed line length
 		void AddLineLen(chrlen lineLen) { _currPos += lineLen; }
