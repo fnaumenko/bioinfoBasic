@@ -1,6 +1,6 @@
 /**********************************************************
 TxtFile.h
-Provides read|write bioinfo text files functionality
+Provides read|write basic bioinfo text files functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
 Last modified: 11/23/2023
 ***********************************************************/
@@ -166,7 +166,7 @@ protected:
 	char* _buff;				// basic I/O (read/write) buffer
 	size_t	_buffLen;			// the length of the basic I/O buffer
 	mutable size_t _currRecPos;	// start position of the last readed/writed record in the block
-	mutable ULONG _recCnt;		// local counter of readed/writed records
+	mutable size_t _recCnt;		// local counter of readed/writed records
 	mutable Err::eCode	_errCode;
 	//Stopwatch	_stopwatch;
 
@@ -247,7 +247,7 @@ protected:
 	LLONG Length() const { return _fSize; }
 
 	// Gets number of readed/writed records.
-	ULONG RecordCount() const { return _recCnt; }
+	size_t RecordCount() const { return _recCnt; }
 
 	// Throws exception
 	//	@msg: exception message
@@ -294,7 +294,7 @@ class TxtReader : public TxtFile
 
 	// Gets number of line.
 	//	@lineInd: index of line in a record
-	ULONG LineNumber(BYTE lineInd) const { return (_recCnt - 1) * _recLineCnt + lineInd + 1; }
+	size_t LineNumber(BYTE lineInd) const { return (_recCnt - 1) * _recLineCnt + lineInd + 1; }
 
 protected:
 	// Constructs an TxtReader instance: allocates buffers, opens an assigned file.
@@ -339,10 +339,10 @@ protected:
 	}
 
 	// Throw exception if no record is readed.
-	void CheckGettingRecord() const {
-		if (IsLFundef())
-			ThrowExcept("attempt to get record's oinfo without reading record");
-	}
+	//void CheckGettingRecord() const {
+	//	if (IsLFundef())
+	//		ThrowExcept("attempt to get record's oinfo without reading record");
+	//}
 #endif
 
 	// Returns the read pointer to the beginning of the last read line and decreases line counter.
@@ -866,30 +866,3 @@ public:
 
 #endif	// _WIGREG
 #endif	// no _FQSTATN
-
-#if defined _CALLDIST || defined _FQSTATN
-
-// 'FqReader' implements reading file in FQ format.
-class FqReader : public TxtReader
-{
-	enum eLineLenIndex { HEADER1, READ, HEADER2, QUAL };
-
-public:
-	// Creates new instance for reading by file name
-	FqReader(const string& fileName)
-		: TxtReader(fileName, eAction::READ, 4, false) {}
-
-	// Returns checked length of current readed Read.
-	readlen ReadLength() const;
-
-	// Gets checked Read from readed Sequence.
-	const char* GetCurrRead() const;
-
-	// Returns checked Sequence.
-	const char* GetSequence();
-
-	// Returns count of sequences.
-	ULONG Count() const { return RecordCount(); }
-};
-
-#endif	// _CALLDIST || _FQSTATN

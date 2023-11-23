@@ -340,7 +340,7 @@ void Distrib::CalcPCC(dtype type, DParams& dParams, fraglen Mode, bool full) con
 		const double b = Distrs[type](dParams.Params, f.first, eqTerms);	// y-coordinate (value) of the calculated sequence
 		if (isNaN(b))						return;
 		if (f.first > Mode && b < cutoffY)	break;
-		const double a = f.second;											// y-coordinate (value) of the original sequence
+		const double a = double(f.second);									// y-coordinate (value) of the original sequence
 		sumA += a;
 		sumB += b;
 		sumA2 += a * a;

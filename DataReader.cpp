@@ -374,7 +374,7 @@ bool FBedReader::NarrowLenDistr() const
 /************************ end of FBedReader ************************/
 #endif	// _FEATURES
 
-#if !defined _WIGREG && !defined _FQSTATN
+#ifndef _WIGREG
 
 /************************ class Read ************************/
 

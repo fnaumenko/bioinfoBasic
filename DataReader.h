@@ -531,7 +531,7 @@ public:
 };
 #endif	// _FEATURES
 
-#if !defined _WIGREG && !defined _FQSTATN
+#ifndef _WIGREG
 
 // 'Read' represents Read (with name and score in case of _VALIGN) as item
 class Read

@@ -1,10 +1,6 @@
 /**********************************************************
-TxtFile.cpp (c) 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-All rights reserved.
--------------------------
-Last modified: 11/12/2023
--------------------------
-Provides read|write text file functionality
+TxtFile.cpp
+Last modified: 11/23/2023
 ***********************************************************/
 
 #include "TxtFile.h"
@@ -1044,39 +1040,6 @@ FaReader::FaReader(const string& fName, ChromDefRegions* rgns) : TxtReader(fName
 
 #endif	// _ISCHIP, _READDENS, _BIOCC
 #endif	// no _FQSTATN
-#if defined _CALLDIST || defined _FQSTATN
-
-/************************ FqReader ************************/
-
-// Returns checked length of current readed Read.
-readlen FqReader::ReadLength() const
-{
-	//CheckGettingRecord();
-	return readlen(LineLengthByInd(READ));
-}
-
-// Gets checked Read from readed Sequence.
-const char* FqReader::GetCurrRead() const
-{
-	//CheckGettingRecord();
-	return NextRecord() - RecordLength() + LineLengthByInd(HEADER1);
-}
-
-// Returns checked Sequence
-const char* FqReader::GetSequence()
-{
-	const char* record = GetNextRecord();
-	if (record != NULL) {
-		if (*record != AT)
-			Err("non '@' marker; missed header line", LineNumbToStr()).Throw();
-		if (*(record + LineLengthByInd(HEADER1, false) + LineLengthByInd(READ, false)) != PLUS)
-			Err("non '+' marker; missed second header line", LineNumbToStr()).Throw();
-	}
-	return record;
-}
-/************************ FqReader: end ************************/
-
-#endif	// _FQSTATN
 
 // Creates new instance with read buffer belonges to aggregated file: constructor for concatenating.
 //	For reading only.
