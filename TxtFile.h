@@ -396,7 +396,7 @@ private:
 	string	_formatFloat[2]{ "%4.2f", "%1.f" };	// format string for converting float to string
 #ifdef _MULTITHREAD
 	// === total counter of writed records
-	ULONG* _totalRecCnt;	// pointer to total counter of writed records; for clone only
+	size_t* _totalRecCnt;	// pointer to total counter of writed records; for clone only
 	Mutex::eType _mtype;
 #endif
 
