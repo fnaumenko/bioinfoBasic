@@ -181,7 +181,7 @@ protected:
 	// Gets the number of characters corresponded to LF
 	// In Windows LF matches '\r\n', in Linux LF matches '\n',
 	//	return: in Windows always 1, in Linux: 2 for file created in Windows, 1 for file created in Linux
-	size_t LFSize() const { return 2 - (_flag & ISCR); }
+	size_t LFSize() const { return static_cast<size_t>(2) - (_flag & ISCR); }	// not size_t !!!
 
 	// Returns true if LF size is not defined
 	bool IsLFundef() const { return !(_flag & LFCHECKED); }
@@ -275,9 +275,6 @@ class TxtReader : public TxtFile
 	// Raises ENDREAD sign an return NULL
 	//char* ReadingEnded()		  { RaiseFlag(ENDREAD); return NULL; }
 
-	// Returns record without control
-	char* RealRecord() const { return _buff + _currRecPos - _recLen; }
-
 	// Reads next block.
 	//	@offset: shift of start reading position
 	//	return: 0 if file is finished; -1 if unsuccess reading; otherwhise number of readed chars
@@ -308,6 +305,9 @@ protected:
 
 	~TxtReader() { if (_linesLen)	delete[] _linesLen; }
 
+	// Returns record without control
+	char* RealRecord() const { return _buff + _currRecPos - _recLen; }
+
 	// Gets current record.
 	const char* Record() const { return IsFlag(ENDREAD) ? NULL : RealRecord(); }
 
@@ -326,14 +326,9 @@ protected:
 	//	return: pointer to line or NULL if no more lines
 	char* GetNextRecord(short* const tabPos, const BYTE tabCnt);
 
-#if defined _CALLDIST || defined _FQSTATN
-	// Gets next record
-	//	return: point to the next record in a buffer.
-	const char* NextRecord() const { return _buff + _currRecPos; }
-
-	// Gets length of line.
-	//	@lineInd: index of line in a record
-	//	@withoutLF: if true then without LF marker length, otherwise without it
+	// Returns line length in a multiline record
+	//	@param lineInd: index of line in a record
+	//	@param withoutLF: if true then without LF marker length
 	size_t	LineLengthByInd(BYTE lineInd, bool withoutLF = true) const {
 		return _linesLen[lineInd] - withoutLF * LFSize();
 	}
@@ -343,7 +338,6 @@ protected:
 	//	if (IsLFundef())
 	//		ThrowExcept("attempt to get record's oinfo without reading record");
 	//}
-#endif
 
 	// Returns the read pointer to the beginning of the last read line and decreases line counter.
 	//	Zeroes length of current reading record!

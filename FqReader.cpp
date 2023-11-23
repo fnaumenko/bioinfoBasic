@@ -14,7 +14,7 @@ readlen FqReader::ReadLength() const
 const char* FqReader::GetCurrRead() const
 {
 	//CheckGettingRecord();
-	return NextRecord() - RecordLength() + LineLengthByInd(HEADER1);
+	return RealRecord() + LineLengthByInd(HEADER1);
 }
 
 const char* FqReader::GetSequence()
