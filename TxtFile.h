@@ -1,16 +1,12 @@
 /**********************************************************
-TxtFile.h (c) 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-All rights reserved.
--------------------------
-Last modified: 11/12/2023
--------------------------
-Provides read|write text file functionality
+TxtFile.h
+Provides read|write bioinfo text files functionality
+2014 Fedor Naumenko (fedor.naumenko@gmail.com)
+Last modified: 11/23/2023
 ***********************************************************/
-
 #pragma once
 
 #include "common.h"
-//#include <variant>
 
 // Number of basics file's reading|writing buffer blocks.
 // Should be less than 2047 because of ULONG type of block size variable.
@@ -23,8 +19,8 @@ static const char* WigTYPE = "wiggle_0";
 static const string WigVarSTEP = "variableStep";
 static const string WigFixSTEP = "fixedStep";
 
-// 'TabFilePar' keeps basic parameters for TabFile
-struct TabFilePar
+// 'TabReaderPar' keeps basic parameters for TabReader
+struct TabReaderPar
 {
 	static const BYTE BGLnLen;	// predefined BedGraph line length in purpose of reserving container size
 	static const BYTE WvsLnLen;	// predefined WIG variable step line length in purpose of reserving container size
@@ -36,9 +32,9 @@ struct TabFilePar
 	const char	Comment;		// char indicates that line is comment
 	const char* LineSpec;		// substring on which each data line is beginning
 
-	TabFilePar() : MinFieldCnt(0), MaxFieldCnt(0), AvrLineLen(0), Comment(cNULL), LineSpec(NULL) {}
+	TabReaderPar() : MinFieldCnt(0), MaxFieldCnt(0), AvrLineLen(0), Comment(cNULL), LineSpec(NULL) {}
 
-	TabFilePar(BYTE minTabCnt, BYTE maxTabCnt, BYTE avrLineLen = 0, char comm = HASH, const char* lSpec = NULL) :
+	TabReaderPar(BYTE minTabCnt, BYTE maxTabCnt, BYTE avrLineLen = 0, char comm = HASH, const char* lSpec = NULL) :
 		MinFieldCnt(minTabCnt),
 		MaxFieldCnt(maxTabCnt < minTabCnt ? minTabCnt : maxTabCnt),
 		AvrLineLen(avrLineLen),
@@ -57,7 +53,7 @@ static class FT
 		const string Item;			// item title
 		const string ItemPl;		// item title in plural
 		Mutex::eType MtxType;		// type of Mutex lock
-		TabFilePar FileParam;		// TabFile parameters, defined feilds
+		TabReaderPar FileParam;		// TabReader parameters, defined feilds
 	};
 	static const char* bedExt;
 	static const char* wigExt;
@@ -107,9 +103,9 @@ public:
 		return pl ? TypeAttrs[int(t)].ItemPl : TypeAttrs[int(t)].Item;
 	}
 
-	// Gets TabFile params
+	// Gets TabReader params
 	//	@t: file type
-	static const TabFilePar& FileParams(eType t) { return TypeAttrs[int(t)].FileParam; }
+	static const TabReaderPar& FileParams(eType t) { return TypeAttrs[int(t)].FileParam; }
 
 	// Get Mutex type by file type
 	static Mutex::eType MutexType(eType t) { return TypeAttrs[int(t)].MtxType; }
@@ -180,7 +176,7 @@ protected:
 	bool IsZipped()			const { return _flag & ZIPPED; }
 	bool IsClone()			const { return _flag & CLONE; }
 
-	// *** 3 methods used by TxtInFile only
+	// *** 3 methods used by TxtReader only
 
 	// Gets the number of characters corresponded to LF
 	// In Windows LF matches '\r\n', in Linux LF matches '\n',
@@ -267,9 +263,9 @@ public:
 
 };
 
-// 'TxtInFile' represents TxtFile for reading.
+// 'TxtReader' represents TxtFile for reading.
 //	Ñorrectly reads records even if the latter does not end with LF (CR,LF) character (s)
-class TxtInFile : public TxtFile
+class TxtReader : public TxtFile
 {
 	size_t	_recLen;		// the length of record with LF marker
 	size_t	_readedLen;		// number of actually readed chars in block
@@ -301,16 +297,16 @@ class TxtInFile : public TxtFile
 	ULONG LineNumber(BYTE lineInd) const { return (_recCnt - 1) * _recLineCnt + lineInd + 1; }
 
 protected:
-	// Constructs an TxtInFile instance: allocates buffers, opens an assigned file.
+	// Constructs an TxtReader instance: allocates buffers, opens an assigned file.
 	//	@fName: valid full name of assigned file
 	//	@mode: opening mode: READ or READ_ANY
 	//	@cntRecLines: number of lines in a record
 	//	@msgFName: true if file name should be printed in an exception's message
 	//	@abortInvalid: true if invalid instance should be completed by throwing exception
-	TxtInFile(const string& fName, eAction mode, BYTE cntRecLines,
+	TxtReader(const string& fName, eAction mode, BYTE cntRecLines,
 		bool msgFName = true, bool abortInvalid = true);
 
-	~TxtInFile() { if (_linesLen)	delete[] _linesLen; }
+	~TxtReader() { if (_linesLen)	delete[] _linesLen; }
 
 	// Gets current record.
 	const char* Record() const { return IsFlag(ENDREAD) ? NULL : RealRecord(); }
@@ -383,17 +379,17 @@ public:
 
 #ifdef _FILE_WRITE
 
-// 'TxtOutFile' represents TxtFile for writing
-class TxtOutFile : public TxtFile
+// 'TxtWriter' represents TxtFile for writing
+class TxtWriter : public TxtFile
 {
 #ifdef _ISCHIP
-	friend class ReadOutFile;
+	friend class ReadWriter;
 #endif
 public:
 	static bool	Zipped;				// true if filed should be zippped
 
 private:
-	//typedef void(TxtOutFile::* fAddChar)();
+	//typedef void(TxtWriter::* fAddChar)();
 	//// 'Add delimiter' methods: [0] - empty method, [1] - adds delimiter and increases current position
 	//static fAddChar fLineAddChar[2];
 
@@ -449,12 +445,12 @@ protected:
 	rowlen LineAddChars(const char* src, rowlen len, bool addDelim = true);
 
 	//public:
-		// Constructs an TxtOutFile instance: allocates I/O buffer, opens an assigned file.
+		// Constructs an TxtWriter instance: allocates I/O buffer, opens an assigned file.
 		//	@ftype: type of file
 		//	@fName: valid file name without extention
 		//	@printName: true if file name should be printed in the exception's message
 		//	@abortInvalid: true if invalid instance shold be completed by throwing exception
-	TxtOutFile(FT::eType ftype, const string& fName,
+	TxtWriter(FT::eType ftype, const string& fName,
 		char delim = TAB, bool printName = true, bool abortInvalid = true) :
 		_delim(delim), _mtype(FT::MutexType(ftype)),
 		TxtFile(fName + FT::Ext(ftype, Zipped), eAction::WRITE, printName, abortInvalid)
@@ -465,7 +461,7 @@ protected:
 	}		// line buffer will be created in SetLineBuff()
 
 // Writes nonempty buffer, deletes line buffer and closes file
-	~TxtOutFile();
+	~TxtWriter();
 
 	//protected:
 #ifdef _MULTITHREAD
@@ -473,7 +469,7 @@ protected:
 	// Clone is a copy of opened file with its own separate basic I/O and write line buffers.
 	// Used for multithreading file recording
 	//	@file: opened file which is cloned
-	TxtOutFile(const TxtOutFile& file);
+	TxtWriter(const TxtWriter& file);
 #endif
 
 	// Sets current position of the line write buffer.
@@ -590,8 +586,8 @@ public:
 
 #ifndef _FQSTATN
 
-// 'TabFile' represents TxtInFile consisting of lines with tab-separated filds
-class TabFile : public TxtInFile
+// 'TabReader' represents TxtReader consisting of lines with tab-separated filds
+class TabReader : public TxtReader
 	/*
 	 * Only number of fields defined in constructor is processed.
 	 * Number of fields can be equal 1, in that case ordinary plain text is processed.
@@ -637,33 +633,33 @@ public:
 	//	@type: file bioinfo type
 	//	@msgFName: true if file name should be printed in exception's message
 	//	@abortInvalid: true if invalid instance should be completed by throwing exception
-	TabFile(
+	TabReader(
 		const string& fName,
 		FT::eType type = FT::eType::UNDEF,
 		eAction	mode = eAction::READ,
 		bool estLineCnt = true,
 		bool msgFName = true,
 		bool abortInvalid = true
-	) : TxtInFile(fName, mode, 1, msgFName, abortInvalid), _fType(type)
+	) : TxtReader(fName, mode, 1, msgFName, abortInvalid), _fType(type)
 	{
 		if (mode != eAction::WRITE && IsGood())
 			Init(_fType, estLineCnt);
 	}
 
 #if defined _ISCHIP && defined  _MULTITHREAD
-	// Creates a clone of TabFile class.
+	// Creates a clone of TabReader class.
 	// Clone is a copy of opened file with its own buffer for writing only. Used for multithreading file recording.
 	//  @file: opened file which is copied
 	//  @threadNumb: number of thread
-	TabFile(const TabFile& file) :
+	TabReader(const TabReader& file) :
 		_fType(file._fType),
 		_lineSpecLen(file._lineSpecLen),
 		_fieldPos(file._fieldPos),
 		_currLine(NULL),
-		TxtInFile(file/*, threadNumb*/) {}
+		TxtReader(file/*, threadNumb*/) {}
 #endif
 
-	~TabFile() { Release(); }
+	~TabReader() { Release(); }
 
 	// Returns a pointer to the substring defined by key.
 	//	@str: null-terminated string to search the key
@@ -806,10 +802,10 @@ public:
 #endif
 };
 
-// 'FaFile' supports reading/writing chromosomes in FA format
-class FaFile : public TxtInFile
+// 'FaReader' supports reading chromosomes in FA format
+class FaReader : public TxtReader
 {
-	// 'DefRgnMaker' produced chrom defined regions while FaFile reading 
+	// 'DefRgnMaker' produced chrom defined regions while FaReader reading 
 	class DefRgnMaker
 	{
 		chrlen	_minGapLen,			// minimal length which defines gap as a real gap
@@ -839,7 +835,7 @@ class FaFile : public TxtInFile
 
 	const char FaComment = '>';
 	chrlen		_cLen;						// length of chromosome
-	const char* (FaFile::* _pGetLine)();	// pointer to the 'GetNextLine' method
+	const char* (FaReader::* _pGetLine)();	// pointer to the 'GetNextLine' method
 	unique_ptr<DefRgnMaker> _rgnMaker;		// chrom defined regions store
 
 	// Search 'N' subsequence in the current line beginning from the start position
@@ -856,7 +852,7 @@ class FaFile : public TxtInFile
 public:
 	// Opens existing file and reads first line.
 	//	@rgns: def regions to fill, otherwise NULL to reading without 'N' control
-	FaFile(const string& fName, ChromDefRegions* rgns = NULL);
+	FaReader(const string& fName, ChromDefRegions* rgns = NULL);
 
 	// Gets chromosome's length
 	chrlen ChromLength() const { return _cLen; }
@@ -873,15 +869,15 @@ public:
 
 #if defined _CALLDIST || defined _FQSTATN
 
-// 'FqFile' implements reading/writing file in FQ format.
-class FqFile : public TxtInFile
+// 'FqReader' implements reading file in FQ format.
+class FqReader : public TxtReader
 {
 	enum eLineLenIndex { HEADER1, READ, HEADER2, QUAL };
 
 public:
 	// Creates new instance for reading by file name
-	FqFile(const string& fileName)
-		: TxtInFile(fileName, eAction::READ, 4, false) {}
+	FqReader(const string& fileName)
+		: TxtReader(fileName, eAction::READ, 4, false) {}
 
 	// Returns checked length of current readed Read.
 	readlen ReadLength() const;

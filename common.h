@@ -602,7 +602,7 @@ public:
 	static void ResetIntVal(int opt) {  List[opt].NVal = 0; }
 
 	// Parses and checks main() parameters and their values.
-	//	Output message if some of them is wrong.
+	//	DataWriter message if some of them is wrong.
 	//	@argc: count of main() pearmeters
 	//	@argv: array of main() pearmeters
 	//	@obligPar: name of required application parameter or NULL if not required
@@ -675,8 +675,8 @@ public:
 		F_WRITE,	// file write error
 		//F_FORMAT,
 #ifndef _FQSTATN
-		TF_FIELD,	// TabFile: number of fields is less than expected
-		TF_EMPTY,	// TabFile: no records
+		TF_FIELD,	// TabReader: number of fields is less than expected
+		TF_EMPTY,	// TabReader: no records
 #endif
 		EMPTY
 	};

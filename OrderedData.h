@@ -1,10 +1,11 @@
 /**********************************************************
 OrderedData.h
-Provides chromosomally sorted data files functionality
+Provides chromosomally sorted data functionality
 2022 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/22/2023
+Last modified: 11/23/2023
 ***********************************************************/
 #pragma once
+
 #include "ChromData.h"
 #include "DataReader.h"
 #include <assert.h>
@@ -117,7 +118,7 @@ struct TrackFields
 		: Name(params.Name + addName), Descr(descr), CommLine(params.CommLine), ItemRgb(itemRgb), UseScore(useScore), Color(color) {}
 };
 
-class RegionWriter : public TxtOutFile
+class RegionWriter : public TxtWriter
 {
 protected:
 	//static const char* sTRACK;

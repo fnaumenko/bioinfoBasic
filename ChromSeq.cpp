@@ -11,13 +11,13 @@ bool ChromSeq::Init(const string& fName, ChromDefRegions& rgns, bool fill)
 {
 	_seq = nullptr;
 	bool getN = StatGaps || LetGaps || rgns.Empty();	// if true then chrom def regions should be recorded
-	FaFile file(fName, rgns.Empty() ? &rgns : nullptr);
+	FaReader file(fName, rgns.Empty() ? &rgns : nullptr);
 
 	_len = file.ChromLength();
 	if (fill) {
 		try { _seq = new char[_len]; }
 		catch (const bad_alloc&) { Err(Err::F_MEM, fName.c_str()).Throw(); }
-		const char* line = file.Line();		// First line is readed by FaFile()
+		const char* line = file.Line();		// First line is readed by FaReader()
 		chrlen linelen;
 		_len = 0;
 
@@ -58,7 +58,7 @@ ChromSeq::ChromSeq(const string& fName, ChromDefRegions& rgns, short minGapLen)
 //
 //void ChromSeq::Write(const string & fName, const char *chrName) const
 //{
-//	FaFile file(fName, chrName);
+//	FaReader file(fName, chrName);
 //	chrlen i, cnt = _len / FA_LINE_LEN;
 //	for(i=0; i<cnt; i++)
 //		file.AddLine(_seq + i * FA_LINE_LEN, FA_LINE_LEN);

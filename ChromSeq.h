@@ -38,7 +38,7 @@ public:
 	//const char* Read(chrlen pos, readlen len) const { return pos + len > Length() ? NULL : _seq + pos; }
 
 	// Gets subsequence without exceeding checking 
-	const char* Seq(chrlen pos) const { return _seq + pos; }
+	const char* SeqMode(chrlen pos) const { return _seq + pos; }
 
 	// Creates a stub instance (for sampling cutting)
 	//	@param len: chrom length

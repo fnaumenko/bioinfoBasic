@@ -1,10 +1,6 @@
 /**********************************************************
-OrderedData.cpp (c) 2022 Fedor Naumenko (fedor.naumenko@gmail.com)
-All rights reserved.
--------------------------
-Last modified: 11/12/2023
--------------------------
-Provides chromosomally sorted data files functionality
+OrderedData.cpp
+Last modified: 11/23/2023
 ***********************************************************/
 
 #include "OrderedData.h"
@@ -94,7 +90,7 @@ void AccumCover::AddRegion(const Region& frag)
 const char* RegionWriter::sGRAY = "Silver";	// "175,175,175";
 
 RegionWriter::RegionWriter(FT::eType ftype, eStrand strand, const TrackFields& fields)
-	: TxtOutFile(ftype, fields.Name, TAB)
+	: TxtWriter(ftype, fields.Name, TAB)
 {
 	static const char* wigFormats[] = { BedGraphTYPE, WigTYPE, WigTYPE };
 	static const char* StrandCOLORS[] = { "128,128,128", "197,74,74", "0,118,188" };	// grey, red, blue; 50,130,190 - foggy blue

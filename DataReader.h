@@ -83,7 +83,7 @@ public:
 };
 
 // 'BedReader' represents unified PI for reading bed file
-class BedReader : public DataReader, public TabFile
+class BedReader : public DataReader, public TabReader
 {
 	const BYTE	NameFieldInd = 3;	// inner index of name field
 	const BYTE	StrandFieldInd = 5;	// inner index of strand field
@@ -119,7 +119,7 @@ public:
 	size_t EstItemCount() const { return EstLineCount(); }
 
 	// Gets file bioinfo type
-	FT::eType Type() const { return TabFile::Type(); }
+	FT::eType Type() const { return TabReader::Type(); }
 
 	// Sets the next chromosome as the current one if they are different
 	//	@cID: returned next chrom ID
@@ -137,7 +137,7 @@ public:
 	bool GetNextChrom(chrid& cID) { return SetNextChrom(cID = Chrom::ValidateID(ChromMark())); }
 
 	// Retrieves next item's record
-	bool GetNextItem() { return TabFile::GetNextLine(); }
+	bool GetNextItem() { return TabReader::GetNextLine(); }
 
 	// Returns current item start position
 	chrlen ItemStart()	const { return LongField(1); }
@@ -159,11 +159,11 @@ public:
 
 	// Gets string containing file name and current line number.
 	//	@code: code of error occurs
-	const string LineNumbToStr(Err::eCode code) const { return TxtInFile::LineNumbToStr(code); }
+	const string LineNumbToStr(Err::eCode code) const { return TxtReader::LineNumbToStr(code); }
 
 	// Throws exception with message included current reading line number
 	//	@msg: exception message
-	void ThrowExceptWithLineNumb(const string& msg) const { return TxtInFile::ThrowExceptWithLineNumb(msg); }
+	void ThrowExceptWithLineNumb(const string& msg) const { return TxtReader::ThrowExceptWithLineNumb(msg); }
 
 	// Gets conditional file name: name if it's printable, otherwise empty string.
 	const string CondFileName() const { return TxtFile::CondFileName(); }
@@ -599,7 +599,7 @@ public:
 	chrlen End() const { return _rgn.End; }
 
 	// Gets Read's sequence
-	const char* Seq() const { return _seq; }
+	const char* SeqMode() const { return _seq; }
 
 	// Copies Read into dst
 	void Copy(char* dst) const { memcpy(dst, _seq, Length()); }

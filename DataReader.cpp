@@ -77,7 +77,7 @@ bool BedReader::DefineWigType(const char* line)
 BedReader::BedReader(const char* fName, FT::eType type, BYTE scoreNumb, bool msgFName, bool abortInval) :
 	_scoreInd(scoreNumb ? scoreNumb - 1 : 4),	// default score index for ABED and BAM
 	_chrMarkPos(BYTE(strlen(Chrom::Abbr))),
-	TabFile(fName, type, eAction::READ, false, msgFName, abortInval)
+	TabReader(fName, type, eAction::READ, false, msgFName, abortInval)
 {
 	if (type == FT::eType::ABED)
 		_getStrand = [this]() { return *StrField(StrandFieldInd) == PLUS; };
@@ -85,7 +85,7 @@ BedReader::BedReader(const char* fName, FT::eType type, BYTE scoreNumb, bool msg
 		_getStrand = []() { return true; };
 
 	// ** read track definition line and clarify types
-	const char* line = TabFile::GetNextLine(false);
+	const char* line = TabReader::GetNextLine(false);
 	if (!line) ThrowExcept(Err::F_EMPTY);
 
 	const char* line1 = KeyStr(line, "track");			// check track key

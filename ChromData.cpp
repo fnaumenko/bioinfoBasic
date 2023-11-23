@@ -16,7 +16,7 @@ inline int ChromSizes::CommonPrefixLength(const string& fName, BYTE extLen)
 
 void ChromSizes::Read(const string& fName)
 {
-	TabFile file(fName, FT::eType::CSIZE);	// file check already done
+	TabReader file(fName, FT::eType::CSIZE);	// file check already done
 
 	while (file.GetNextLine()) {
 		chrid cID = Chrom::ValidateIDbyAbbrName(file.StrField(0));
@@ -106,7 +106,7 @@ ChromSizes::ChromSizes(const char* gName, BYTE customChrOpt, bool prMsg, const c
 			if (isExist)	Read(cName);
 			else {							// generate chrom.sizes
 				for (chrid cid : cIDs)
-					AddValue(cid, ChromSize(FaFile(RefName(cid) + _ext).ChromLength()));
+					AddValue(cid, ChromSize(FaReader(RefName(cid) + _ext).ChromLength()));
 				if (IsServAvail())	Write(cName);
 				if (prMsg)
 					dout << FS::ShortFileName(cName) << SPACE << (IsServAvail() ? "created" : "generated") << LF,

@@ -713,7 +713,7 @@ string const Options::CommandLine(int argc, char* argv[])
 	return ss.str();
 }
 
-// Parses and checks main() parameters and their values. Output message if some of them is wrong.
+// Parses and checks main() parameters and their values. DataWriter message if some of them is wrong.
 //	@argc: count of main() parameters
 //	@argv: array of main() parameters
 //	@obligPar: name of required application parameter or NULL if not required
