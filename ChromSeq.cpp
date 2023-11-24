@@ -27,7 +27,6 @@ bool ChromSeq::Init(const string& fName, ChromDefRegions& rgns, bool fill)
 	}
 	else if (getN)	while (file.NextGetLine());	// just to fill chrom def regions
 	file.CLoseReading();	// only makes sense if chrom def regions were filled
-	_len;
 	return getN;
 }
 

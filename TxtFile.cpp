@@ -1,6 +1,6 @@
 /**********************************************************
 TxtFile.cpp
-Last modified: 11/23/2023
+Last modified: 11/24/2023
 ***********************************************************/
 
 #include "TxtFile.h"
@@ -126,23 +126,33 @@ bool TxtFile::CreateIOBuff()
 	return IsGood();
 }
 
-// Constructs an TxtFile instance: allocates I/O buffer, opens an assigned file.
-//	@fName: valid full name of assigned file
-//	@mode: opening mode
-//	@msgFName: true if file name should be printed in exception's message
-//	@abortInvalid: true if invalid instance shold be completed by throwing exception
 TxtFile::TxtFile(const string& fName, eAction mode, bool msgFName, bool abortInvalid) :
 	_flag(1)	// LF size set to 1
 {
+	string f_name(fName);	// to add '.gz' in case of zipped
+
 	SetFlag(ZIPPED, FS::HasGzipExt(fName));
+	// check for zipped case
+	if (!IsZipped()) {
+		if (mode == eAction::READ		// assumed to exist
+		&& !FS::IsFileExist(f_name.c_str())) {
+			f_name += ZipFileExt;
+			if (!FS::IsFileExist(f_name.c_str())) {
+				Err(Err::MsgNoFile(FS::ShortFileName(fName), false), FS::DirName(fName)).Throw(abortInvalid);
+				return;
+			}
+			SetFlag(ZIPPED, true);
+		}
+	}
 	SetFlag(ABORTING, abortInvalid);
 	SetFlag(PRNAME, msgFName);
-	if (!SetBasic(fName, mode, NULL))	return;
-	_fSize = FS::Size(fName.c_str());
+	// try to open
+	if (!SetBasic(f_name, mode, NULL))	return;
+	_fSize = FS::Size(f_name.c_str());
 	if (_fSize == -1)	_fSize = 0;		// new file
 #ifdef _ZLIB
 	else if (IsZipped()) {				// existed file
-		LLONG size = FS::UncomressSize(fName.c_str());
+		LLONG size = FS::UncomressSize(f_name.c_str());
 		if (size > 0) {
 			// wrong uncompressed size: increase initial size four times
 			// since zip is too big to keep right size in archive
@@ -1014,8 +1024,6 @@ const char* FaReader::GetLineWitnNControl()
 	return line;
 }
 
-// Opens existing file and reads first line.
-//	@rgns: def regions to fill, otherwise NULL to reading without 'N' control
 FaReader::FaReader(const string& fName, ChromDefRegions* rgns) : TxtReader(fName, eAction::READ, 1)
 {
 	if (rgns) {

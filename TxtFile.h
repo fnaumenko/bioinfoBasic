@@ -2,7 +2,7 @@
 TxtFile.h
 Provides read|write basic bioinfo text files functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/23/2023
+Last modified: 11/24/2023
 ***********************************************************/
 #pragma once
 
@@ -207,11 +207,11 @@ private:
 	//void operator = (const TxtFile&); //assignment prohibition
 
 protected:
-	// Constructs an TxtFile instance: allocates I/O buffer, opens an assigned file.
-	//	@fName: valid full name of assigned file
-	//	@mode: opening mode
-	//	@msgFName: true if file name should be printed in the exception's message
-	//	@abortInvalid: true if invalid instance shold be completed by throwing exception
+	// Constructs an instance: allocates I/O buffer, opens an assigned file
+	//	@param fName: valid full name of assigned file
+	//	@param mode: opening mode
+	//	@param msgFName: true if file name should be printed in the exception's message
+	//	@param abortInvalid: true if invalid instance shold be completed by throwing exception
 	TxtFile(const string& fName, eAction mode, bool msgFName = true, bool abortInvalid = true);
 
 #ifdef _MULTITHREAD
@@ -242,8 +242,8 @@ protected:
 	const string& CondFileName() const { return IsFlag(PRNAME) ? _fName : strEmpty; }
 
 	// Gets size of uncompressed file,
-	// or size of compressed file if its uncompressed length is more than UINT_MAX.
-	// So it can be used for estimatation only.
+	// or size of compressed file if its uncompressed length is less than UINT_MAX.
+	// So it can be used for estimatation only!
 	LLONG Length() const { return _fSize; }
 
 	// Gets number of readed/writed records.
@@ -844,9 +844,10 @@ class FaReader : public TxtReader
 	const char* GetLineWitnNControl();
 
 public:
-	// Opens existing file and reads first line.
-	//	@rgns: def regions to fill, otherwise NULL to reading without 'N' control
-	FaReader(const string& fName, ChromDefRegions* rgns = NULL);
+	// Opens existing file, reads the first line and sets chrom length
+	//	@param fName: file name
+	//	@param rgns: def regions to fill, otherwise nullptr to reading without 'N' control
+	FaReader(const string& fName, ChromDefRegions* rgns = nullptr);
 
 	// Gets chromosome's length
 	chrlen ChromLength() const { return _cLen; }

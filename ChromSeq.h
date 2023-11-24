@@ -1,6 +1,6 @@
 /**********************************************************
 ChromSeq.h  2023 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/21/2023
+Last modified: 11/24/2023
 ***********************************************************/
 #pragma once
 
@@ -14,7 +14,7 @@ private:
 	chrlen	_len;			// length of chromosome
 	chrlen	_gapLen = 0;	// total length of gaps
 	Region	_effDefRgn;		// effective defined region (except 'N' at the begining and at the end)
-	char* _seq = NULL;		// the nucleotides buffer
+	char* _seq = nullptr;	// the nucleotides buffer
 
 	// Initializes instance and/or chrom's defined regions
 	//	@param fName: file name
@@ -27,7 +27,7 @@ public:
 	static bool	LetGaps;	// if true then include gaps at the edges of the ref chrom while reading
 	static bool	StatGaps;	// if true count sum gaps for statistic output
 
-	~ChromSeq() { delete[] _seq; }
+	~ChromSeq() { if(_seq)	delete[] _seq; }
 
 	// Gets chrom legth
 	chrlen Length()	const { return _len; }

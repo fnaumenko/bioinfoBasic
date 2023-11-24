@@ -1,10 +1,8 @@
 /**********************************************************
-common.h (c) 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-All rights reserved.
--------------------------
-Last modified: 11/19/2023
--------------------------
+common.h 
 Provides common functionality
+2014 Fedor Naumenko (fedor.naumenko@gmail.com)
+Last modified: 11/24/2023
 ***********************************************************/
 
 #pragma once
@@ -704,8 +702,11 @@ public:
 	//	@fName: file name
 	//static const string IssueNumbToStr(const string& issName, ULONG issNumb, const string& fName);
 
-	// Gets message "no @fileName.@fileExt[.gz] files in this directory"
-	static const string MsgNoFiles (const string & fileName, const string fileExt);
+	// Gets message "no <filename>.ext[.gz] file(s) in this directory"
+	//	@param fName: file name or template
+	//	@param plural: if true then in plural form
+	//	@param fExt: file extention or none
+	static const string MsgNoFile(const string & fName, bool plural, const string fExt = strEmpty);
 
 	// Code-attached constructor.
 	//	@code: exception/warning message as code
@@ -816,6 +817,7 @@ public:
 	// === check dir/file existing
 
 	// Returns true if file exists
+	//	@param name: name of file
 	static bool IsFileExist	 (const char* name) { return IsExist(name, S_IFREG); }
 	
 	// Returns true if directory exists
@@ -825,10 +827,9 @@ public:
 	static bool IsFileDirExist(const char* name) { return IsExist(name, S_IFDIR|S_IFREG); }
 	
 	// Checks if file doesn't exist
-	//	@name: name of file
-	//	@throwExcept: if true throws excwption,
-	//	otherwise outputs Err message as warning without LF
-	//	return: true if file doesn't exist
+	//	@param name: name of file
+	//	@param throwExcept: if true then throws excwption, otherwise prints Err message as warning without LF
+	//	@return: true if file doesn't exist
 	static bool CheckFileExist	(const char* name, bool throwExcept = true) {
 		return CheckExist(name, S_IFREG, throwExcept, Err::F_NONE);
 	}

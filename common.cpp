@@ -1,10 +1,6 @@
 /**********************************************************
-common.cpp (c) 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-All rights reserved.
--------------------------
-Last modified: 11/12/2023
--------------------------
-Provides common functionality
+common.cpp
+Last modified: 11/24/2023
 ***********************************************************/
 
 #include "common.h"
@@ -850,10 +846,10 @@ void Err::set_message(const char* sender, const char* txt, const char* specTxt)
 //	return res + issName + SPACE + NSTR(issNumb);
 //}
 
-// Gets message "no @fileName.@ext[.gz] files in this directory"
-const string Err::MsgNoFiles(const string& fileName, const string ext)
+const string Err::MsgNoFile(const string& fName, bool plural, const string fExt)
 {
-	return string("no " + fileName + ext + "[" + ZipFileExt + "] files in this directory");
+	const string pl_ext = plural ? "s" : strEmpty;
+	return string("no " + fName + fExt + "[" + ZipFileExt + "] file" + pl_ext + " in this directory");
 }
 
 
@@ -862,8 +858,8 @@ Err::Err(const Err& src)
 	_code = src._code;
 	auto size = strlen(src.what()) + 1;
 	_outText = new char[size];
-	memcpy(_outText, src._outText, strlen(src._outText));	// instead of strcpy(_outText, src._outText)
-	//_specifyText = src._specifyText;
+	memset(_outText, 0, size);
+	memcpy(_outText, src._outText, size - 1);	// instead of strcpy(_outText, src._outText)
 }
 
 // Throws exception or outputs Err message.

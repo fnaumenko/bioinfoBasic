@@ -100,7 +100,7 @@ ChromSizes::ChromSizes(const char* gName, BYTE customChrOpt, bool prMsg, const c
 			if (!GetChromIDs(cIDs, gName)) {				// fill list from *.fa
 				_ext += ZipFileExt;			// if chrom.sizes exists, get out - we don't need a list
 				if (!isExist && !GetChromIDs(cIDs, gName))	// fill list from *.fa.gz
-					Err(Err::MsgNoFiles("*", FT::Ext(FT::eType::FA)), gName).Throw();
+					Err(Err::MsgNoFile("*", true, FT::Ext(FT::eType::FA)), gName).Throw();
 			}
 
 			if (isExist)	Read(cName);
