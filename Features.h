@@ -2,7 +2,7 @@
 Feature.h
 BED feature and features collection
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/22/2023
+Last modified: 11/24/2023
 ***********************************************************/
 #pragma once
 

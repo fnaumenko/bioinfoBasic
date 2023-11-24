@@ -1,8 +1,8 @@
 /**********************************************************
 Feature.cpp
-Last modified: 11/22/2023
+Last modified: 11/24/2023
 ***********************************************************/
-#include "Feature.h"
+#include "Features.h"
 
 void Features::AddChrom(chrid cID, size_t cnt)
 {
