@@ -405,11 +405,6 @@ Read::pCopyRead Read::CopyRead[] = { &Read::Copy, &Read::CopyComplement };
 //	[](const Read* r, char* dst) -> void { r->CopyComplement(dst); }
 //};
 
-// Initializes static members
-//	@len: length of Read
-//	@posInName: true if Read position is included in Read name
-//	@seqQual: quality values for the sequence
-//	@limN: maximal permitted number of 'N'
 void Read::Init(readlen len, bool posInName, char seqQual, short limN)
 {
 	FixedLen = len;
@@ -418,7 +413,6 @@ void Read::Init(readlen len, bool posInName, char seqQual, short limN)
 	LimitN = limN;
 }
 
-// Copies complemented Read.
 void Read::CopyComplement(char* dst) const
 {
 	const char* seq = _seq - 1;
@@ -426,8 +420,6 @@ void Read::CopyComplement(char* dst) const
 		dst[i] = Complements[(*++seq & ~0x20) - 'A'];		// any *src to uppercase
 }
 
-// Checks Read for number of 'N'
-//	return:	1: NULL Read; 0: success; -1: N limit is exceeded
 int Read::CheckNLimit() const
 {
 	if (!_seq)		return 1;
@@ -441,9 +433,6 @@ int Read::CheckNLimit() const
 	return 0;
 }
 
-// Prints Read values - parameters
-//	@signOut: output marker
-//	@isRVL: true if Read variable length is set
 void Read::PrintParams(const char* signOut, bool isRVL)
 {
 	cout << signOut << Title << SepDCl;
@@ -460,14 +449,13 @@ void Read::PrintParams(const char* signOut, bool isRVL)
 void Read::InitBase(const RBedReader& file)
 {
 	const Region& rgn = file.ItemRegion();
-	Pos = rgn.Start;
-	Len = rgn.Length();
+	Start = rgn.Start;
+	End = rgn.End;
 	Strand = file.ItemStrand();
 }
 
 #ifdef _PE_READ
 
-// PE Read constructor
 Read::Read(const RBedReader& file)
 {
 	Numb = GetNumber(
@@ -483,14 +471,12 @@ Read::Read(const RBedReader& file)
 // Extended (with saved chrom & position in name) Read constructor
 Read::Read(const RBedReader& file)
 {
-	//static const string tip1 = " in the read's name. It should be '*:<pos>.<number>'";
-
 	const char* ss = strchr(file.ItemName() + 1, Read::NmDelimiter);
 	if (ss)		ss = strstr(++ss, Chrom::Abbr);		// to be sure that 'chr' is in ss
 	if (!ss)
 		file.ThrowExceptWithLineNumb(TipNoFind + "chrom mark in the read's name. It should be '*chr<x>*'");
 	RecCID = Chrom::ID(ss += strlen(Chrom::Abbr));
-	RecPos = GetNumber(
+	RecStart = GetNumber(
 		strchr(++ss, Read::NmPos1Delimiter),
 		file,
 		"position in the read's name. It should be ' * :<pos>. < number>'"
@@ -507,8 +493,8 @@ Read::Read(const RBedReader& file)
 
 void Read::Print() const
 {
-	dout << Pos << TAB << Strand << TAB << Chrom::AbbrName(RecCID)
-		<< RecPos << TAB << setprecision(1) << Score << TAB << LF;
+	dout << Start << TAB << Strand << TAB << Chrom::AbbrName(RecCID)
+		<< RecStart << TAB << setprecision(1) << Score << TAB << LF;
 }
 
 #endif	// no  _VALIGN

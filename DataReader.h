@@ -547,6 +547,9 @@ public:
 	static const char	NmPos2Delimiter = '-';	// delimiter between two recorded positions in pair
 #endif
 
+	// Returns Read's length
+	readlen Length() const { return readlen(Region::Length()); }
+
 #ifdef _ISCHIP
 
 private:
@@ -559,7 +562,6 @@ private:
 	static pCopyRead CopyRead[2];
 
 	const char* _seq;
-	//Region	_rgn;
 
 	// Copies complemented Read into dst
 	void CopyComplement(char* dst) const;
@@ -569,10 +571,10 @@ public:
 	static const char* title;
 
 	// Initializes static members
-	//	@len: length of Read
-	//	@posInName: true if Read position is included in Read name
-	//	@seqQual: quality values for the sequence
-	//	@limN: maximal permitted number of 'N'
+	//	@param len: length of Read
+	//	@param posInName: true if Read position is included in Read name
+	//	@param seqQual: quality values for the sequence
+	//	@param limN: maximal permitted number of 'N'
 	static void Init(readlen len, bool posInName, char seqQual, short limN);
 
 	static char StrandMark(bool reverse) { return Strands[int(reverse)]; }
@@ -584,18 +586,6 @@ public:
 
 	// Constructor by sequence, start position and length
 	Read(const char* seq, chrlen pos, readlen len) : _seq(seq) { Set(pos, pos + len); }
-
-	// Gets Read's region
-	//const Region& Rgn() const { return _rgn; }
-
-	// Gets Read's length
-	//readlen Length() const { return _rgn.Length(); }
-
-	// Gets Read's start position
-	//chrlen Start() const { return _rgn.Start; }
-
-	// Gets Read's end position
-	//chrlen End() const { return _rgn.End; }
 
 	// Gets Read's sequence
 	const char* SeqMode() const { return _seq; }
@@ -614,38 +604,32 @@ public:
 	static void PrintSeqQuality() { cout << '[' << SeqQuality << ']'; }
 
 	// Prints Read values - parameters
-	//	@signOut: output marker
-	//	@isRVL: true if Read variable length is set
+	//	@param signOut: output marker
+	//	@param isRVL: true if Read variable length is set
 	static void PrintParams(const char* signOut, bool isRVL);
 
 #else
 public:
-	chrlen	Pos;		// Read's actual start position
-	readlen Len;		// Read's length
 	bool	Strand;		// true if strand is positive
 
 	void InitBase(const RBedReader& file);
 
-	chrlen Centre() const { return Pos + (Len >> 1); }
+	//chrlen Centre() const { return Pos + (Len >> 1); }
 #ifdef _PE_READ
 	ULONG	Numb;		// read number keeped in name
 
 	// PE Read constructor
 	Read(const RBedReader& file);
 
-	chrlen Start()	const { return Pos; }
-
-	chrlen End()	const { return Pos + Len; }
-
 	// Returns frag length
-	//	@r: second read in a pair
-	fraglen FragLen(const Read& r) const { return Strand ? r.End() - Pos : End() - r.Pos; }
+	//	@param r: second read in a pair
+	fraglen FragLen(const Read& r) const { return Strand ? r.End - Start : End - r.Start; }
 
-	void Print() const { dout << Pos << TAB << Numb << TAB << Strand << LF; }
+	void Print() const { dout << Start << TAB << Numb << TAB << Strand << LF; }
 
 #elif defined _VALIGN
 	chrid	RecCID;		// recorded (true) chrom - owner
-	chrlen	RecPos;		// recorded (true) Read start position
+	chrlen	RecStart;	// recorded (true) Read start position
 	float	Score;		// Read's score
 
 	// Extended (with saved chrom & position in name) Read constructor
@@ -653,10 +637,6 @@ public:
 
 	void Print() const;
 #endif
-
-	// Compares two Reads by position. For sorting a container.
-	static bool CompareByStartPos(const Read& r1, const Read& r2) { return r1.Pos < r2.Pos; }
-
 	//static bool CompareByNum(const Read& r1, const Read& r2) {	return r1.Num < r2.Num; }
 #endif
 };
