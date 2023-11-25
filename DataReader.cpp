@@ -54,13 +54,13 @@ void BedReader::ResetWigType(FT::eType type, BYTE scoreInd, size_t cMarkPosOffse
 	//	return: true if Fixed or Variable step type is specified
 bool BedReader::DefineWigType(const char* line)
 {
-	FT::eType type = FT::eType::UNDEF;
+	FT::eType type = FT::UNDEF;
 
 	if (KeyStr(line, WigFixSTEP))
-		ResetWigType(type = FT::eType::WIG_FIX, 0, WigFixSTEP.length() + 1);
+		ResetWigType(type = FT::WIG_FIX, 0, WigFixSTEP.length() + 1);
 	else if (KeyStr(line, WigVarSTEP))
-		ResetWigType(type = FT::eType::WIG_VAR, 1, WigVarSTEP.length() + 1);
-	if (type != FT::eType::UNDEF) {
+		ResetWigType(type = FT::WIG_VAR, 1, WigVarSTEP.length() + 1);
+	if (type != FT::UNDEF) {
 		SetEstLineCount(type);
 		RollBackRecord(TAB);					// roll back the read declaration line
 		return true;
@@ -79,7 +79,7 @@ BedReader::BedReader(const char* fName, FT::eType type, BYTE scoreNumb, bool msg
 	_chrMarkPos(BYTE(strlen(Chrom::Abbr))),
 	TabReader(fName, type, eAction::READ, false, msgFName, abortInval)
 {
-	if (type == FT::eType::ABED)
+	if (type == FT::ABED)
 		_getStrand = [this]() { return *StrField(StrandFieldInd) == PLUS; };
 	else			// for BED ignore strand to omit duplicates even when strand is defined
 		_getStrand = []() { return true; };
@@ -90,7 +90,7 @@ BedReader::BedReader(const char* fName, FT::eType type, BYTE scoreNumb, bool msg
 
 	const char* line1 = KeyStr(line, "track");			// check track key
 	if (line1)											// track definition line
-		if (type == FT::eType::BGRAPH) {				// defined by extention
+		if (type == FT::BGRAPH) {				// defined by extention
 			static const char* typeBGraph = BedGraphTYPE;
 			static const char* typeWiggle = WigTYPE;
 
@@ -111,7 +111,7 @@ BedReader::BedReader(const char* fName, FT::eType type, BYTE scoreNumb, bool msg
 		}
 		else SetEstLineCount();			// ordinary bed
 	else								// no track definition line
-		if (type == FT::eType::BGRAPH) {
+		if (type == FT::BGRAPH) {
 			if (!DefineWigType(line)) {
 				SetEstLineCount(type);	// real bedgraph
 				RollBackRecord(TAB);	// roll back the read data line
@@ -185,7 +185,7 @@ bool UniBedReader::CheckItem(chrlen cLen)
 		if (_rgn.Start >= cLen) { _issues[STARTOUT].Cnt++; return false; }
 		else if (_rgn.End > cLen) {
 			_issues[ENDOUT].Cnt++;
-			if (_type != FT::eType::ABED && _type != FT::eType::BAM)
+			if (_type != FT::ABED && _type != FT::BAM)
 				_rgn.End = cLen;
 			else	return false;
 		}
@@ -231,7 +231,7 @@ void UniBedReader::PrintStats(ULONG cnt)
 				_issues[DUPL].Ext = ss.str().c_str();
 			}
 			_issues[OVERL].Action = GetOverlAction();
-			if (_type == FT::eType::BED)	_issues[ENDOUT].Action = TRUNC;
+			if (_type == FT::BED)	_issues[ENDOUT].Action = TRUNC;
 
 			PrintStats(cnt, issCnt, _issues, _oinfo == eOInfo::STAT);
 		}
@@ -283,18 +283,18 @@ UniBedReader::UniBedReader(const char* fName, const FT::eType type, ChromSizes* 
 	if (prName) { dout << fName; fflush(stdout); }
 
 #ifdef _BAM
-	if (type == FT::eType::BAM)
+	if (type == FT::BAM)
 		_file = new BamReader(fName, cSizes, prName);
 	else
 #endif	//_BAM
-		if (type <= FT::eType::ABED || type == FT::eType::BGRAPH) {
+		if (type <= FT::ABED || type == FT::BGRAPH) {
 			_file = new BedReader(fName, type, scoreNumb, !prName, abortInval);
 			_type = ((BedReader*)_file)->Type();	// possible change of BGRAPH with WIG_FIX or WIG_VAR
 		}
 		else
 			Err(
 #ifndef _BAM
-				type == FT::eType::BAM ? "this build does not support bam files" :
+				type == FT::BAM ? "this build does not support bam files" :
 #endif
 				"wrong extension",
 				prName ? nullptr : fName
@@ -304,7 +304,7 @@ UniBedReader::UniBedReader(const char* fName, const FT::eType type, ChromSizes* 
 UniBedReader::~UniBedReader()
 {
 #ifdef _BAM
-	if (_type == FT::eType::BAM)
+	if (_type == FT::BAM)
 		delete (BamReader*)_file;
 	else
 #endif
@@ -348,7 +348,7 @@ FBedReader::FBedReader(const char* fName, ChromSizes* cSizes,
 	BYTE scoreNmb, eAction action, eOInfo oinfo, bool prName, bool abortInval) :
 	_isJoin(action == eAction::JOIN),
 	_overlAction(action),
-	UniBedReader(fName, FT::eType::BED, cSizes, scoreNmb, 0, oinfo, prName, true, abortInval)
+	UniBedReader(fName, FT::BED, cSizes, scoreNmb, 0, oinfo, prName, true, abortInval)
 {
 	switch (action) {
 	case eAction::ACCEPT:

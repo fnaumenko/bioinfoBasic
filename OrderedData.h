@@ -176,7 +176,7 @@ public:
 	//	@param strand: strand
 	//	@param fields: BED/WIG track fields
 	VarWigWriter(eStrand strand, const TrackFields& fields)
-		: WigWriter(FT::eType::WIG_VAR, strand, fields) {}
+		: WigWriter(FT::WIG_VAR, strand, fields) {}
 
 	// Fill IO buffer by chrom cover
 	void WriteChromData(chrid cID, const covmap& cover) override { WriteChromVarStepData(cID, cover); }
@@ -190,7 +190,7 @@ public:
 	//	@param strand: strand
 	//	@param fields: BED/WIG track fields
 	BedGrWriter(eStrand strand, const TrackFields& fields)
-		: WigWriter(FT::eType::BGRAPH, strand, fields) {}
+		: WigWriter(FT::BGRAPH, strand, fields) {}
 
 	// Fill IO buffer by chrom cover
 	void WriteChromData(chrid cID, const covmap& cover) override;

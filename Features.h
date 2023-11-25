@@ -37,7 +37,7 @@ class Features : public Items<Featr>
 
 	// Returns item's title
 	//	@param pl: if true then print in plural form
-	static const string& ItemTitle(bool pl = false) { return FT::ItemTitle(FT::eType::BED, pl); }
+	static const string& ItemTitle(bool pl = false) { return FT::ItemTitle(FT::BED, pl); }
 
 	// Returns a copy of Region
 	//	@param it: item's iterator

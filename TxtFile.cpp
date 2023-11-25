@@ -132,17 +132,16 @@ TxtFile::TxtFile(const string& fName, eAction mode, bool msgFName, bool abortInv
 	string f_name(fName);	// to add '.gz' in case of zipped
 
 	SetFlag(ZIPPED, FS::HasGzipExt(fName));
-	// check for zipped case
-	if (!IsZipped()) {
-		if (mode == eAction::READ		// assumed to exist
-		&& !FS::IsFileExist(f_name.c_str())) {
-			f_name += ZipFileExt;
-			if (!FS::IsFileExist(f_name.c_str())) {
-				Err(Err::MsgNoFile(FS::ShortFileName(fName), false), FS::DirName(fName)).Throw(abortInvalid);
-				return;
-			}
-			SetFlag(ZIPPED, true);
+	// check for zipped option
+	if (!IsZipped()
+	&& mode == eAction::READ		// assumed to exist
+	&& !FS::IsFileExist(f_name.c_str())) {
+		f_name += ZipFileExt;
+		if (!FS::IsFileExist(f_name.c_str())) {
+			Err(Err::MsgNoFile(FS::ShortFileName(fName), false), FS::DirName(fName)).Throw(abortInvalid);
+			return;
 		}
+		SetFlag(ZIPPED, true);
 	}
 	SetFlag(ABORTING, abortInvalid);
 	SetFlag(PRNAME, msgFName);
@@ -890,7 +889,7 @@ ChromDefRegions::ChromDefRegions(const string& fName, chrlen minGapLen) : _gapLe
 {
 	_fName = fName + Ext;
 	if (FS::IsFileExist(_fName.c_str())) {
-		TabReader file(_fName, FT::eType::RGN);
+		TabReader file(_fName, FT::RGN);
 		Combiner comb(minGapLen);
 		Region rgn;
 

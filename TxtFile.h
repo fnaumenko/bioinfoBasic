@@ -66,7 +66,7 @@ static class FT
 
 public:
 	// bioinfo file types
-	enum class eType {
+	enum /*class*/ eType {
 		UNDEF,	// undefined type
 		BED,	// ordinary bed
 		ABED,	// alignment bed
@@ -629,7 +629,7 @@ public:
 	//	@abortInvalid: true if invalid instance should be completed by throwing exception
 	TabReader(
 		const string& fName,
-		FT::eType type = FT::eType::UNDEF,
+		FT::eType type = FT::UNDEF,
 		eAction	mode = eAction::READ,
 		bool estLineCnt = true,
 		bool msgFName = true,

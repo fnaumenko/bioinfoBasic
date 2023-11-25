@@ -94,17 +94,17 @@ RegionWriter::RegionWriter(FT::eType ftype, eStrand strand, const TrackFields& f
 {
 	static const char* wigFormats[] = { BedGraphTYPE, WigTYPE, WigTYPE };
 	static const char* StrandCOLORS[] = { "128,128,128", "197,74,74", "0,118,188" };	// grey, red, blue; 50,130,190 - foggy blue
-	const rowlen bufLen = ftype == FT::eType::BED ?
+	const rowlen bufLen = ftype == FT::BED ?
 		1000 :		// to save BS bed with extended feilds
-		ftype == FT::eType::WIG_FIX ? 300 : 500;
+		ftype == FT::WIG_FIX ? 300 : 500;
 
 	SetLineBuff(bufLen);
 	if (fields.CommLine)	CommLineToIOBuff(*fields.CommLine);
 
 	ostringstream oss;
 	oss << "track";
-	if(ftype != FT::eType::BED)
-		oss << " type=" << wigFormats[int(ftype) - int(FT::eType::BGRAPH)];
+	if(ftype != FT::BED)
+		oss << " type=" << wigFormats[int(ftype) - int(FT::BGRAPH)];
 
 	oss << " name=\"" << FS::ShortFileName(fields.Name) << "\" ";
 	if (fields.Descr || strand != TOTAL) {
@@ -115,7 +115,7 @@ RegionWriter::RegionWriter(FT::eType ftype, eStrand strand, const TrackFields& f
 	}
 	const char* color = NULL;
 
-	if (ftype != FT::eType::BED) {
+	if (ftype != FT::BED) {
 		oss << " autoScale=on";
 		color = fields.Color ? fields.Color : StrandCOLORS[strand];
 	}

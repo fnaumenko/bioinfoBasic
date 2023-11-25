@@ -440,7 +440,7 @@ void Distrib::PrintSeq(dostream& s) const
 
 Distrib::Distrib(const char* fName)
 {
-	TabReader file(fName, FT::eType::DIST);
+	TabReader file(fName, FT::DIST);
 
 	for (int x; file.GetNextLine();)
 		if (x = file.IntField(0))	// IntField(0) returns 0 if zero field is not an integer

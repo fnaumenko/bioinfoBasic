@@ -16,7 +16,7 @@ inline int ChromSizes::CommonPrefixLength(const string& fName, BYTE extLen)
 
 void ChromSizes::Read(const string& fName)
 {
-	TabReader file(fName, FT::eType::CSIZE);	// file check already done
+	TabReader file(fName, FT::CSIZE);	// file check already done
 
 	while (file.GetNextLine()) {
 		chrid cID = Chrom::ValidateIDbyAbbrName(file.StrField(0));
@@ -90,9 +90,9 @@ ChromSizes::ChromSizes(const char* gName, BYTE customChrOpt, bool prMsg, const c
 	Chrom::SetCustomOption(customChrOpt);
 	if (gName) {
 		if (FS::IsDirExist(FS::CheckedFileDirName(gName))) {	// gName is a directory
-			_ext = FT::Ext(FT::eType::FA);
+			_ext = FT::Ext(FT::FA);
 			SetPath(gName, sPath, prMsg);
-			const string cName = _sPath + FS::LastDirName(gName) + FT::Ext(FT::eType::CSIZE);
+			const string cName = _sPath + FS::LastDirName(gName) + FT::Ext(FT::CSIZE);
 			const bool isExist = FS::IsFileExist(cName.c_str());
 			vector<chrid> cIDs;		// chrom's ID fill list
 
@@ -100,7 +100,7 @@ ChromSizes::ChromSizes(const char* gName, BYTE customChrOpt, bool prMsg, const c
 			if (!GetChromIDs(cIDs, gName)) {				// fill list from *.fa
 				_ext += ZipFileExt;			// if chrom.sizes exists, get out - we don't need a list
 				if (!isExist && !GetChromIDs(cIDs, gName))	// fill list from *.fa.gz
-					Err(Err::MsgNoFile("*", true, FT::Ext(FT::eType::FA)), gName).Throw();
+					Err(Err::MsgNoFile("*", true, FT::Ext(FT::FA)), gName).Throw();
 			}
 
 			if (isExist)	Read(cName);
