@@ -22,12 +22,11 @@ bool DataReader::SetNextChrom(chrid cID)
 
 /************************ BedReader ************************/
 
-// Reset WIG type, score index, chrom mark position offset and estimated number of lines
-void BedReader::ResetWigType(FT::eType type, BYTE scoreInd, size_t cMarkPosOffset)
+void BedReader::ResetWigType(FT::eType type, BYTE scoreInd, BYTE cMarkPosOffset)
 {
 	ResetType(type);
 	_scoreInd = scoreInd;
-	_chrMarkPos += BYTE(cMarkPosOffset);
+	_chrMarkPos += cMarkPosOffset;
 }
 
 // Inserts '0' after chrom in current line and returns point to the next decl parameter if exists
@@ -49,17 +48,14 @@ void BedReader::ResetWigType(FT::eType type, BYTE scoreInd, size_t cMarkPosOffse
 //	return false;
 //}
 
-	// Checks for Fixed or Variable step wiggle type and corrects it if found
-	//	@line: possible declaration line
-	//	return: true if Fixed or Variable step type is specified
 bool BedReader::DefineWigType(const char* line)
 {
 	FT::eType type = FT::UNDEF;
 
 	if (KeyStr(line, FT::WigFixSTEP))
-		ResetWigType(type = FT::WIG_FIX, 0, FT::WigFixSTEP.length() + 1);
+		ResetWigType(type = FT::WIG_FIX, 0, BYTE(FT::WigFixSTEP.length() + 1));
 	else if (KeyStr(line, FT::WigVarSTEP))
-		ResetWigType(type = FT::WIG_VAR, 1, FT::WigVarSTEP.length() + 1);
+		ResetWigType(type = FT::WIG_VAR, 1, BYTE(FT::WigVarSTEP.length() + 1));
 	if (type != FT::UNDEF) {
 		SetEstLineCount(type);
 		RollBackRecord(TAB);					// roll back the read declaration line

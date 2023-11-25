@@ -92,14 +92,17 @@ class BedReader : public DataReader, public TabReader
 	function<bool()> _getStrand;	// returns current item strand; different for BED and ABED
 
 	// Reset WIG type, score index, chrom mark position offset and estimated number of lines
-	void ResetWigType(FT::eType type, BYTE scoreInd, size_t cMarkPosOffset);
+	//	@param type: WIG type
+	//	@param scoreInd: new score index
+	//	@param cMarkPosOffset: additional chrom mark position offset
+	void ResetWigType(FT::eType type, BYTE scoreInd, BYTE cMarkPosOffset);
 
 	// Inserts '0' after chrom in current line and returns point to the next decl parameter if exists
 	//const char* SplitLineOnChrom();
 
 	// Checks for Fixed or Variable step wiggle type and corrects it if found
-	//	@line: possible declaration line
-	//	return: true if Fixed or Variable step type is specified
+	//	@param line: possible declaration line
+	//	@return: true if Fixed or Variable step type is specified
 	bool DefineWigType(const char* line);
 
 public:

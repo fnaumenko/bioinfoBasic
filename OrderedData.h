@@ -7,7 +7,6 @@ Last modified: 11/25/2023
 #pragma once
 
 #include "ChromData.h"
-//#include "DataReader.h"
 #include <assert.h>
 
 enum eStrand { TOTAL = 0, POS, NEG, CNT };
