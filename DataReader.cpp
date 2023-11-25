@@ -91,16 +91,13 @@ BedReader::BedReader(const char* fName, FT::eType type, BYTE scoreNumb, bool msg
 	const char* line1 = KeyStr(line, "track");			// check track key
 	if (line1)											// track definition line
 		if (type == FT::BGRAPH) {				// defined by extention
-			static const char* typeBGraph = BedGraphTYPE;
-			static const char* typeWiggle = WigTYPE;
-
 			// ** define type by track definition line1
 			line1 = CheckSpec(line1 + 1, "type=");
 			const size_t len = strchr(line1, SPACE) - line1;	// the length of wiggle type in definition line1
 			if (!len)	ThrowExcept("track type is not specified");
-			if (strncmp(line1, typeBGraph, max(len, strlen(typeBGraph)))) {		// not BedGraph; be fit len == strlen(typeBGraph)
+			if (strncmp(line1, BedGraphTYPE, max(len, strlen(BedGraphTYPE)))) {		// not BedGraph; be fit len == strlen(typeBGraph)
 				// check for 'wiggle_0'
-				if (strncmp(line1, typeWiggle, max(len, strlen(typeWiggle))))
+				if (strncmp(line1, WigTYPE, max(len, strlen(WigTYPE))))
 					ThrowExcept("type '" + string(line1, len) + "' does not supported");
 				// fixed or variable step
 				line1 = GetNextLine(false);

@@ -2,14 +2,13 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/22/2023
+Last modified: 11/25/2023
 ***********************************************************/
 #pragma once
 
 #include "TxtFile.h"
 #include <map>
 #include <functional>
-//#include <variant>
 
 static const char* sTotal = "total";
 
