@@ -2,12 +2,12 @@
 OrderedData.h
 Provides chromosomally sorted data functionality
 2022 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/23/2023
+Last modified: 11/25/2023
 ***********************************************************/
 #pragma once
 
 #include "ChromData.h"
-#include "DataReader.h"
+//#include "DataReader.h"
 #include <assert.h>
 
 enum eStrand { TOTAL = 0, POS, NEG, CNT };
@@ -85,9 +85,9 @@ public:
 	void AddFragPos(const Region& frag) { AddPos(frag.Centre()); }
 
 	// Adds Read's position to accumulate the density
-	//	@param tag: added Read
+	//	@param read: added Read
 	//	@param reverse: if true then add complemented read
-	void AddReadPos(const Read& tag, bool reverse) { AddPos(reverse ? tag.End() : tag.Start()); }
+	void AddReadPos(const Region& read, bool reverse) { AddPos(reverse ? read.End : read.Start); }
 };
 
 //=====  WRITERS
@@ -410,9 +410,9 @@ public:
 	void AddFragDens(const Region& frag) { _data->DataByInd().AddFragPos(frag); }
 
 	// For current chrom adds SE read to total coverage
-	//	@param tag: added read
+	//	@param read: added read
 	//	@param reverse: true if read is reversed (neg strand)
-	void AddReadDens(const Read& tag, bool reverse) { _data->DataByInd().AddReadPos(tag, reverse); }
+	void AddReadDens(const Region& read, bool reverse) { _data->DataByInd().AddReadPos(read, reverse); }
 
 	// Prints output file names separated by comma
 	void PrintWritersName() const { if (_primer._writers)	_primer._writers->PrintNames(); }

@@ -533,7 +533,7 @@ public:
 #ifndef _WIGREG
 
 // 'Read' represents Read (with name and score in case of _VALIGN) as item
-class Read
+class Read : public Region
 {
 public:
 	static const readlen VarMinLen = 20;	// minimum Read length in variable Read mode
@@ -559,7 +559,7 @@ private:
 	static pCopyRead CopyRead[2];
 
 	const char* _seq;
-	Region	_rgn;
+	//Region	_rgn;
 
 	// Copies complemented Read into dst
 	void CopyComplement(char* dst) const;
@@ -583,19 +583,19 @@ public:
 	static void FillBySeqQual(char* dst, readlen rlen) { memset(dst, SeqQuality, rlen); }
 
 	// Constructor by sequence, start position and length
-	Read(const char* seq, chrlen pos, readlen len) : _seq(seq) { _rgn.Set(pos, pos + len); }
+	Read(const char* seq, chrlen pos, readlen len) : _seq(seq) { Set(pos, pos + len); }
 
 	// Gets Read's region
 	//const Region& Rgn() const { return _rgn; }
 
 	// Gets Read's length
-	readlen Length() const { return _rgn.Length(); }
+	//readlen Length() const { return _rgn.Length(); }
 
 	// Gets Read's start position
-	chrlen Start() const { return _rgn.Start; }
+	//chrlen Start() const { return _rgn.Start; }
 
 	// Gets Read's end position
-	chrlen End() const { return _rgn.End; }
+	//chrlen End() const { return _rgn.End; }
 
 	// Gets Read's sequence
 	const char* SeqMode() const { return _seq; }
