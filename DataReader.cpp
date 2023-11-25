@@ -56,10 +56,10 @@ bool BedReader::DefineWigType(const char* line)
 {
 	FT::eType type = FT::UNDEF;
 
-	if (KeyStr(line, WigFixSTEP))
-		ResetWigType(type = FT::WIG_FIX, 0, WigFixSTEP.length() + 1);
-	else if (KeyStr(line, WigVarSTEP))
-		ResetWigType(type = FT::WIG_VAR, 1, WigVarSTEP.length() + 1);
+	if (KeyStr(line, FT::WigFixSTEP))
+		ResetWigType(type = FT::WIG_FIX, 0, FT::WigFixSTEP.length() + 1);
+	else if (KeyStr(line, FT::WigVarSTEP))
+		ResetWigType(type = FT::WIG_VAR, 1, FT::WigVarSTEP.length() + 1);
 	if (type != FT::UNDEF) {
 		SetEstLineCount(type);
 		RollBackRecord(TAB);					// roll back the read declaration line
@@ -95,9 +95,9 @@ BedReader::BedReader(const char* fName, FT::eType type, BYTE scoreNumb, bool msg
 			line1 = CheckSpec(line1 + 1, "type=");
 			const size_t len = strchr(line1, SPACE) - line1;	// the length of wiggle type in definition line1
 			if (!len)	ThrowExcept("track type is not specified");
-			if (strncmp(line1, BedGraphTYPE, max(len, strlen(BedGraphTYPE)))) {		// not BedGraph; be fit len == strlen(typeBGraph)
+			if (strncmp(line1, FT::BedGraphTYPE, max(len, strlen(FT::BedGraphTYPE)))) {		// not BedGraph; be fit len == strlen(typeBGraph)
 				// check for 'wiggle_0'
-				if (strncmp(line1, WigTYPE, max(len, strlen(WigTYPE))))
+				if (strncmp(line1, FT::WigTYPE, max(len, strlen(FT::WigTYPE))))
 					ThrowExcept("type '" + string(line1, len) + "' does not supported");
 				// fixed or variable step
 				line1 = GetNextLine(false);

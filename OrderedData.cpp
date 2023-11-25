@@ -92,7 +92,7 @@ const char* RegionWriter::sGRAY = "Silver";	// "175,175,175";
 RegionWriter::RegionWriter(FT::eType ftype, eStrand strand, const TrackFields& fields)
 	: TxtWriter(ftype, fields.Name, TAB)
 {
-	static const char* wigFormats[] = { BedGraphTYPE, WigTYPE, WigTYPE };
+	static const char* wigFormats[] = { FT::BedGraphTYPE, FT::WigTYPE, FT::WigTYPE };
 	static const char* StrandCOLORS[] = { "128,128,128", "197,74,74", "0,118,188" };	// grey, red, blue; 50,130,190 - foggy blue
 	const rowlen bufLen = ftype == FT::BED ?
 		1000 :		// to save BS bed with extended feilds
@@ -143,14 +143,14 @@ rowlen RegionWriter::AddChromToLine(chrid cID)
 void WigWriter::WriteFixStepDeclLine(chrid cID, chrlen pos)
 {
 	LineSetOffset();
-	StrToIOBuff(WigFixSTEP + ChromMarker(cID) + " start=" + to_string(pos));
+	StrToIOBuff(FT::WigFixSTEP + ChromMarker(cID) + " start=" + to_string(pos));
 }
 
 void WigWriter::WriteChromVarStepData(chrid cID, const covmap& cover)
 {
 	// write declaration line
 	LineSetOffset();
-	StrToIOBuff(WigVarSTEP + ChromMarker(cID) + " span=1");
+	StrToIOBuff(FT::WigVarSTEP + ChromMarker(cID) + " span=1");
 
 	// write data lines
 	for (const auto& f : cover) {

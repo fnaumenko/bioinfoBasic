@@ -1,6 +1,6 @@
 /**********************************************************
 TxtFile.cpp
-Last modified: 11/24/2023
+Last modified: 11/25/2023
 ***********************************************************/
 
 #include "TxtFile.h"
@@ -19,6 +19,11 @@ const string FT::Interval = "interval";
 const string FT::Intervals = "intervals";
 const string FT::Read = "read";
 const string FT::Reads = "reads";
+
+const char* FT::BedGraphTYPE = "bedGraph";
+const char* FT::WigTYPE = "wiggle_0";
+const string FT::WigVarSTEP = "variableStep";
+const string FT::WigFixSTEP = "fixedStep";
 
 const FT::fTypeAttr FT::TypeAttrs[] = {
 	{ "",		strEmpty,	strEmpty,	Mutex::eType::NONE,	 TabReaderPar(1, 1) },	// undefined type

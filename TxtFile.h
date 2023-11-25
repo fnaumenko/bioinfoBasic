@@ -2,7 +2,7 @@
 TxtFile.h
 Provides read|write basic bioinfo text files functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/24/2023
+Last modified: 11/25/2023
 ***********************************************************/
 #pragma once
 
@@ -13,11 +13,6 @@ Last modified: 11/24/2023
 // Otherwise the behaviour is unpredictable.
 
 typedef short rowlen;	// type: length of row in TxtFile
-
-static const char* BedGraphTYPE = "bedGraph";
-static const char* WigTYPE = "wiggle_0";
-static const string WigVarSTEP = "variableStep";
-static const string WigFixSTEP = "fixedStep";
 
 // 'TabReaderPar' keeps basic parameters for TabReader
 struct TabReaderPar
@@ -84,6 +79,11 @@ public:
 		INI		// isChIP ini file type
 #endif
 	};
+
+	static const char* BedGraphTYPE;
+	static const char* WigTYPE;
+	static const string WigVarSTEP;
+	static const string WigFixSTEP;
 
 	// Gets file type
 	//	@fName: file name (with case insensitive extension)
