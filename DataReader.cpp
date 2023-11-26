@@ -212,7 +212,7 @@ void UniBedReader::PrintStats(size_t cnt)
 			if (_MaxDuplCnt == BYTE_UNDEF)	_issues[DUPL].Action = ACCEPT;
 			else if (_MaxDuplCnt) {
 				stringstream ss(" except for the first ");
-				ss << _MaxDuplCnt;
+				ss << int(_MaxDuplCnt);
 				_issues[DUPL].Extra = ss.str();
 			}
 			_issues[OVERL].Action = GetOverlAction();
