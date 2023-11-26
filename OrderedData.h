@@ -126,7 +126,7 @@ protected:
 
 	RegionWriter(FT::eType ftype, eStrand strand, const TrackFields& fields);
 
-	rowlen AddChromToLine(chrid cID);
+	reclen AddChromToLine(chrid cID);
 
 	virtual void WriteChromData(chrid cID, const covmap& cover) {};
 

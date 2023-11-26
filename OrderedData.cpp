@@ -94,7 +94,7 @@ RegionWriter::RegionWriter(FT::eType ftype, eStrand strand, const TrackFields& f
 {
 	static const char* wigFormats[] = { FT::BedGraphTYPE, FT::WigTYPE, FT::WigTYPE };
 	static const char* StrandCOLORS[] = { "128,128,128", "197,74,74", "0,118,188" };	// grey, red, blue; 50,130,190 - foggy blue
-	const rowlen bufLen = ftype == FT::BED ?
+	const reclen bufLen = ftype == FT::BED ?
 		1000 :		// to save BS bed with extended feilds
 		ftype == FT::WIG_FIX ? 300 : 500;
 
@@ -129,7 +129,7 @@ RegionWriter::RegionWriter(FT::eType ftype, eStrand strand, const TrackFields& f
 	StrToIOBuff(oss.str());
 }
 
-rowlen RegionWriter::AddChromToLine(chrid cID)
+reclen RegionWriter::AddChromToLine(chrid cID)
 {
 	LineSetOffset();
 	return LineAddStr(Chrom::AbbrName(cID));
@@ -193,7 +193,7 @@ void BedGrWriter::WriteChromData(chrid cID, const covmap& cover)
 {
 	if (cover.empty())	return;
 
-	const rowlen offset = AddChromToLine(cID);
+	const reclen offset = AddChromToLine(cID);
 
 	auto it0 = cover.cbegin(), it = it0;
 	const auto end = cover.cend();

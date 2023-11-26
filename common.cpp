@@ -798,7 +798,7 @@ const char* Err::_msgs[] = {
 	/* F_CLOSE */	"could not close",
 	/* F_READ */	"could not read",
 	/* F_EMPTY */	"empty",
-	/* F_BIGLINE */	"buffer is less than length of line",
+	/* F_BIGLINE */	"record length exceeds buffer limit",
 	/* FZ_MEM */	"not enough internal gzip buffer",
 	/* FZ_OPEN */	"wrong reading mode READ_ANY for gzip file",
 	/* FZ_BUILD */	"this build does not support gzip files",

@@ -18,11 +18,11 @@ bool ChromSeq::Init(const string& fName, ChromDefRegions& rgns, bool fill)
 		try { _seq = new char[_len]; }
 		catch (const bad_alloc&) { Err(Err::F_MEM, fName.c_str()).Throw(); }
 		const char* line = file.Line();		// First line is readed by FaReader()
-		chrlen linelen;
+		chrlen lineLen;
 		_len = 0;
 
-		do	memcpy(_seq + _len, line, linelen = file.LineLength()),
-			_len += linelen;
+		do	memcpy(_seq + _len, line, lineLen = file.LineLength()),
+			_len += lineLen;
 		while (line = file.NextGetLine());
 	}
 	else if (getN)	while (file.NextGetLine());	// just to fill chrom def regions
