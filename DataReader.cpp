@@ -1,16 +1,15 @@
 /**********************************************************
 DataReader.cpp
-Last modified: 11/22/2023
+Last modified: 11/26/2023
 ***********************************************************/
 
 #include "DataReader.h"
 #include "ChromData.h"
 
+const BYTE BYTE_UNDEF = BYTE(-1);
+
 /************************ DataReader ************************/
 
-// Sets the next chromosome as the current one if they are different
-//	@cID: next chrom ID
-//	@return: true, if new chromosome is set as current one
 bool DataReader::SetNextChrom(chrid cID)
 {
 	if (cID == _cID || cID == Chrom::UnID)	return false;
@@ -186,7 +185,7 @@ bool UniBedReader::CheckItem(chrlen cLen)
 	_strand = _file->ItemStrand();				// the only reading strand from file
 	if (_rgn0 == _rgn && _strand0 == _strand)	// duplicates
 		_cDuplCnt++,
-		res = _MaxDuplCnt == vUNDEF || ++_duplCnt < _MaxDuplCnt;
+		res = _MaxDuplCnt == BYTE_UNDEF || ++_duplCnt < _MaxDuplCnt;
 	else {
 		_duplCnt = 0;
 		_lenFreq[_file->ItemLength()]++;
@@ -196,10 +195,7 @@ bool UniBedReader::CheckItem(chrlen cLen)
 	return res;
 }
 
-// Prints count of items
-//	@cnt: total count of items
-//	@title: item title
-void UniBedReader::PrintItemCount(ULONG cnt, const string& title)
+void UniBedReader::PrintItemCount(size_t cnt, const string& title)
 {
 	dout << SepCl;
 	if (Chrom::CustomID() == Chrom::UnID)
@@ -208,16 +204,14 @@ void UniBedReader::PrintItemCount(ULONG cnt, const string& title)
 		dout << cnt << SPACE << title << " per " << Chrom::ShortName(Chrom::CustomID());
 }
 
-// Prints items statistics
-//	@cnt: total count of items
-void UniBedReader::PrintStats(ULONG cnt)
+void UniBedReader::PrintStats(size_t cnt)
 {
 	PrintItemCount(cnt, FT::ItemTitle(_type, cnt != 1));
 	if (cnt) {
-		ULONG issCnt = 0;
-		for (const Issue& iss : _issues)	issCnt += ULONG(iss.Cnt);
+		size_t issCnt = 0;
+		for (const Issue& iss : _issues)	issCnt += iss.Cnt;
 		if (issCnt) {
-			if (_MaxDuplCnt == vUNDEF)		_issues[DUPL].Action = ACCEPT;
+			if (_MaxDuplCnt == BYTE_UNDEF)	_issues[DUPL].Action = ACCEPT;
 			else if (_MaxDuplCnt) {
 				stringstream ss(" except for the first ");
 				ss << _MaxDuplCnt;
@@ -233,21 +227,16 @@ void UniBedReader::PrintStats(ULONG cnt)
 };
 
 // Prints part number and percent of total
-//	@part: part number
-//	@total: total number
-//	@fwidth: field width
-void PrintValAndPercent(ULONG part, ULONG total, BYTE fwidth = 1)
+//	@param part: part number
+//	@param total: total number
+//	@param fwidth: field width
+void PrintValAndPercent(size_t part, size_t total, BYTE fwidth = 1)
 {
 	dout << setfill(SPACE) << setw(fwidth) << SPACE;
 	dout << part << sPercent(part, total, 2, 0, true);
 }
 
-// Prints items statistics
-//	@cnt: total count of items
-//	@issCnt: count of item issues
-//	@issues: issue info collection
-//	@prStat: it TRUE then print issue statsistics
-void UniBedReader::PrintStats(ULONG cnt, ULONG issCnt, const vector<Issue>& issues, bool prStat)
+void UniBedReader::PrintStats(size_t cnt, size_t issCnt, const vector<Issue>& issues, bool prStat)
 {
 	static const char* sActions[] = { "accepted", "truncated", "joined", "omitted" };
 	const BYTE pWidth = 4;		// padding width
@@ -270,8 +259,14 @@ void UniBedReader::PrintStats(ULONG cnt, ULONG issCnt, const vector<Issue>& issu
 };
 
 UniBedReader::UniBedReader(const char* fName, const FT::eType type, ChromSizes* cSizes,
-	BYTE scoreNumb, char dupLevel, eOInfo oinfo, bool prName, bool checkSorted, bool abortInval) :
-	_type(type), _MaxDuplCnt(dupLevel), _checkSorted(checkSorted), _abortInv(abortInval), _oinfo(oinfo), _cSizes(cSizes)
+	BYTE scoreNumb, BYTE dupLevel, eOInfo oinfo,
+	bool prName, bool checkSorted, bool abortInval) :
+	_type(type),
+	_MaxDuplCnt(dupLevel), 
+	_checkSorted(checkSorted), 
+	_abortInv(abortInval), 
+	_oinfo(oinfo), 
+	_cSizes(cSizes)
 {
 	if (prName) { dout << fName; fflush(stdout); }
 

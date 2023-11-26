@@ -4,8 +4,8 @@ Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
 Last modified: 11/24/2023
 ***********************************************************/
-
 #pragma once
+
 #ifndef _COMMON_H
 #define _COMMON_H
 
@@ -210,8 +210,10 @@ int RightOnePos(int n);
 //	return: number of digist without minus symbol or 0 if value is 0
 int DigitsCount (LLONG val, bool isLocale = false);
 
-// Returns percent of @part relatively @total
-inline float Percent(ULLONG part, ULLONG total) { return total ? 100.f * part / total : 0.f; }
+// Returns percent of part value relatively total value
+//	@param part: part of the total value
+//	@param total: total value
+inline float Percent(size_t part, size_t total) { return total ? 100.f * part / total : 0.f; }
 
 // Returns string represents the percent of part relatively total
 //	@percent: value of percent
@@ -219,19 +221,16 @@ inline float Percent(ULLONG part, ULLONG total) { return total ? 100.f * part / 
 //	if count of value's mapped digits is more then that, printed "<X%", or exactly by default
 //	@fieldWith: displayed width of value and '%' or '<' sign (excluding parentheses), or exactly if 0;
 //	@parentheses: if true then parenthesize the value (not considering fieldWith)
-//string sPercent(float percent, BYTE precision=0, BYTE fieldWith=0, bool parentheses=false);
 string PercentToStr(float percent, BYTE precision = 0, BYTE fieldWith = 0, bool parentheses = false);
 
 // Returns string represents the percent of part relatively total
-//	@part: value represents desired %
-//	@total: value represents 100%
-//	@precision: count of mapped digits; 
-//	if count of value's mapped digits is more then that (too little percent), printed "<n%"
-//	or exactly by default
-//	@fieldWith: the width of the display field insine parentheses or exactly by default;
-//	should include a '%' mark
-//	@parentheses: if true parenthesize the value
-inline string sPercent(ULONG part, ULONG total,	BYTE precision=0, BYTE fieldWith=0, bool parentheses=false) {
+//	@param part: value represents desired %
+//	@param total: value represents 100%
+//	@param precision: count of mapped digits; 
+//	if count of value's mapped digits is more then that (too little percent), printed "<n%" or exactly by default
+//	@param fieldWith: the width of the display field insine parentheses or exactly by default; should include a '%' mark
+//	@param parentheses: if true parenthesize the value
+inline string sPercent(size_t part, size_t total, BYTE precision=0, BYTE fieldWith=0, bool parentheses=false) {
 	return PercentToStr(Percent(part, total), precision, fieldWith, parentheses);
 }
 

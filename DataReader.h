@@ -2,7 +2,7 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/25/2023
+Last modified: 11/26/2023
 ***********************************************************/
 #pragma once
 
@@ -28,7 +28,7 @@ protected:
 	int	_cID = Chrom::UnID;			// current readed chrom ID; int for BAM PI compatibility
 
 	// Sets the next chromosome as the current one if they are different
-	//	@cID: next chrom ID
+	//	@param cID: next chrom ID
 	//	@return: true, if new chromosome is set as current one
 	bool SetNextChrom(chrid cID);
 
@@ -268,7 +268,7 @@ public:
 
 	// Ñonsolidated issue information; public becauseod use in CallDist (class FragDist)
 	struct Issue {
-		ULONG	Cnt = 0;				// total number of issue cases
+		size_t	Cnt = 0;				// total number of issue cases
 		const char* Title;				// issue description
 		const char* Ext = nullptr;		// extension of treatment description
 		eAction Action = eAction::OMIT;	// issue treatment
@@ -278,15 +278,15 @@ public:
 
 private:
 	FT::eType _type;			// should be const, but can be edited (from BEDGRAPF to WIGGLE)
-	const char	_MaxDuplCnt;	// max allowed number of duplicates; -1 if keep all
+	const BYTE	_MaxDuplCnt;	// max allowed number of duplicates; BYTE_UNDEF if keep all
 	const bool	_abortInv;		// true if invalid instance should be completed by throwing exception
 	const eOInfo _oinfo;		// level of output stat info
 
 	chrid	_cCnt = 0;			// number of readed chroms
 	Region	_rgn0{ 0,0 };		// previous item's region
 	Region	_rgn{ 0,0 };		// current item's region
-	ULONG	_cDuplCnt = 0;		// number of duplicates per chrom; the first 'originals' are not counted
-	char	_duplCnt = 0;		// current number of duplicates
+	size_t	_cDuplCnt = 0;		// number of duplicates per chrom; the first 'originals' are not counted
+	BYTE	_duplCnt = 0;		// current number of duplicates
 	bool	_strand = true;		// current item's strand
 	bool	_strand0 = true;	// previous item's strand; first sorted read is always negative
 	bool	_checkSorted = true;// checking for unsorted items 
@@ -310,8 +310,8 @@ private:
 	virtual eAction GetOverlAction() const { return eAction::ACCEPT; }
 
 	// Prints items statistics
-	//	@cnt: total count of items
-	void PrintStats(ULONG cnt);
+	//	@param cnt: total count of items
+	void PrintStats(size_t cnt);
 
 	// Returns chrom size
 	//	Defined in cpp because of call in template function (otherwise ''ChromSize' is no defined')
@@ -341,29 +341,30 @@ public:
 	static bool IsTimer;	// if true then manage timer by Timer::Enabled, otherwise no timer
 
 	// Prints count of items
-	//	@cnt: total count of items
-	//	@title: item title
-	static void PrintItemCount(ULONG cnt, const string& title);
+	//	@param cnt: total count of items
+	//	@param title: item title
+	static void PrintItemCount(size_t cnt, const string& title);
 
 	// Prints items statistics
-	//	@cnt: total count of items
-	//	@issCnt: count of item issues
-	//	@issues: issue info collection
-	//	@prStat: it TRUE then print issue statsistics
-	static void PrintStats(ULONG cnt, ULONG issCnt, const vector<Issue>& issues, bool prStat);
+	//	@param cnt: total count of items
+	//	@param issCnt: count of item issues
+	//	@param issues: issue info collection
+	//	@param prStat: it TRUE then print issue statsistics
+	static void PrintStats(size_t cnt, size_t issCnt, const vector<Issue>& issues, bool prStat);
 
 	// Creates new instance for reading and open file
 	//	@param fName: file name
 	//	@param type: file type
 	//	@param cSizes: chrom sizes
 	//	@param scoreNumb: number of 'score' filed (0 by default for ABED and BAM)
-	//	@param dupLevel: number of additional duplicates allowed; -1 - keep all additional duplicates
+	//	@param dupLevel: number of additional duplicates allowed; BYTE_UNDEF - keep all additional duplicates
 	//	@param oinfo: output stat info level
 	//	@param prName: true if file name should be printed unconditionally
 	//	@param checkSorted: true if items should be sorted within chrom
 	//	@param abortInval: true if invalid instance should be completed by throwing exception
 	UniBedReader(const char* fName, const FT::eType type, ChromSizes* cSizes,
-		BYTE scoreNumb, char dupLevel, eOInfo oinfo, bool prName, bool checkSorted, bool abortInval);
+		BYTE scoreNumb, BYTE dupLevel, eOInfo oinfo, 
+		bool prName, bool checkSorted, bool abortInval);
 
 	// explicit destructor
 	~UniBedReader();
@@ -374,7 +375,7 @@ public:
 	{
 		const bool setCustom = Chrom::CustomID() != Chrom::UnID;	// 	chrom is specified by user
 		size_t	cItemCnt = 0;					// count of chrom entries
-		ULONG	tItemCnt = 0;					// total count of entries
+		size_t	tItemCnt = 0;					// total count of entries
 		chrid cID = Chrom::UnID, nextcID = cID;	// current, next chrom
 		chrlen	cLen = 0;						// current chrom length
 		bool skipChrom = false;
@@ -461,16 +462,15 @@ public:
 	const string CondFileName() const { return _file->CondFileName(); }
 
 	// Returns number of duplicated items in current chrom (without the first 'original')
-	ULONG DuplCount() const { return _cDuplCnt; }
+	size_t DuplCount() const { return _cDuplCnt; }
 
 	// Returns total number of duplicate items (without the first 'original')
-	ULONG DuplTotalCount() const {
+	size_t DuplTotalCount() const {
 		return _issues[DUPL].Cnt + _cDuplCnt;	// _cDuplCnt separate because the last chrom is not counted in a loop
 	}
 };
 
 #ifdef _READS
-
 class RBedReader : public UniBedReader
 {
 	mutable readlen _rLen = 0;		// most frequent (common) read length
@@ -479,13 +479,13 @@ public:
 	// Creates new instance for reading and open file
 	//	@param fName: file name
 	//	@param cSizes: chrom sizes
-	//	@param dupLevel: number of additional duplicates allowed; -1 - keep all additional duplicates
+	//	@param dupLevel: number of additional duplicates allowed; BYTE_UNDEF - keep all additional duplicates
 	//	@param oinfo: verbose level
 	//	@param prName: true if file name should be printed unconditionally
 	//	@param checkSorted: true if reads should be sorted within chrom
 	//	@param abortInval: true if invalid instance should be completed by throwing exception
-	RBedReader(const char* fName, ChromSizes* cSizes,
-		char dupLevel, eOInfo oinfo, bool prName, bool checkSorted = true, bool abortInval = true) :
+	RBedReader(const char* fName, ChromSizes* cSizes, BYTE dupLevel, 
+		eOInfo oinfo, bool prName, bool checkSorted = true, bool abortInval = true) :
 		UniBedReader(fName, FT::GetType(fName, true), cSizes, 0, dupLevel, oinfo, prName, checkSorted, abortInval)
 	{}
 
@@ -496,7 +496,6 @@ public:
 	// Returns true if alignment part of paired-end read
 	bool IsPairedRead() const { return BaseFile().IsPairedItem(); }
 };
-
 #endif	// _READS
 #ifdef _FEATURES
 
