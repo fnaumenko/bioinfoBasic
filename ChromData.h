@@ -2,7 +2,7 @@
 ChromData.h
 Provides chromosomes data functionality
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/22/2023
+Last modified: 11/26/2023
 ***********************************************************/
 #pragma once
 
@@ -12,6 +12,8 @@ Last modified: 11/22/2023
 
 //#define	MY_DEBUG
 #define	CID(it)	(it)->first
+
+const BYTE BYTE_UNDEF = BYTE(-1);
 
 // 'ChromMap'
 template <typename T> class ChromMap

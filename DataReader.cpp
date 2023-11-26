@@ -6,8 +6,6 @@ Last modified: 11/26/2023
 #include "DataReader.h"
 #include "ChromData.h"
 
-const BYTE BYTE_UNDEF = BYTE(-1);
-
 /************************ DataReader ************************/
 
 bool DataReader::SetNextChrom(chrid cID)

@@ -2,7 +2,7 @@
 Feature.h
 BED feature and features collection
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/24/2023
+Last modified: 11/26/2023
 ***********************************************************/
 #pragma once
 
@@ -19,7 +19,7 @@ struct Featr : public Region
 
 #ifdef MY_DEBUG
 	void Print() const { cout << Start << TAB << End << TAB << Value << LF; }
-#endif	// MY_DEBUG
+#endif
 };
 
 // 'Features' represents a collection of crhoms features
@@ -110,7 +110,7 @@ public:
 	//	@param cLen: chromosome's  length
 	//	@param cnt: last chromosome's items count
 	//	@param tCnt: total items count
-	void operator()(chrid cID, chrlen cLen, size_t cnt, ULONG tCnt) { AddChrom(cID, cnt); }
+	void operator()(chrid cID, chrlen cLen, size_t cnt, size_t tCnt) { AddChrom(cID, cnt); }
 
 	// Gets chromosome's feature by ID
 	//	@param cID: chromosome's ID
