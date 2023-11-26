@@ -268,9 +268,9 @@ public:
 
 	// Ñonsolidated issue information; public becauseod use in CallDist (class FragDist)
 	struct Issue {
-		size_t	Cnt = 0;				// total number of issue cases
-		const char* Title;				// issue description
-		const char* Ext = nullptr;		// extension of treatment description
+		const char* Title;			// issue description
+		string	Extra = strEmpty;	// addition to issue description
+		size_t	Cnt = 0;			// total number of issue cases
 		eAction Action = eAction::OMIT;	// issue treatment
 
 		Issue(const char* title) : Title(title) {}

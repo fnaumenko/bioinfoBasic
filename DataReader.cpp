@@ -213,7 +213,7 @@ void UniBedReader::PrintStats(size_t cnt)
 			else if (_MaxDuplCnt) {
 				stringstream ss(" except for the first ");
 				ss << _MaxDuplCnt;
-				_issues[DUPL].Ext = ss.str().c_str();
+				_issues[DUPL].Extra = ss.str();
 			}
 			_issues[OVERL].Action = GetOverlAction();
 			if (_type == FT::BED)	_issues[ENDOUT].Action = TRUNC;
@@ -245,7 +245,7 @@ void UniBedReader::PrintStats(size_t cnt, size_t issCnt, const vector<Issue>& is
 			if (prStat) {
 				PrintValAndPercent(iss.Cnt, cnt, pWidth);
 				dout << SPACE << iss.Title << SepCl << sActions[iss.Action];
-				if (iss.Ext)	dout << iss.Ext;
+				if (iss.Extra.length())	dout << iss.Extra;
 				dout << LF;
 			}
 			if (iss.Action <= UniBedReader::eAction::TRUNC)
