@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 11/24/2023
+Last modified: 11/26/2023
 ***********************************************************/
 
 #include "common.h"
@@ -32,11 +32,7 @@ int RightOnePos(int n)
 	return pos;
 }
 
-// Gets number of digist in a integral value
-//	@val: integral value
-//	@isLocale: if true then adds number of '1000' separators
-//	return: number of digist without minus symbol or 0 if value is 0
-int DigitsCount(LLONG val, bool isLocale)
+int DigitsCount(size_t val, bool isLocale)
 {
 	int res = 0;
 	for (; val; val /= 10, res++);

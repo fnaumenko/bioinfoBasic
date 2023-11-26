@@ -205,10 +205,10 @@ int OnesCount(int n);
 int RightOnePos(int n);
 
 // Gets number of digist in a integral value
-//	@val: integral value
-//	@isLocale: if true then adds number of '1000' separators
-//	return: number of digist without minus symbol or 0 if value is 0
-int DigitsCount (LLONG val, bool isLocale = false);
+//	@param val: integral value
+//	@param isLocale: if true then adds number of '1000' separators
+//	@return: number of digist without minus symbol or 0 if value is 0
+int DigitsCount (size_t val, bool isLocale = false);
 
 // Returns percent of part value relatively total value
 //	@param part: part of the total value
