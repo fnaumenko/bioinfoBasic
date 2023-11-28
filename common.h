@@ -91,7 +91,7 @@ typedef BYTE		chrid;		// type number of chromosome
 typedef uint16_t	readlen;	// type length of Read
 typedef uint32_t	chrlen;		// type length of chromosome
 typedef chrlen		fraglen;	// type length of fragment
-typedef uint64_t	genlen;		// type length of genome
+typedef chrlen		genlen;		// type length of genome
 
 #define	CHRLEN_UNDEF	-1			// undefined length of chromosome
 #define	CHRLEN_MAX		LONG_MAX //-1	// max length of chromosome

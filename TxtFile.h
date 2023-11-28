@@ -164,8 +164,6 @@ private:
 	mutable short _flag;	// bitwise storage for signs included in eFlag
 
 protected:
-	//const bufflen buffLenUNDEF = -1;	// ???
-
 	void* _stream;			// FILE* (for unzipped file) or gzFile (for zipped file)
 	char* _buff;			// basic I/O (read/write) buffer
 	bufflen	_buffLen;		// the length of the basic I/O buffer
