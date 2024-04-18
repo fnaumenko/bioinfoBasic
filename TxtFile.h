@@ -199,11 +199,11 @@ private:
 	//	@param fName: valid full name of file
 	//	@param mode: opening mode
 	//	@param fStream: clonable file stream or NULL
-	//	@return: true is success, otherwise false
+	//	@returns: true is success, otherwise false
 	bool SetBasic(const string& fName, eAction mode, void* fStream);
 
 	// Allocates memory for the I/O buffer with checking
-	//	@return: true is success, otherwise false
+	//	@returns: true is success, otherwise false
 	bool CreateIOBuff();
 
 	//void operator = (const TxtFile&); //assignment prohibition
@@ -278,14 +278,14 @@ class TxtReader : public TxtFile
 
 	// Reads next block
 	//	@param offset: shift of start reading position
-	//	@return: 0 if file is finished; -1 if unsuccess reading; otherwhise number of readed chars
+	//	@returns: 0 if file is finished; -1 if unsuccess reading; otherwhise number of readed chars
 	int ReadBlock(const bufflen offset);
 
 	// Checks the actually read block to see if it exceeds the I/O buffer limit.
 	// If block is complete (exceeds buffer limit), moves the misplaced remainder at the beginning if the buffer.
 	//	@param currLinePos: current reading position
 	//	@param blankLineCnt: number of empty lines read
-	//	@return true if block is complete
+	//	@returns true if block is complete
 	bool CompleteBlock(bufflen currLinePos, bufflen blankLineCnt);
 
 	// Fills I/O buffer with 0, beginning from @offset position
@@ -413,7 +413,7 @@ private:
 
 	// Allocates memory for write line buffer with checking
 	//	@param len: size of the allocated buffer
-	//	@return: true if successful
+	//	@returns: true if successful
 	bool CreateLineBuff(reclen len);
 
 	// Closes adding record to the I/O buffer: set current rec position and increases rec counter
@@ -438,7 +438,7 @@ protected:
 	//	@param src: pointer to the block of chars
 	//	@param len: number of characters
 	//	@param addDelim: if true then adds delimiter and increases current position
-	//	@return: new current position
+	//	@returns: new current position
 	reclen LineAddChars(const char* src, reclen len, bool addDelim = true);
 
 	// Constructs an instance: allocates I/O buffer, opens an assigned file.
@@ -482,7 +482,7 @@ protected:
 	// Copies the string to the current position of the line write buffer
 	//	@param str: string to be copied
 	//	@param addDelim: if true then adds delimiter and increases current position
-	//	@return: new current position
+	//	@returns: new current position
 	reclen LineAddStr(const string& str, bool addDelim = true) {
 		return LineAddChars(str.c_str(), reclen(str.length()), addDelim);
 	}
@@ -590,7 +590,7 @@ class TabReader : public TxtReader
 
 	// Checks if filed is valid, otherwise throws an exception
 	//	@param fInd: field index
-	//	@return: true if field is valid
+	//	@returns: true if field is valid
 	bool IsFieldValid(BYTE fInd) const;
 
 	// Initializes new instance
@@ -653,19 +653,19 @@ public:
 	// Returns a pointer to the substring defined by key
 	//	@param str: null-terminated string to search the key
 	//	@param key: string to search for
-	//	@return: a pointer to the null-terminated substring after key, or NULL if key does not appear in str
+	//	@returns: a pointer to the null-terminated substring after key, or NULL if key does not appear in str
 	static const char* KeyStr(const char* str, const string& key);
 
 	// Checks definition or declaration line for key
 	//	@param str: null-terminated string to search the key
 	//	@param key: string to search for
-	//	@return: a pointer to the null-terminated substring followed after the key
+	//	@returns: a pointer to the null-terminated substring followed after the key
 	const char* CheckSpec(const char* str, const string& key);
 
 	// Returns required int value with check
 	//	@param str: null-terminated string to search the key
 	//	@param key: string to search for
-	//	@return: key value, or throws an exception if key does not appear in str
+	//	@returns: key value, or throws an exception if key does not appear in str
 	chrlen GetIntKey(const char* str, const string& key) { return atoi(CheckSpec(str, key) + 1); }
 
 	// Gets file bioinfo type
@@ -689,7 +689,7 @@ public:
 
 	// Reads next line and set it as current
 	//	@param checkTabs: it true then check the number of incoming fields (tabs)
-	//	@return: read line
+	//	@returns: read line
 	const char* GetNextLine(bool checkTabs = true);
 
 	// Gets current line
@@ -841,7 +841,7 @@ class FaReader : public TxtReader
 	// and adds complete 'N' subsequence to _rgnMaker
 	//	@param startPos: starting line reading position
 	//	@param NCnt: number of 'N' in the line beginning from the start position
-	//	@return: true if line trimming is complete, false for single 'N'
+	//	@returns: true if line trimming is complete, false for single 'N'
 	void CountN(chrlen startPos, reclen NCnt);
 
 	// Reads line and set it as current with def filling regions

@@ -15,16 +15,14 @@ Last modified: 11/26/2023
 
 /************************ common Functions ************************/
 
-// Returns number of ones in an bynary integer
 int OnesCount(int n)
 {
 	int cnt = 0;
-	//for (; n; n >>= 1)  cnt += n & 1;		// 11001: 5 cycles
-	for (; n; n &= n - 1)   cnt++;			// 11001: 3 cycles
+	//for (; n; n >>= 1)  cnt += n & 1;		// sample 11001: 5 cycles
+	for (; n; n &= n - 1)   cnt++;			// sample 11001: 3 cycles
 	return cnt;
 }
 
-// Returns right position of right one in an bynary integer
 int RightOnePos(int n)
 {
 	int pos = 0;
@@ -546,10 +544,6 @@ int Options::Option::GetEnumInd(const char* val)
 	return -1;
 }
 
-// Ouptuts option with error message to cerr
-//	@val: value or NULL
-//	@msg: error message about value
-//	@return: always 1
 int Options::Option::PrintWrong(const char* val, const string& msg) const
 {
 	cerr << ToStr(false) << SepSCl << (msg == strEmpty ? "wrong " + sValue : msg);

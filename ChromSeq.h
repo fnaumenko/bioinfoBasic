@@ -20,7 +20,7 @@ private:
 	//	@param fName: file name
 	//	@param rgns: chrom's defined regions: ripe or new
 	//	@param fill: if true fill sequence and def regions, otherwise def regions only
-	//	@return: true if chrom def regions are stated
+	//	@returns: true if chrom def regions are stated
 	bool Init(const string& fName, ChromDefRegions& rgns, bool fill);
 
 public:

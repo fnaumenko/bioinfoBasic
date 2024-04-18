@@ -29,7 +29,7 @@ protected:
 
 	// Sets the next chromosome as the current one if they are different
 	//	@param cID: next chrom ID
-	//	@return: true, if new chromosome is set as current one
+	//	@returns: true, if new chromosome is set as current one
 	bool SetNextChrom(chrid cID);
 
 public:
@@ -38,7 +38,7 @@ public:
 
 	// Sets the next chromosome as the current one if they are different
 	// @cID: returned next chrom ID
-	//	@return: true, if new chromosome is set as current one
+	//	@returns: true, if new chromosome is set as current one
 	virtual bool GetNextChrom(chrid& cID) = 0;
 
 	// Retrieves next item's record
@@ -102,7 +102,7 @@ class BedReader : public DataReader, public TabReader
 
 	// Checks for Fixed or Variable step wiggle type and corrects it if found
 	//	@param line: possible declaration line
-	//	@return: true if Fixed or Variable step type is specified
+	//	@returns: true if Fixed or Variable step type is specified
 	bool DefineWigType(const char* line);
 
 public:
@@ -126,7 +126,7 @@ public:
 	// Sets the next chromosome as the current one if they are different
 	//	@cID: returned next chrom ID
 	//	@str: null-terminated string started with short chrom name
-	//	@return: true, if new chromosome is set as current one
+	//	@returns: true, if new chromosome is set as current one
 	//	Used in Calc.cpp
 	bool GetNextChrom(chrid& cID, const char* str) {
 		return SetNextChrom(cID = Chrom::ValidateID(str, strlen(Chrom::Chrom::Abbr)));
@@ -134,7 +134,7 @@ public:
 
 	// Sets the next chromosome as the current one if they are different
 	//	@cID: returned next chrom ID
-	//	@return: true, if new chromosome is set as current one
+	//	@returns: true, if new chromosome is set as current one
 	//	To implement DataReader virtual GetNextChrom(chrid& cID)
 	bool GetNextChrom(chrid& cID) { return SetNextChrom(cID = Chrom::ValidateID(ChromMark())); }
 
@@ -208,7 +208,7 @@ public:
 
 	// Sets the next chromosome as the current one if they are different
 	// @cID: returned next chrom ID
-	//	@return: true, if new chromosome is set as current one
+	//	@returns: true, if new chromosome is set as current one
 	bool GetNextChrom(chrid& cID) { return SetNextChrom(cID = Chrom::ValidateID(_read.RefID)); }
 
 	// Retrieves next item's record

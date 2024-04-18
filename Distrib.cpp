@@ -24,9 +24,9 @@ const string Distrib::sSpec[] = {
 
 // Returns two constant terms of the distrib equation of type, supplied as an index
 //	@param p: distrib params: mean/alpha and sigma/beta
-//	@return: two initialized constant terms of the distrib equation
+//	@returns: two initialized constant terms of the distrib equation
 //	Implemeted as an array of lambdas treated like a regular function and assigned to a function pointer.
-fpair(*InitEqTerms[])(const fpair& p) = {
+fpair(*GetEqTerms[])(const fpair& p) = {
 	[](const fpair& p) -> fpair { return { p.second * SDPI, 0.f}; },						// normal
 	[](const fpair& p) -> fpair { return { p.second * SDPI, 2 * p.second * p.second}; },	// lognormal
 	[](const fpair& p) -> fpair { return { p.first - 1, float(pow(p.second, p.first)) }; }	// gamma
@@ -44,6 +44,14 @@ double (*Distrs[])(const fpair& p, fraglen x, const fpair& eqTerms) = {
 	[](const fpair& p, fraglen x, const fpair& eqTerms) ->	double { return 		// gamma
 		pow(x, eqTerms.first) * exp(-(x / p.second)) / eqTerms.second; }
 };
+
+double Distrib::GetVal(eCType ctype, float mean, float sigma, fraglen x)
+{
+	const fpair p{ mean, sigma };
+	auto type = GetDType(ctype);
+
+	return Distrs[type](p, x, GetEqTerms[type](p));
+}
 
 // Returns distribution mode
 //	@param p: distrib params: mean/alpha and sigma/beta
@@ -159,7 +167,7 @@ void Distrib::AllDParams::Print(dostream& s)
 	float maxPCC = 0;
 	bool note = false;
 
-	Sort();			// should be sorted before by PrintTraits(), but just in case
+	Sort();			// should already be sorted by PrintTraits(), but just in case
 	s << LF << "\t PCC\t";
 	if (notSingle)
 		s << "relPCC\t",
@@ -326,8 +334,9 @@ fpair Distrib::GetKeyPoints(fraglen base, dpoint& summit) const
 
 void Distrib::CalcPCC(dtype type, DParams& dParams, fraglen Mode, bool full) const
 {
-	const fpair eqTerms = InitEqTerms[type](dParams.Params);		// two constant terms of the distrib equation
-	const double cutoffY = Distrs[type](dParams.Params, Mode, eqTerms) / 1000;	// break when Y became less then 0.1% of max value
+	const auto dist = Distrs[type];								// function that calculates the 'type' distribution coordinate
+	const fpair eqTerms = GetEqTerms[type](dParams.Params);	// two constant terms of the distrib equation
+	const double cutoffY = dist(dParams.Params, Mode, eqTerms) / 1000;	// break when Y became less then 0.1% of max value
 	double	sumA = 0, sumA2 = 0;	// sum, sum of squares of original values
 	double	sumB = 0, sumB2 = 0;	// sum, sum of squares of calculated values
 	double	sumAB = 0;				// sum of products of original and calculated values
@@ -337,10 +346,10 @@ void Distrib::CalcPCC(dtype type, DParams& dParams, fraglen Mode, bool full) con
 	dParams.SetUndefPcc();
 	for (const value_type& f : *this) {
 		if (!full && f.first < Mode)		continue;
-		const double b = Distrs[type](dParams.Params, f.first, eqTerms);	// y-coordinate (value) of the calculated sequence
+		const double b = dist(dParams.Params, f.first, eqTerms);	// y-coordinate (value) of the calculated sequence
 		if (isNaN(b))						return;
 		if (f.first > Mode && b < cutoffY)	break;
-		const double a = double(f.second);									// y-coordinate (value) of the original sequence
+		const double a = double(f.second);							// y-coordinate (value) of the original sequence
 		sumA += a;
 		sumB += b;
 		sumA2 += a * a;

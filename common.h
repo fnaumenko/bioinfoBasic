@@ -198,16 +198,16 @@ one oss 123456789-123456789	19	18.76	01.67
 // Instead of std::to_string(x) [C++11] because of compatibility
 //#define NSTR(x) std::to_string(x)
 
-// Returns number of ones in an bynary integer
+// Returns number of ones in the bit representation of an integer
 int OnesCount(int n);
 
-// Returns right position of right one in an bynary integer
+// Returns right position of right one in the bit representation of an integer
 int RightOnePos(int n);
 
 // Gets number of digist in a integral value
 //	@param val: integral value
 //	@param isLocale: if true then adds number of '1000' separators
-//	@return: number of digist without minus symbol or 0 if value is 0
+//	@returns: number of digist without minus symbol or 0 if value is 0
 int DigitsCount (size_t val, bool isLocale = false);
 
 // Returns percent of part value relatively total value
@@ -235,10 +235,10 @@ inline string sPercent(size_t part, size_t total, BYTE precision=0, BYTE fieldWi
 }
 
 // Gets linear density (density per 1000 bs) of some elements
-//	@cnt: number of elements
-//	@len: length on which the density is determined
+//	@param cnt: number of elements
+//	@param len: length on which the density is determined
 //	Used in isChIP (Imitator.cpp) and readDens (readDens.h).
-inline float LinearDens(ULLONG cnt, chrlen len) { return len ? 1000.f * cnt / len : 0; }
+inline float LinearDens(size_t cnt, chrlen len) { return len ? 1000.f * cnt / len : 0; }
 
 // Prints horizontal line
 //	@w: width of line
@@ -504,7 +504,7 @@ private:
 		// Ouptuts option with error message to cerr
 		//	@val: value or NULL
 		//	@msg: error message about value
-		//	@return: always 1
+		//	@returns: always 1
 		int PrintWrong(const char* val, const string& msg=strEmpty) const;
 	};
 
@@ -828,7 +828,7 @@ public:
 	// Checks if file doesn't exist
 	//	@param name: name of file
 	//	@param throwExcept: if true then throws excwption, otherwise prints Err message as warning without LF
-	//	@return: true if file doesn't exist
+	//	@returns: true if file doesn't exist
 	static bool CheckFileExist	(const char* name, bool throwExcept = true) {
 		return CheckExist(name, S_IFREG, throwExcept, Err::F_NONE);
 	}

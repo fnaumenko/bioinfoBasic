@@ -28,6 +28,14 @@ public:
 	};
 	static const char* sDistrib;
 
+	// Returns distibution Y-value by X-value
+	//	@param ctype: type of distribution
+	//	@param mean: mean (for norm, lognorm) or alpha (for gamma)
+	//	@param sigma: sigma (for norm, lognorm) or beta (for gamma)
+	//	@param x: X-value for which Y-value is calculated
+	//	@returs Y-value
+	static double GetVal(eCType ctype, float mean, float sigma, fraglen x);
+
 private:
 	using dtype = int;	// consecutive distribution type: just to designate dist type, used as an index
 	using spoint = pair<fraglen, dVal_t>;	// initial raw sequence point
@@ -105,7 +113,7 @@ private:
 		// Returns number of distribution parameters set in sorted instance
 		int SetCntInSorted() const;
 
-		// Returns DParams by combined distribution type
+		// Returns Distribution Params by combined distribution type
 		DParams& Params(eCType ctype) { return _allParams[GetDType(ctype)].dParams; }
 
 		// Sorts in PCC descending order
@@ -128,7 +136,7 @@ private:
 
 		// Returns parameters of distribution with the highest (best) PCC
 		//	@param dParams: returned PCC, mean(alpha) & sigma(beta)
-		//	@return: consecutive distribution type with the highest (best) PCC
+		//	@returns consecutive distribution type with the highest (best) PCC
 		dtype GetBestParams(DParams& dParams);
 
 		// Prints sorted distibutions params
@@ -160,13 +168,13 @@ private:
 #endif
 
 	// Returns estimated moving window half-length ("base")
-	//	@return: estimated base, or 0 in case of degenerate distribution
+	//	@returns estimated base, or 0 in case of degenerate distribution
 	fraglen GetBase();
 
 	// Defines key points
 	//	@param base: moving window half-length
 	//	@param summit: returned X,Y coordinates of spliced (smoothed) summit
-	//	@return: key points: X-coord of highest point, X-coord of right middle hight point
+	//	@returns key points: X-coord of highest point, X-coord of right middle hight point
 	fpair GetKeyPoints(fraglen base, dpoint& summit) const;
 
 	// Compares this sequence with calculated one by given mean & sigma, and returns PCC

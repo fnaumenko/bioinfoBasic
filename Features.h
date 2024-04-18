@@ -95,7 +95,7 @@ public:
 	}
 
 	// Treats current item
-	//	@return: true if item is accepted
+	//	@returns: true if item is accepted
 	bool operator()();
 
 	// Closes current chrom, open next one
@@ -145,7 +145,7 @@ public:
 	//	@param cID: chromosome's ID
 	//	@param multiplier: 1 for numerics, 0 for nameds
 	//	@param fLen: average fragment length on which each feature will be expanded in puprose of calculation (float to minimize rounding error)
-	//	@return: chrom's total enriched regions length, or 0 if chrom is absent
+	//	@returns: chrom's total enriched regions length, or 0 if chrom is absent
 	chrlen EnrRegnLength(chrid cID, BYTE multiplier, float fLen) const;
 
 #ifdef _ISCHIP
@@ -170,7 +170,7 @@ public:
 	//	@param extLen: distance on which Start should be decreased, End should be increased, or inside out if it os negative
 	//	@param cSizes: chrom sizes
 	//	@param action: action for overlapping features
-	//	@return: true if positions have been changed
+	//	@returns: true if positions have been changed
 	bool Extend(chrlen extLen, const ChromSizes & cSizes, UniBedReader::eAction action);
 
 	// Checks whether all features length exceed given length, throws exception otherwise.

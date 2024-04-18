@@ -75,11 +75,11 @@ protected:
 	// Avoids unnecessery copy constructor call
 	//	@param cID: chromosome's ID
 	//	@param val: class type value
-	//	@return: class type collection reference
+	//	@returns: class type collection reference
 	T& AddElem(chrid cID, const T& val) { return _cMap[cID] = val; }
 
 	// Adds empty class type to the collection without checking cID
-	//	@return: class type collection reference
+	//	@returns: class type collection reference
 	T& AddEmptyElem(chrid cID) { return AddElem(cID, T()); }
 
 	// Returns inner container
@@ -358,7 +358,7 @@ class ChromSizes : public Chroms<ChromSize>
 	// Returns length of common prefix before abbr chrom name of all file names
 	//	@param fName: full file name
 	//	@param extLen: length of file name's extention
-	//	@return: length of common prefix or -1 if there is no abbreviation chrom name in fName
+	//	@returns: length of common prefix or -1 if there is no abbreviation chrom name in fName
 	static int CommonPrefixLength(const string& fName, BYTE extLen);
 
 	// Initializes chrom sizes from file
@@ -371,7 +371,7 @@ class ChromSizes : public Chroms<ChromSize>
 	// Fills external vector by chrom IDs relevant to file's names found in given directory.
 	//	@param cIDs: filling vector of chrom's IDs
 	//	@param gName: path to reference genome
-	//	@return: count of filled chrom's IDs
+	//	@returns: count of filled chrom's IDs
 	chrid GetChromIDs(vector<chrid>& cIDs, const string& gName);
 
 	// Initializes the paths
