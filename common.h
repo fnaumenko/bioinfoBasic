@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/24/2023
+Last modified: 04/18/2024
 ***********************************************************/
 #pragma once
 
@@ -168,7 +168,7 @@ one oss 123456789-123456789	19	18.76	01.67
 // Prints number to buffer without checkup
 //	@buf: buffer to print
 //	@numb: number to print
-//	return: total number of characters written
+//	@returns:  total number of characters written
 //	NOT USED in Linux (sprintf() is used instead due to performance) 
 //template <typename T>
 //BYTE	PrintNumbToBuff(char* const buf, T numb)
@@ -182,7 +182,7 @@ one oss 123456789-123456789	19	18.76	01.67
 //	@buf: buffer to print
 //	@delim: delimiter to print
 //	@numb: number to print
-//	return: total number of characters written
+//	@returns:  total number of characters written
 //	NOT USED in Linux (sprintf() is used instead due to performance) 
 //template <typename T>
 //BYTE	PrintDelimNumbToBuff(char* const buf, char delim, T numb) {
@@ -216,11 +216,11 @@ int DigitsCount (size_t val, bool isLocale = false);
 inline float Percent(size_t part, size_t total) { return total ? 100.f * part / total : 0.f; }
 
 // Returns string represents the percent of part relatively total
-//	@percent: value of percent
-//	@precision: count of fractional digits; 
+//	@param percent: value of percent
+//	@param precision: count of fractional digits; 
 //	if count of value's mapped digits is more then that, printed "<X%", or exactly by default
-//	@fieldWith: displayed width of value and '%' or '<' sign (excluding parentheses), or exactly if 0;
-//	@parentheses: if true then parenthesize the value (not considering fieldWith)
+//	@param fieldWith: displayed width of value and '%' or '<' sign (excluding parentheses), or exactly if 0;
+//	@param parentheses: if true then parenthesize the value (not considering fieldWith)
 string PercentToStr(float percent, BYTE precision = 0, BYTE fieldWith = 0, bool parentheses = false);
 
 // Returns string represents the percent of part relatively total
@@ -241,19 +241,19 @@ inline string sPercent(size_t part, size_t total, BYTE precision=0, BYTE fieldWi
 inline float LinearDens(size_t cnt, chrlen len) { return len ? 1000.f * cnt / len : 0; }
 
 // Prints horizontal line
-//	@w: width of line
-void PrintHorLine(int w);
+//	@param lw: width of line
+void PrintHorLine(int lw);
 
 #if defined _WIGREG || defined _BIOCC
 
 // Align position to the up or down resoluation level
 // f.e. by resoluation==5 pos 102 -> 100+relative, pos 104 -> 105++relative
-//	@pos: chromosome's position
-//	@res: resoluation
-//	@relative: 0 or 1
+//	@param pos: chromosome's position
+//	@param res: resoluation
+//	@param relative: 0 or 1
 //	1 used for 1-relative position (the first base is 1, WIG)
 //	0 used for 0-relative position (BED)
-//	return: aligned position
+//	@returns: aligned position
 chrlen AlignPos(chrlen pos, BYTE res, BYTE relative);
 
 #endif
@@ -279,7 +279,7 @@ public:
 	~dostream() { if (file.is_open())	file.close(); }		// in case of exception or holding execution by user
 
 	// Open output file with given name
-	//	return: true if file is open
+	//	@returns: true if file is open
 	bool OpenFile(const string fname);
 
 	template <typename T> dostream& operator<< (T val) {
@@ -291,19 +291,6 @@ public:
 	template <typename T> 
 	void ToFile(T val) { file << val; }
 };
-
-//class dostream
-//{
-//    std::ostream &first, &second;
-//public:
-//    dostream(std::ostream &f, std::ostream &s) : first(f), second(s) {}
-//	
-//	template <typename T> dostream& operator<< (T val) {
-//		first << val;
-//		second << val;
-//		return *this;
-//	}
-//};
 
 extern dostream dout;		// stream's duplicator
 #elif defined _WIGREG
@@ -321,8 +308,7 @@ static struct Product
 	static const string	Descr;
 
 	// Gets length of product name (title plus version).
-	//static BYTE MarkLength() { return BYTE(Title.length()); // + strlen(Version) + 1);
-	//}
+	//static BYTE MarkLength() { return BYTE(Title.length()); // + strlen(Version) + 1); }
 
 	// Gets title plus version.
 	//static const string& Name() { return Title + string(1, HPH) + string(Version); }
@@ -377,9 +363,7 @@ private:
 		void Set(tOpt sign)	{ signs |= BYTE(sign); }
 
 #ifdef DEBUG
-		void Print() const {
-			cout << int(Is(WORD)) << int(Is(TRIMMED)) << int(Is(HIDDEN)) << int(Is(OBLIG));
-		}
+		void Print() const { cout << int(Is(WORD)) << int(Is(TRIMMED)) << int(Is(HIDDEN)) << int(Is(OBLIG)); }
 #endif
 	};
 
@@ -408,11 +392,11 @@ private:
 		//	@val: value of option
 		//	@nextItem: next token after opt and val, or NULL
 		//	@argInd: the current index in argc; increased by 1 if value is accepted
-		//	return: 0 if success, -1 if not found, 1 if option or value is wrong
+		//	@returns:  0 if success, -1 if not found, 1 if option or value is wrong
 		int	SetVal(const char* opt, bool isword, char* val, char* nextItem, int& argInd);
 
 		// Check option for obligatory.
-		//	return: -1 if option is obligatory but not stated, otherwise 1
+		//	@returns:  -1 if option is obligatory but not stated, otherwise 1
 		int CheckOblig() const;
 
 		// Prints option if it's obligatory
@@ -439,12 +423,12 @@ private:
 		static const char EnumDelims[];		// specifies delimiter for enum [0] and combi [1] values
 
 		// Checks digital value representation. Prints 'wrong val' message in case of failure
-		//	@str: defined (no NULL) string  representing digital value
-		//	return: true if digital value representation is correct
+		//	@param str: defined (no NULL) string  representing digital value
+		//	@returns: true if digital value representation is correct
 		bool IsValidFloat(const char *str, bool isInt, bool isPair = false);
 
 		// Returns option's signature as a string
-		//	@asPointed: true if returns signature as it was stated by user
+		//	@param asPointed: true if returns signature as it was stated by user
 		string NameToStr (bool asPointed) const;
 
 		// Returns string represented pair of value's separated by delimiter.
@@ -454,23 +438,23 @@ private:
 		bool ValRequired() const { return MinNVal != vUNDEF; }
 
 		// Checks limits and set numerical value
-		//	@val: numerical value
-		//	return: 1 if limits are exceeded, otherwise 0
+		//	@param val: numerical value
+		//	@returns: 1 if limits are exceeded, otherwise 0
 		int SetTriedFloat(float val, float min, float max);
 
 		// Checks and sets enum option value. Prints 'wrong val' message in case of failure
-		//	@val: input value as C string or NULL if value is optional and not defined
-		//	return: 0 if success, 1 if wrong value
+		//	@param val: input value as C string or NULL if value is optional and not defined
+		//	@returns: 0 if success, 1 if wrong value
 		int SetEnum(const char* val);
 
 		// Checks and sets enum option value. Prints 'wrong val' message in case of failure
-		//	@val: input value as C string
-		//	return: 0 if success, 1 if wrong value
+		//	@param val: input value as C string
+		//	@returns: 0 if success, 1 if wrong value
 		int SetComb(char* val);
 
 		// Checks and sets pair option value
-		//	@vals: pair of values as C string or NULL if value isn't set
-		//	return: 0 if success, 1 if wrong values
+		//	@param vals: pair of values as C string or NULL if value isn't set
+		//	@returns: 0 if success, 1 if wrong values
 		int SetPair(const char* vals, bool isInt);
 
 		// Recursively prints string with replaced ENUM_REPLACE symbol by enum/combi value.
@@ -491,19 +475,19 @@ private:
 		static void PrintSubLine(char* buff, const char* str, const char* subStr, const char** vals, short* cnt);
 
 		// Prints enum or combi values
-		//	return: number of printed symbols
+		//	@returns: number of printed symbols
 		BYTE PrintEnumVals() const;
 		
 		// Performs a case-insensitive search of given string value among enum values.
-		//	@val: input value as string
-		//	return: index of finded value in enum,
+		//	@param val: input value as string
+		//	@returns: index of finded value in enum,
 		//	or -1 if the value is not present in enum,
 		//	or -2 if the wrong delimiter is encountered
 		int GetEnumInd (const char* val);
 
 		// Ouptuts option with error message to cerr
-		//	@val: value or NULL
-		//	@msg: error message about value
+		//	@param val: value or NULL
+		//	@param msg: error message about value
 		//	@returns: always 1
 		int PrintWrong(const char* val, const string& msg=strEmpty) const;
 	};
@@ -534,31 +518,30 @@ private:
 										// the last one, option 'version' - before last.
 	
 	// Check obligatory options and output message about first absent obligatory option.
-	//	return: -1 if some of obligatory options does not exists, otherwise 1
+	//	@returns: -1 if some of obligatory options does not exists, otherwise 1
 	static int	CheckObligs();
 	
 	// Set option [with value] or splitted short options
-	//	@opt: option without HYPHEN
-	//	@val: option's value
-	//	@nextItem: next token after opt and val, or NULL
-	//	@argInd: the current index in argc; increased by 1 if value is accepted
-	//	Return: 0 - success, 1 - false
+	//	@param opt: option without HYPHEN
+	//	@param val: option's value
+	//	@param nextItem: next token after opt and val, or NULL
+	//	@param argInd: the current index in argc; increased by 1 if value is accepted
+	//	@returns: 0 - success, 1 - false
 	static int	SetOption(char* opt, char* val, char* nextItem, int& argInd);
 
 	// Returns true if long option opt is defined
 	static bool Find(const char* opt);
 
 	// Ouptuts ambiguous option with error message to cerr
-	//	@opt: option
-	//	@isWord: true if option is a word
-	//	@headMsg: message at the beginning
-	//	@inOpt: initial option (in case of ambiguous composite)
-	//	return: always 1
-	static int PrintAmbigOpt(const char* opt, bool isWord,
-		const char* headMsg, const char* inOpt = NULL);
+	//	@param opt: option
+	//	@param isWord: true if option is a word
+	//	@param headMsg: message at the beginning
+	//	@param inOpt: initial option (in case of ambiguous composite)
+	//	@returns: always 1
+	static int PrintAmbigOpt(const char* opt, bool isWord, const char* headMsg, const char* inOpt = NULL);
 
 	// Prints version
-	//	return: always 1
+	//	@returns: always 1
 	static int PrintVersion();
 
 	static int PrintSummary(bool prTitle);
@@ -583,16 +566,16 @@ public:
 	};
 
 	// Prints 'usage' information
-	//	@title: if true prints title before information
-	//	return: 1 if title is settinf to true, 0 otherwise
+	//	@param title: if true prints title before information
+	//	@returns: 1 if title is settinf to true, 0 otherwise
 	static int PrintUsage (bool title);
 
 	// Returns option name [and value]
 	static string OptionToStr(int opt, bool prVal = false) { return List[opt].ToStr(prVal); }
 	
 	// Returns command line.
-	//	@argc: count of main() parameters
-	//	@argv: array of main() parameters
+	//	@param argc: count of main() parameters
+	//	@param argv: array of main() parameters
 	static const string CommandLine(int argc, char* argv[]);
 
 	// Reset int option value to 0
@@ -600,10 +583,10 @@ public:
 
 	// Parses and checks main() parameters and their values.
 	//	DataWriter message if some of them is wrong.
-	//	@argc: count of main() pearmeters
-	//	@argv: array of main() pearmeters
-	//	@obligPar: name of required application parameter or NULL if not required
-	//	return: index of first parameter (not option) in argv[],
+	//	@param argc: count of main() pearmeters
+	//	@param argv: array of main() pearmeters
+	//	@param obligPar: name of required application parameter or NULL if not required
+	//	@returns:  index of first parameter (not option) in argv[],
 	//	or argc if it is absent,
 	//	or negative if tokenize complets wrong
 	static int Parse(int argc, char* argv[], const char* obligPar=NULL);
@@ -708,45 +691,45 @@ public:
 	static const string MsgNoFile(const string & fName, bool plural, const string fExt = strEmpty);
 
 	// Code-attached constructor.
-	//	@code: exception/warning message as code
-	//	@sender: name of object who has generated exception/warning, or NULL if no sender
-	//	@specifyText: aditional text to specify exception/warning message
+	//	@param code: exception/warning message as code
+	//	@param sender: name of object who has generated exception/warning, or NULL if no sender
+	//	@param specifyText: aditional text to specify exception/warning message
 	Err(eCode code, const char* sender, const char* specifyText=NULL): _code(code) {
 		set_message(sender, _msgs[code], specifyText);
 	}
 
 	// Code-attached constructor.
-	//	@code: exception/warning message as code
-	//	@sender: name of object who has generated exception/warning, or NULL if no sender
-	//	@specifyText: aditional text to specify exception/warning message
+	//	@param code: exception/warning message as code
+	//	@param sender: name of object who has generated exception/warning, or NULL if no sender
+	//	@param specifyText: aditional text to specify exception/warning message
 	Err(eCode code, const char* sender, const string& specifyText) : _code(code) {
 		set_message(sender, _msgs[code], specifyText.c_str());
 	}
 
 	// C-string-attached constructor.
-	//	@text: exception/warning message
-	//	@sender: name of object who has generated exception/warning
+	//	@param text: exception/warning message
+	//	@param sender: name of object who has generated exception/warning
 	Err(const char* text, const char* sender=NULL) : _code(NONE) {
 		set_message(sender, text);
 	}
 
 	// String-attached constructor.
-	//	@text: exception/warning message
-	//	@sender: name of object who has generated exception/warning
+	//	@param text: exception/warning message
+	//	@param sender: name of object who has generated exception/warning
 	Err(const char* text, const string& sender) : _code(NONE) {
 		set_message(sender.c_str(), text);
 	}
 
 	// String-attached constructor.
-	//	@text: exception/warning message
-	//	@sender: name of object who has generated exception/warning
+	//	@param text: exception/warning message
+	//	@param sender: name of object who has generated exception/warning
 	Err(const string& text, const char* sender=NULL) : _code(NONE) {
 		set_message(sender, text.c_str());
 	}
 
 	// String-attached constructor.
-	//	@text: exception/warning message
-	//	@sender: name of object who has generated exception/warning
+	//	@param text: exception/warning message
+	//	@param sender: name of object who has generated exception/warning
 	Err(const string& text, const string& sender) : _code(NONE) {
 		set_message(sender.c_str(), text.c_str());
 	}
@@ -764,13 +747,13 @@ public:
 	//const char* SpecifyText() const	{ return _specifyText; }
 
 	// Throws exception or outputs Err message.
-	//	@throwExc: if true then throws exception, otherwise outputs Err message
-	//	@eol: if true then carriage return after Err message
+	//	@param throwExc: if true then throws exception, otherwise outputs Err message
+	//	@param eol: if true then carriage return after Err message
 	void Throw(bool throwExc = true, bool eol = true);
 	
 	// Outputs warning
-	//	@prefix: output ": " before "WARNING"
-	//	@eol: if true then carriage return after Err message
+	//	@param prefix: output ": " before "WARNING"
+	//	@param eol: if true then carriage return after Err message
 	void Warning(bool eol = true, bool prefix = false);
 };
 
@@ -778,21 +761,21 @@ public:
 static class FS
 {
 	// Returns true if file system's object exists
-	//	@name: object's name
-	//	@st_mode: object's system mode
+	//	@param name: object's name
+	//	@param st_mode: object's system mode
 	static bool IsExist(const char* name, int st_mode);
 
 	// Checks if file system's object doesn't exist
-	//	@name: object's name
-	//	@st_mode: object's system mode
-	//	@throwExcept: if true throws exception,
-	//	@ecode: error's code
+	//	@param name: object's name
+	//	@param st_mode: object's system mode
+	//	@param throwExcept: if true throws exception,
+	//	@param ecode: error's code
 	//	otherwise outputs Err message as warning without LF
-	//	return: true if file or directory doesn't exist
+	//	@returns:  true if file or directory doesn't exist
 	static bool CheckExist	(const char* name,  int st_mode, bool throwExcept, Err::eCode ecode);
 
 	// Searches through a file name for the any extention ('/' or '\' insensible).
-	//	return: the index of the DOT matched extention; otherwise npos
+	//	@returns:  the index of the DOT matched extention; otherwise npos
 	static size_t GetLastExtPos	(const string &fname);
 
 	// Returns true if file name has specified extension ignoring zip extension. Case insensitive
@@ -834,59 +817,58 @@ public:
 	}
 
 	// Checks if directory doesn't exist
-	//	@name: name of file or directory
-	//	@throwExcept: if true throws excwption,
+	//	@param name: name of file or directory
+	//	@param throwExcept: if true throws excwption,
 	//	otherwise outputs Err message as warning without LF
-	//	return: true if file or directory doesn't exist
+	//	@returns:  true if file or directory doesn't exist
 	static bool CheckDirExist	(const char* name, bool throwExcept = true) {
 		return CheckExist(name, S_IFDIR, throwExcept, Err::D_NONE);
 	}
 
 	// Checks if file or directory doesn't exist
-	//	@name: name of file or directory
-	//	@throwExcept: if true throws excwption,
+	//	@param name: name of file or directory
+	//	@param throwExcept: if true throws excwption,
 	//	otherwise outputs Err message as warning without LF
-	//	return: true if file or directory doesn't exist
+	//	@returns:  true if file or directory doesn't exist
 	static bool CheckFileDirExist	(const char* name, bool throwExcept = true) {
 		return CheckExist(name, S_IFDIR|S_IFREG, throwExcept, Err::FD_NONE);
 	}
 
 	// Throws exsception if file or directory doesn't exist
-	//	@name: name of file or directory
-	//	@ext: file extention; if set, check for file first
-	//	@throwExcept: if true throws exception,
+	//	@param name: name of file or directory
+	//	@param ext: file extention; if set, check for file first
+	//	@param throwExcept: if true throws exception,
 	//	otherwise outputs Err message as warning without LF
-	//	return: true if file or directory doesn't exist
+	//	@returns:  true if file or directory doesn't exist
 	static bool CheckFileDirExist(const char* name, const string & ext, bool throwExcept);
 
 	// === check dir/file name
 
 	// Returns a pointer to the file name checked if file exist, otherwise throws exception
-	//	@optsVal: Options char* value
-	//	return: pointer to the checked file name
+	//	@param optsVal: Options char* value
+	//	@returns:  pointer to the checked file name
 	static const char* CheckedFileDirName	(const char* name);
 
 	// Returns a pointer to the file name checked if file exist, otherwise throws exception
 	//	@optVal: Options value
-	//	return: pointer to the checked file name
+	//	@returns:  pointer to the checked file name
 	static const char* CheckedFileDirName	(int optVal) {
 		return CheckedFileDirName(Options::GetSVal(optVal));
 	}
 
 	// Returns a pointer to the file name checked if it exist, otherwise throws exception
-	//	@name: pointer to the file name
-	//	return: pointer to the checked file name
+	//	@param name: pointer to the file name
+	//	@returns:  pointer to the checked file name
 	static const char* CheckedFileName	(const char* name);
 
 	// Returns a pointer to the path checked if it exist, otherwise throws exception
-	//	@opt: Options value
-	//	return: pointer to the checked path
+	//	@param opt: Options value
+	//	@returns:  pointer to the checked path
 	static const char* CheckedDirName	(int opt);
 
 	// Returns a pointer to the file name checked if file exist, otherwise throws exception
-	//	@opt: Options value
-	//	return: pointer to the checked file name
-	//	return: pointer to the checked file name
+	//	@param opt: Options value
+	//	@returns:  pointer to the checked file name
 	static const char* CheckedFileName	(int opt) {
 		return CheckedFileName(Options::GetSVal(opt));
 	}
@@ -903,12 +885,12 @@ public:
 	// === check file extension
 
 	// Returns true if file has any extension.
-	//	@fname: file name
+	//	@param fname: file name
 	static bool HasExt	(const string &fname) { return GetLastExtPos(fname) != string::npos; }
 
 	// Returns true if file has a specified  extension. Case insensitive search
-	//	@ext: extension includes dot symbol
-	//	@composite: true if extension is (strictly last)
+	//	@param ext: extension includes dot symbol
+	//	@param composite: true if extension is (strictly last)
 	static bool HasExt	(const string& fname, const string& ext, bool composite = true) {
 		return HasCaseInsExt(fname, ext, HasGzipExt(fname), composite);
 	}
@@ -917,8 +899,8 @@ public:
 	static bool HasGzipExt(const string& fname) { return HasCaseInsExt(fname, ZipFileExt, false); }
 
 	// Returns string containing real file extension (without gzip).
-	//	@fname: pointer to the file name
-	//	return: string containing real file extension or empty string if no real extention
+	//	@param fname: pointer to the file name
+	//	@returns:  string containing real file extension or empty string if no real extention
 	static string const GetExt(const char* fname);
 
 	// === dir/file name transform
@@ -932,20 +914,20 @@ public:
 	static bool IsShortFileName(const string& fname);
 
 	// Returns short file name by long one
-	//	@fname: long file name
+	//	@param fname: long file name
 	static string const ShortFileName (const string& fname);
 
 	// Returns directory name by long file name
-	//	@fname: long file name
+	//	@param fname: long file name
 	//	@addSlash: true if slash sould be added at the end
 	static string const DirName (const string& fname, bool addSlash = false);
 
 	// Returns the name of last subdirectory by long file name
-	//	@name: long dir name
+	//	@param name: long dir name
 	static string const LastSubDirName (const string& name);
 
 	// Returns the name of last subdirectory
-	//	@name: long dir name
+	//	@param name: long dir name
 	static string const LastDirName (const string& fname);
 
 	// Returns the name ended by slash without checking
@@ -956,12 +938,12 @@ public:
 #if !defined _WIGREG && !defined _FQSTATN
 	// Fills external vector of strings by file's names found in given directory
 	// Implementation depends of OS.
-	//	@files: external vector of strings that should be filled by file's names
-	//	@dirName: name of directory
-	//	@ext: file's extention as a choosing filter
-	//	@all: true if all files with given extention should be placed into external vector,
+	//	@param files: external vector of strings that should be filled by file's names
+	//	@param dirName: name of directory
+	//	@param ext: file's extention as a choosing filter
+	//	@param all: true if all files with given extention should be placed into external vector,
 	//	otherwise only one (any)
-	//	return: true if files with given extention are found
+	//	@returns:  true if files with given extention are found
 	static bool GetFiles (vector<string>& files, const string& dirName, const string& ext, bool all = true);
 #endif	// _WIGREG, _FQSTATN
 
@@ -980,17 +962,17 @@ class TimerBasic
 {
 protected:
 	// Prints elapsed wall time interval
-	//	@elapsed: elapsed time in seconds
-	//	@title: string printed before time output
-	//	@parentheses: if true then output time in parentheses
-	//	@isLF: if true then ended output by LF
+	//	@param elapsed: elapsed time in seconds
+	//	@param title: string printed before time output
+	//	@param parentheses: if true then output time in parentheses
+	//	@param isLF: if true then ended output by LF
 	static void Print(long elapsed, const char *title, bool parentheses, bool isLF);
 
 	mutable time_t	_startTime;
 	mutable bool	_enabled;	// True if local timing is enabled
 
 	// Creates a new TimerBasic
-	//	@enabled: if true then set according total timing enabling
+	//	@param enabled: if true then set according total timing enabling
 	TimerBasic(bool enabled = true) : _startTime(0) { _enabled = enabled ? Enabled : false;	}
 	
 	// Stops timer and return elapsed wall time in seconds
@@ -1018,13 +1000,13 @@ public:
 	static void StartCPU()	{ if( Enabled ) _StartCPUClock = clock(); }
 	
 	// Stops enabled CPU timer and print elapsed time
-	//	@isLF: if true then ended output by LF
+	//	@param isLF: if true then ended output by LF
 	static void StopCPU(bool isLF=true) {
 		if(Enabled)	Print((clock()-_StartCPUClock)/CLOCKS_PER_SEC, "CPU: ", false, isLF);
 	}
 
 	// Creates a new Timer and starts it if timing is enabled
-	//	@enabled: if true then set according total timing enabling
+	//	@param enabled: if true then set according total timing enabling
 	Timer(bool enabled = true) : TimerBasic(enabled) { Start(); }
 	
 	// Stops enabled timer and prints elapsed time with title
@@ -1036,16 +1018,15 @@ public:
 	}
 
 	// Stops enabled timer and prints elapsed time
-	//	@offset: space before time output
-	//	@parentheses: if true then output time in parentheses
-	//	@isLF: if true then ended output by LF
+	//	@param offset: space before time output
+	//	@param parentheses: if true then output time in parentheses
+	//	@param isLF: if true then ended output by LF
 	void Stop(int offset = 0, bool parentheses = false, bool isLF = false);
 
 	// Stops enabled timer and prints elapsed time
-	//	@parentheses: if true then output time in parentheses
-	//	@isLF: if true then ended output by LF
-	//void Stop(bool parentheses = false, bool isLF = true)	{
-	//	Stop(NULL, parentheses, isLF); }
+	//	@param parentheses: if true then output time in parentheses
+	//	@param isLF: if true then ended output by LF
+	//void Stop(bool parentheses = false, bool isLF = true)	{ Stop(NULL, parentheses, isLF); }
 };
 
 #ifdef _TEST
@@ -1064,7 +1045,7 @@ class Stopwatch : public TimerBasic
 		void Start() const		{ ((TimerBasic*)this)->Start(); _isStarted = true; }
 
 		// Stops Stopwatch
-		//	@title: if not empty, and if instance was launched, output sum wall time with title
+		//	@param title: if not empty, and if instance was launched, output sum wall time with title
 		//	'const' to apply to constant objects
 		void Stop(const string title = strEmpty) const;
 };
@@ -1084,9 +1065,9 @@ class StopwatchCPU
 		void Start(bool reset=false)	{ _clock = clock(); if(reset) _sumclock = 0; }
 
 		// Stops StopwatchCPU
-		//	@title: string printed before time output
-		//	@print: if true time should be printed
-		//	@isLF: if true then ended output by LF
+		//	@param title: string printed before time output
+		//	@param print: if true time should be printed
+		//	@param isLF: if true then ended output by LF
 		void Stop(const char* title, bool print = false, bool isLF = false);
 };
 
@@ -1189,8 +1170,8 @@ public:
 	//*** ID getters
 
 	// Gets chrom's ID by name without control of case insensitivity and undefined ID
-	//	@cName: chrom's name
-	//  @prefixLen: length of name prefix
+	//	@param cName: chrom's name
+	//  @param prefixLen: length of name prefix
 	static chrid ID(const char* cName, size_t prefixLen=0);
 	
 	// Gets chrom ID by mark without control of case insensitivity and undefined ID
@@ -1208,16 +1189,16 @@ public:
 	static chrid ValidateID(chrid cID) { return cID < firstHeteroID + strlen(Marks) ? cID : UnID; }
 
 	// Validates chrom name and returns chrom ID
-	//	@cName: string of arbitrary length containing chrom's name
-	//  @prefixLen: length of prefix before chrom's mark
+	//	@param cName: string of arbitrary length containing chrom's name
+	//  @param prefixLen: length of prefix before chrom's mark
 	static chrid ValidateID(const char* cName, size_t prefixLen = 0);
 
 	// Validates chrom mark and returns chrom ID
-	//	@cMark: string of arbitrary length, starting with chrom's mark
+	//	@param cMark: string of arbitrary length, starting with chrom's mark
 	static chrid ValidateID(const string& cMark)	{ return ValidateID(cMark.c_str()); }
 
 	// Validates chrom abbreviation name and returns chrom ID
-	//	@cName: string of arbitrary length, starting with chrom's name
+	//	@param cName: string of arbitrary length, starting with chrom's name
 	static chrid ValidateIDbyAbbrName(const char* cName) { return ValidateID(cName, strlen(Abbr)); }
 
 	// Validates all chrom ID by SAM header data, establishes relative ID discipline, and sets custom ID
@@ -1241,16 +1222,16 @@ public:
 	static chrid CustomID()	{ return cID; }
 
 	// Returns true if chrom is set by user, or if no chroms have been set by user (by default)
-	//	@cid: chrom id specified by user
+	//	@param cid: chrom id specified by user
 	static bool IsCustom(chrid cid = UnID) { return cID == UnID || cID == cid; }
 
 	// Sets custom chrom ID with control
-	//	@prColon: if true then print ": " before exception message
-	//	exception: wrong chrom
+	//	@param prColon: if true then print ": " before exception message
+	//	@throws: wrong chrom
 	static void SetCustomID(bool prColon = false);
 
 	// Sets number of 'custom chrom' progr option
-	//	@absIDNumb: true if absolute ID numbering discipline is applied
+	//	@param absIDNumb: true if absolute ID numbering discipline is applied
 	static void SetCustomOption(int opt/*, bool absIDNumb = false*/);
 
 	//*** work with name
@@ -1266,12 +1247,12 @@ public:
 	static const string Mark(chrid cid);
 
 	// Locate chrom's mark in string.
-	//	@str: string checked for chrom number
-	//	return: pointer to the chrom number in str, or a null pointer if Chrom::Abbr is not part of str
+	//	@param str: string checked for chrom number
+	//	@returns:  pointer to the chrom number in str, or a null pointer if Chrom::Abbr is not part of str
 	static const char* FindMark(const char* str);
 
 	// Gets chrom's abbreviation name'chrX'
-	//	@numbSep: if true then separate chrom's number
+	//	@param numbSep: if true then separate chrom's number
 	static string AbbrName(chrid cid, bool numbSep = false);
 
 	// Gets short name 'chrom X'

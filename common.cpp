@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 11/26/2023
+Last modified: 04/18/2024
 ***********************************************************/
 
 #include "common.h"
@@ -38,12 +38,6 @@ int DigitsCount(size_t val, bool isLocale)
 	return res;
 }
 
-// Returns string represents the percent of part relatively total
-//	@percent: value of percent
-//	@precision: count of fractional digits; 
-//	if count of value's mapped digits is more then that, printed "<X%", or exactly by default
-//	@fieldWith: displayed width of value and '%' or '<' sign (excluding parentheses), or exactly if 0;
-//	@parentheses: if true then parenthesize the value (not considering fieldWith)
 string	PercentToStr(float val, BYTE precision, BYTE fieldWith, bool parentheses)
 {
 	//const float minVal = float(pow(10.f, -precision));	// minimum printed value
@@ -76,31 +70,21 @@ string	PercentToStr(float val, BYTE precision, BYTE fieldWith, bool parentheses)
 	return ss.str();
 }
 
-// Prints horizontal line
-//	@w: width of line
-void PrintHorLine(int w)
+void PrintHorLine(int lw)
 {
 #ifdef OS_Windows
-	wcout << setw(++w) << setfill(L'\304') << L'\n';
+	wcout << setw(++lw) << setfill(L'\304') << L'\n';
 #ifdef _DUP_OUTPUT
 	dout.ToFile(string(w, HPH) + LF);
 #endif
 #else
-	for (int i = 0; i < w; dout << "─", i++);	dout << LF;
-	//dout << setw(++w) << setfill('─') << LF;
+	for (int i = 0; i < lw; dout << "─", i++);	dout << LF;
+	//dout << setw(++lw) << setfill('─') << LF;
 #endif
 }
 
 #if defined _WIGREG || defined _BIOCC
 
-// Align position to the up or down resoluation level
-// f.e. by resoluation==5 pos 102 -> 100+relative, pos 104 -> 105++relative
-//	@pos: chromosome's position
-//	@res: resoluation
-//	@relative: 0 or 1
-//	1 used for 1-relative position (the first base is 1, WIG)
-//	0 used for 0-relative position (BED)
-//	return: aligned position
 chrlen AlignPos(chrlen pos, BYTE res, BYTE relative)
 {
 	short rest = pos % res;
@@ -133,8 +117,6 @@ chrlen AlignPos(chrlen pos, BYTE res, BYTE relative)
 
 #ifdef _DUP_OUTPUT
 
-// Open output file with given name
-//	return: true if file is open
 bool dostream::OpenFile(const string fname)
 {
 	if (!fname.length())	return false;
@@ -170,9 +152,6 @@ const char* Options::TypeNames[] = {
 
 const char Options::Option::EnumDelims[] = { '|', ',', ':' };
 
-// Checks digital value representation. Prints 'wrong val' message in case of failure
-//	@str: defined (no NULL) string  representing digital value
-//	return: true if digital value representation is correct
 bool Options::Option::IsValidFloat(const char* str, bool isInt, bool isPair)
 {
 	char c = *str;
@@ -237,13 +216,6 @@ void Options::Option::PrintSubLine(char* buff, const char* str, const char* subS
 	}
 }
 
-// Sets option value.
-//	@opt: option
-//	@isword: true if option is a word, false if option is a char
-//	@val: value of option
-//	@nextItem: next token after opt and val, or NULL
-//	@argInd: the current index in argc; increased by 1 if value is accepted
-//	Return: 0 if success, -1 if not found, 1 if option or value is wrong
 int Options::Option::SetVal(const char* opt, bool isword, char* val, char* nextItem, int& argInd)
 {
 	if (isword) {
@@ -297,8 +269,6 @@ int Options::Option::SetVal(const char* opt, bool isword, char* val, char* nextI
 	return PrintWrong(val);
 }
 
-// Check option for obligatory.
-//	return: -1 if option is obligatory but not stated, otherwise 1
 int Options::Option::CheckOblig() const
 {
 	if (Sign.Is(tOpt::OBLIG) && ValRequired()
@@ -309,8 +279,6 @@ int Options::Option::CheckOblig() const
 	return 1;
 }
 
-// Return option's signature as a string
-//	@asPointed: true if returns signature as it was stated by user
 string Options::Option::NameToStr(bool asPointed) const
 {
 	ostringstream ss;
@@ -326,7 +294,6 @@ string Options::Option::NameToStr(bool asPointed) const
 	return ss.str();
 }
 
-// Returns string represented pair of value's separated by delimiter.
 const string Options::Option::PairValsToStr(const pairVal* vals) const
 {
 	static const char* sAuto = "auto";
@@ -342,9 +309,6 @@ const string Options::Option::PairValsToStr(const pairVal* vals) const
 	//	<< vals->first << EnumDelims[2] << vals->second ).str();
 }
 
-// Checks limits and set numerical value
-//	@val: value
-//	return: 1 if limits are exceeded, otherwise 0
 int Options::Option::SetTriedFloat(float val, float min, float max)
 {
 	if (!val && Sign.Is(tOpt::ALLOW0))	min = 0;
@@ -357,9 +321,6 @@ int Options::Option::SetTriedFloat(float val, float min, float max)
 	return 0;
 }
 
-// Checks and sets enum option value. Prints 'wrong val' message in case of failure
-//	@val: input value as string or NULL if value is optional and not defined
-//	return: 0 if success, 1 if wrong value
 int Options::Option::SetEnum(const char* val)
 {
 	if (!ValRequired())			// boolean template
@@ -373,9 +334,6 @@ int Options::Option::SetEnum(const char* val)
 	return 0;
 }
 
-// Checks and sets enum option value. Prints 'wrong val' message in case of failure
-//	@val: input value as C string
-//	return: 0 if success, 1 if wrong value
 int Options::Option::SetComb(char* vals)
 {
 	char* delim;	// a pointer to the first occurrence of delimiter COMMA in vals
@@ -396,9 +354,6 @@ int Options::Option::SetComb(char* vals)
 	return ind < 0 ? PrintWrong(vals, ind == -2 ? "wrong delimiter in value" : strEmpty) : 0;
 }
 
-// Checks and sets pair option value
-//	@vals: pair of values as C string or NULL if value isn't set
-//	return: 0 if success, 1 if wrong values
 int Options::Option::SetPair(const char* vals, bool isInt)
 {
 	if (!vals)	return 0;	// value isn't stated and it's optional (that was checked before)
@@ -422,7 +377,6 @@ int Options::Option::SetPair(const char* vals, bool isInt)
 	return 0;
 }
 
-// Returns option name and value followed by message
 string Options::Option::ToStr(bool prVal) const
 {
 	string res(optTitle);
@@ -431,9 +385,6 @@ string Options::Option::ToStr(bool prVal) const
 	return res;
 }
 
-// Prints option in full or short way.
-//	@descr: if true, prints in full way: signature, description (marks as Required if needed), default value,
-//	otherwise signature only
 void Options::Option::Print(bool descr) const
 {
 	if (Sign.Is(tOpt::HIDDEN))	return;
@@ -505,8 +456,6 @@ void Options::Option::Print(bool descr) const
 	cout << LF;
 }
 
-// Prints enum or combi values
-//	return: number of printed symbols
 BYTE Options::Option::PrintEnumVals() const
 {
 	if (!ValRequired())	return 0;
@@ -525,11 +474,6 @@ BYTE Options::Option::PrintEnumVals() const
 	return len + cnt + 1;	// here cnt denotes the number of printed delimiters
 }
 
-// Performs a case-insensitive search of given string value among enum values.
-//	@val: input value as string
-//	return: index of finded value in enum,
-//	or -1 if the value is not present in enum,
-//	or -2 if the wrong delimiter is encountered
 int Options::Option::GetEnumInd(const char* val)
 {
 	int i = 0;
@@ -561,7 +505,6 @@ void Options::Option::Print() const
 }
 #endif
 
-// Prints Usage params
 void Options::Usage::Print(Option* opts) const
 {
 	if (Opt != NO_DEF)	// output option value
@@ -575,8 +518,6 @@ void Options::Usage::Print(Option* opts) const
 	cout << endl;
 }
 
-// Check obligatory options and output message about first absent obligatory option.
-//	return: -1 if some of obligatory options does not exists, otherwise 1
 int Options::CheckObligs()
 {
 	for (int i = 0; i < OptCount; i++)
@@ -584,12 +525,6 @@ int Options::CheckObligs()
 	return 1;
 }
 
-// Set option [with value] or splitted short options
-//	@opt: option without HYPHEN
-//	@val: value of option
-//	@nextItem: next token after opt and val, or NULL
-//	@argInd: the current index in argc; increased by 1 if value is accepted
-//	return: 0 if success, 1 otherwise
 int Options::SetOption(char* opt, char* val, char* nextItem, int& argInd)
 {
 	int i, res = 0;
@@ -607,7 +542,6 @@ int Options::SetOption(char* opt, char* val, char* nextItem, int& argInd)
 	return 0;
 }
 
-// Returns true if long option opt is defined
 bool Options::Find(const char* opt)
 {
 	for (int i = 0; i < OptCount; i++)
@@ -616,12 +550,6 @@ bool Options::Find(const char* opt)
 	return false;
 }
 
-// Ouptuts ambiguous option with error message to cerr
-//	@opt: option
-//	@isWord: true if option is a word
-//	@headMsg: message at the beginning
-//	@inOpt: initial option (in case of ambiguous composite)
-//	return: always 1
 int Options::PrintAmbigOpt(const char* opt, bool isWord, const char* headMsg, const char* inOpt)
 {
 	cerr << headMsg << SPACE << optTitle << HPH;
@@ -637,8 +565,6 @@ int Options::PrintAmbigOpt(const char* opt, bool isWord, const char* headMsg, co
 	return 1;
 }
 
-// Prints version
-//	return: always 1
 int	Options::PrintVersion()
 {
 	cout << Product::Version
@@ -656,9 +582,6 @@ int Options::PrintSummary(bool prTitle)
 	return 1;
 }
 
-// Prints 'usage' information
-//	@title: if true prints title before information
-//	return: 1 if title is settinf to true, 0 otherwise
 int Options::PrintUsage(bool title)
 {
 	BYTE i, k;
@@ -686,9 +609,6 @@ int Options::PrintUsage(bool title)
 	return int(title);
 }
 
-// Returns command line.
-//	@argc: count of main() parameters
-//	@argv: array of main() parameters
 string const Options::CommandLine(int argc, char* argv[])
 {
 	ostringstream ss;
@@ -699,13 +619,6 @@ string const Options::CommandLine(int argc, char* argv[])
 	return ss.str();
 }
 
-// Parses and checks main() parameters and their values. DataWriter message if some of them is wrong.
-//	@argc: count of main() parameters
-//	@argv: array of main() parameters
-//	@obligPar: name of required application parameter or NULL if not required
-//	return: index of first parameter (not option) in argv[],
-//	or argc if it is absent,
-//	or negative if tokenize complets wrong
 int Options::Parse(int argc, char* argv[], const char* obligPar)
 {
 	if (argc < 2) { Options::PrintUsage(true); return -1; }		// output tip	
@@ -739,7 +652,6 @@ int Options::Parse(int argc, char* argv[], const char* obligPar)
 	return i * res;
 }
 
-// Return string value by index: if value is not oblig and is not specified, than defName with given extention
 const string Options::GetFileName(int indOpt, const char* defName, const string& ext)
 {
 	Option opt = List[indOpt];
@@ -805,7 +717,6 @@ const char* Err::FailOpenOFile = "could not open output file";
 
 void StrCat(char* dst, const char* src) { memcpy(dst + strlen(dst), src, strlen(src) + 1); }
 
-// Initializes _outText by cstring contained message kind of "<sender>: <txt> <specTxt>".
 void Err::set_message(const char* sender, const char* txt, const char* specTxt)
 {
 	size_t senderLen = sender != NULL ? strlen(sender) : 0;
@@ -825,10 +736,6 @@ void Err::set_message(const char* sender, const char* txt, const char* specTxt)
 	}
 }
 
-// Returns string containing file name and issue number.
-//	@issName: name of issue
-//	@issNumb: number of issue
-//	@fName: file name
 //const string Err::IssueNumbToStr(const string& issName, ULONG issNumb, const string& fName)
 //{
 //	string res = fName;
@@ -852,9 +759,6 @@ Err::Err(const Err& src)
 	memcpy(_outText, src._outText, size - 1);	// instead of strcpy(_outText, src._outText)
 }
 
-// Throws exception or outputs Err message.
-//	@throwExc: if true then throws exception, otherwise outputs Err message
-//	if true then carriage return after Err message
 void Err::Throw(bool throwExc, bool eol) {
 	if (throwExc)
 		throw* this;
@@ -865,9 +769,6 @@ void Err::Throw(bool throwExc, bool eol) {
 	}
 }
 
-// Outputs warning
-//	@prefix: output ": " before "WARNING"
-//	@eol: if true then carriage return after Err message
 void Err::Warning(bool eol, bool prefix)
 {
 	if (prefix)	dout << SepCl;
@@ -882,9 +783,6 @@ void Err::Warning(bool eol, bool prefix)
 
 /************************ class FileSystem ************************/
 
-// Returns true if file system's object exists
-//	@name: object's name
-//	@st_mode: object's system mode
 bool FS::IsExist(const char* name, int st_mode)
 {
 	struct_stat64 st;
@@ -900,13 +798,6 @@ bool FS::IsExist(const char* name, int st_mode)
 	//return ( !_stat64(name, &st) && st.st_mode & st_mode );
 }
 
-// Checks if file system's object doesn't exist
-//	@name: object's name
-//	@st_mode: object's system mode
-//	@throwExcept: if true throws exception,
-//	otherwise outputs Err message as warning without LF
-//	@ecode: error's code
-//	return: true if file or directory doesn't exist
 bool FS::CheckExist(const char* name, int st_mode, bool throwExcept, Err::eCode ecode)
 {
 	if (IsExist(name, st_mode))	return false;
@@ -914,8 +805,6 @@ bool FS::CheckExist(const char* name, int st_mode, bool throwExcept, Err::eCode 
 	return true;
 }
 
-// Searches through a file name for the any extention ('/' or '\' insensible).
-//	return: the index of the DOT matched extention; otherwise npos
 size_t FS::GetLastExtPos(const string& fname) {
 	size_t pos = fname.find_last_of(DOT);
 	return (pos != string::npos && (pos == 0 || (pos == 1 && fname[0] == DOT))) ?	// ./name || ../name
@@ -930,7 +819,6 @@ bool SearchExt(const string& fname, const string& ext, bool isZip, bool composit
 	return fname.size() - pos - isZip * ZipFileExt.length() == ext.size();
 }
 
-// Returns true if file name has specified extension ignoring zip extension. Case insensitive
 bool FS::HasCaseInsExt(const string& fname, const string& ext, bool knownZip, bool composite)
 {
 	bool res = SearchExt(fname, ext, knownZip, composite);
@@ -945,7 +833,6 @@ bool FS::HasCaseInsExt(const string& fname, const string& ext, bool knownZip, bo
 }
 
 
-// Gets size of file or -1 if file doesn't exist
 LLONG FS::Size(const char* fname)
 {
 	struct_stat64 st;
@@ -959,7 +846,6 @@ LLONG FS::Size(const char* fname)
 //    return ifs.tellg(); 
 //}
 
-// Gets real size of zipped file  or -1 if file cannot open; limited by UINT
 LLONG FS::UncomressSize(const char* fname)
 {
 	FILE* file = fopen(fname, "rb");	// "read+binary"
@@ -971,12 +857,6 @@ LLONG FS::UncomressSize(const char* fname)
 	return (sz[3] << 3 * 8) + (sz[2] << 2 * 8) + (sz[1] << 8) + sz[0];
 }
 
-// Throws exsception if file or directory doesn't exist
-//	@name: name of file or directory
-//	@ext: file extention; if set, check for file first
-//	@throwExcept: if true throws exception,
-//	otherwise outputs Err message as warning without LF
-//	return: true if file or directory doesn't exist
 bool FS::CheckFileDirExist(const char* name, const string& ext, bool throwExcept)
 {
 	return HasExt(name, ext) ?
@@ -984,27 +864,18 @@ bool FS::CheckFileDirExist(const char* name, const string& ext, bool throwExcept
 		CheckFileDirExist(name, throwExcept);
 }
 
-// Returns a pointer to the file name checked if file exist, otherwise throws exception
-//	@optsVal: Options char* value
-//	return: pointer to the checked file name
 const char* FS::CheckedFileDirName(const char* name)
 {
 	if (!IsFileDirExist(name))	Err(Err::FD_NONE, name).Throw();
 	return name;
 }
 
-// Returns a pointer to the file name checked if file exist, otherwise throws exception
-//	@name: pointer to the file name
-//	return: pointer to the checked file name
 const char* FS::CheckedFileName(const char* name)
 {
 	if (name && !IsFileExist(name))	Err(Err::F_NONE, name).Throw();
 	return name;
 }
 
-// Returns a pointer to the path checked if it exist, otherwise throws exception
-//	@opt: Options value
-//	return: pointer to the checked path
 const char* FS::CheckedDirName(int opt)
 {
 	const char* name = Options::GetSVal(opt);
@@ -1012,10 +883,6 @@ const char* FS::CheckedDirName(int opt)
 	return name;
 }
 
-
-// Returns string containing real file extension (without zip extention).
-//	@fname: pointer to the file name
-//	return: string containing real file extension or empty string if no real extention
 string const FS::GetExt(const char* fname) {
 	const char* pdot = strrchr(fname, DOT);
 	if (!pdot)		return strEmpty;
@@ -1028,7 +895,6 @@ string const FS::GetExt(const char* fname) {
 	return pprevdot + 1 == fname ? strEmpty : string(pprevdot + 1, pdot - pprevdot - 1);
 }
 
-// Returns true if file name is short (without path)
 bool FS::IsShortFileName(const string& fname)
 {
 #ifdef OS_Windows
@@ -1038,8 +904,6 @@ bool FS::IsShortFileName(const string& fname)
 		return fname.find_first_of(SLASH) == string::npos;
 }
 
-// Returns short file name by long one
-//	@fname: long file name
 string const FS::ShortFileName(const string& fname)
 {
 #ifdef OS_Windows
@@ -1052,9 +916,6 @@ string const FS::ShortFileName(const string& fname)
 	return fname.substr(fname.find_last_of(SLASH) + 1);
 }
 
-// Returns directory name by long file name
-//	@fname: long file name
-//	@addSlash: true if slash sould be added at the end
 string const FS::DirName(const string& fname, bool addSlash)
 {
 #ifdef OS_Windows
@@ -1067,8 +928,6 @@ string const FS::DirName(const string& fname, bool addSlash)
 	return fname.substr(0, fname.find_last_of(SLASH) + int(addSlash));
 }
 
-// Returns the name of last subdirectory by long file name
-//	@fname: long file name
 string const FS::LastSubDirName(const string& fname)
 {
 	const string& dir = FS::DirName(fname, false);
@@ -1077,8 +936,6 @@ string const FS::LastSubDirName(const string& fname)
 		dir.substr(dir.substr(0, pos).length() + 1);
 }
 
-// Returns the name of last subdirectory
-//	@name: long dir name
 string const FS::LastDirName(const string& name)
 {
 	size_t pos = name.find_last_of(SLASH);
@@ -1090,7 +947,6 @@ string const FS::LastDirName(const string& name)
 	return name.substr(pos);
 }
 
-// Returns the name ended by slash without checking
 string const FS::MakePath(const string& name)
 {
 #ifdef OS_Windows
@@ -1104,14 +960,6 @@ string const FS::MakePath(const string& name)
 }
 
 #if !defined _WIGREG && !defined _FQSTATN
-// Fills external vector of strings by file's names found in given directory
-// Implementation depends of OS.
-//	@files: external vector of strings that should be filled by file's names
-//	@dirName: name of directory
-//	@ext: file's extention as a choosing filter
-//	@all: true if all files with given extention should be placed into external vector,
-//	otherwise only one (any)
-//	return: true if files with given extention are found
 bool FS::GetFiles(vector<string>& files, const string& dirName, const string& ext, bool all)
 {
 #ifdef OS_Windows
@@ -1159,10 +1007,6 @@ bool FS::GetFiles(vector<string>& files, const string& dirName, const string& ex
 
 /************************  class TimerBasic ************************/
 
-// Prints elapsed time
-//	@elapsed: elapsed time in seconds
-//	@watch: true if time should be printed as a stopwatch (with decimal places and without empty minutes)
-//	@isLF: if true then ended output by LF
 void PrintTime(long elapsed, bool watch, bool parentheses, bool isLF)
 {
 	int hours = elapsed / 60;
@@ -1181,7 +1025,6 @@ void PrintTime(long elapsed, bool watch, bool parentheses, bool isLF)
 
 bool	TimerBasic::Enabled = false;
 
-// Stops enabled timer and return elapsed wall time in seconds
 long TimerBasic::GetElapsed() const
 {
 	time_t stopTime;
@@ -1189,11 +1032,6 @@ long TimerBasic::GetElapsed() const
 	return (long)difftime(stopTime, _startTime);
 }
 
-// Prints elapsed time interval
-//	@elapsed: elapsed time in seconds 
-//	@title: string printed before time output
-//	@parentheses: if true then output time in parentheses
-//	@isLF: if true then ended output by LF
 void TimerBasic::Print(long elapsed, const char* title, bool parentheses, bool isLF)
 {
 	if (title)	dout << title;
@@ -1205,9 +1043,6 @@ void TimerBasic::Print(long elapsed, const char* title, bool parentheses, bool i
 /************************  class Timer ************************/
 clock_t	Timer::_StartCPUClock;
 
-// Stops enabled timer and prints elapsed time
-//	@offset: space before time output
-//	@isLF: if true then ended output by LF
 void Timer::Stop(int offset, bool parentheses, bool isLF)
 {
 	if (_enabled) {
@@ -1220,9 +1055,6 @@ void Timer::Stop(int offset, bool parentheses, bool isLF)
 #ifdef _TEST
 /************************  class Stopwatch ************************/
 
-// Stops Stopwatch
-//	@title: if not empty, and if instance was launched, output sum wall time with title
-//	'const' to apply to constant objects
 void Stopwatch::Stop(const string title) const
 {
 	if (!_isStarted)		return;
@@ -1234,10 +1066,6 @@ void Stopwatch::Stop(const string title) const
 #endif	// _TEST
 /************************  class StopwatchCPU ************************/
 
-// Stops StopwatchCPU
-//	@title: string printed before time output
-//	@print: if true time should be printed
-//	@isLF: if true then ended output by LF
 void StopwatchCPU::Stop(const char* title, bool print, bool isLF)
 {
 	_sumclock += clock() - _clock;
@@ -1274,7 +1102,6 @@ BYTE		Chrom::CustomOpt;
 chrid Chrom::cID = UnID;		// user-defined chrom ID
 chrid Chrom::firstHeteroID = 0;	// first heterosome (X,Y) ID
 
-// Gets somatic (letter) chrom's ID by mark without control, or undefined ID
 chrid Chrom::HeteroID(const char cMark)
 {
 	if (!IsRelativeID())		return cMark;		// absolute ID
@@ -1284,8 +1111,6 @@ chrid Chrom::HeteroID(const char cMark)
 	return UnID;
 }
 
-// Gets chrom ID by case insensitive mark
-//	firstHeteroID should be initialized!
 chrid Chrom::CaseInsID(const char* cMark)
 {
 	if (isdigit(*cMark)) {				// autosome
@@ -1295,10 +1120,6 @@ chrid Chrom::CaseInsID(const char* cMark)
 	return CaseInsHeteroID(*cMark);		// heterosome
 }
 
-// Returns a pointer to the first occurrence of C substring. Recurcive.
-//	@str: C string to find in
-//	@templ: C string to be located
-//	@templLen: length of templ (extern because of avoiding recursive recalculate)
 const char* SubStr(const char* str, const char* templ, size_t templLen)
 {
 	str = strchr(str, *templ);
@@ -1309,8 +1130,6 @@ const char* SubStr(const char* str, const char* templ, size_t templLen)
 	return str;
 }
 
-// Returns the length of prefix
-//	return: length of substring before short chromosome's name, or -1 if short name is not finded
 short Chrom::PrefixLength(const char* cName)
 {
 	// search from the beginning of the cName because
@@ -1325,17 +1144,11 @@ short Chrom::PrefixLength(const char* cName)
 	return -1;
 }
 
-// Gets chrom's ID by name without control of case insensitivity and undefined ID
-//	@cName: chrom's name
-//  @prefixLen: length of name prefix
 chrid Chrom::ID(const char* cName, size_t prefixLen)
 {
 	return isdigit(*(cName += prefixLen)) ? atoi(cName) - 1 : HeteroID(*cName);
 }
 
-// Validates chrom name and returns chrom ID
-//	@cName: string of arbitrary length, starting with chrom's name
-//  @prefixLen: length of prefix before mark
 chrid Chrom::ValidateID(const char* cName, size_t prefixLen)
 {
 	if (!cName)					return UnID;
@@ -1351,8 +1164,6 @@ chrid Chrom::ValidateID(const char* cName, size_t prefixLen)
 	return CaseInsHeteroID(*cName);				// heterosome
 }
 
-// Sets custom chrom ID with control
-//	@prColon: if true then print ": " before exception message
 void Chrom::SetCustomID(bool prColon)
 {
 	const char* mark = Options::GetSVal(CustomOpt);		// null if no chrom is set by user
@@ -1365,8 +1176,6 @@ void Chrom::SetCustomID(bool prColon)
 	}
 }
 
-// Sets number of 'custom chrom' progr option
-//	@absIDNumb: true if absolute ID numbering discipline is applied
 void Chrom::SetCustomOption(int opt/*, bool absIDNumb*/)
 {
 	CustomOpt = opt;
@@ -1376,7 +1185,6 @@ void Chrom::SetCustomOption(int opt/*, bool absIDNumb*/)
 
 const string AutosomeToStr(chrid cid) { return to_string(cid + 1); }
 
-// Returns mark by ID
 const string Chrom::Mark(chrid cid)
 {
 	if (cid == UnID)		return UndefName;
@@ -1386,17 +1194,12 @@ const string Chrom::Mark(chrid cid)
 	return cid < '9' ? AutosomeToStr(cid) : to_string(cid);
 }
 
-// Locate chrom mark in string.
-//	@str: string checked for chrom number
-//	return: pointer to the chrom number in str, or a null pointer if Chrom::Abbr is not part of str.
 const char* Chrom::FindMark(const char* str)
 {
 	const char* substr = strstr(str, Abbr);
 	return substr ? (substr + strlen(Abbr)) : NULL;
 }
 
-// Gets chrom's abbreviation name by ID
-//	@numbSep: if true then separate chrom's number
 string Chrom::AbbrName(chrid cid, bool numbSep)
 {
 	return Abbr + (numbSep ? sSPACE : strEmpty) + Mark(cid);
@@ -1426,7 +1229,6 @@ void Region::Extend(chrlen extLen, chrlen cLen)
 
 /************************ class Regions ************************/
 
-// Geta total length of regions.
 //chrlen Regions::Length () const
 //{
 //	chrlen len = 0;
@@ -1443,9 +1245,6 @@ void Region::Extend(chrlen extLen, chrlen cLen)
 
 #if defined _READDENS || defined _BIOCC
 
-// Returns an iterator referring to the past-the-end element, where end is external
-//	@curr_it: region's const iterator, from which the search is started
-//	@end: external pre-defined end coordinate
 Regions::Iter Regions::ExtEnd(Iter curr_it, chrlen end) const
 {
 	Iter it = curr_it;
@@ -1454,9 +1253,6 @@ Regions::Iter Regions::ExtEnd(Iter curr_it, chrlen end) const
 	return it;
 }
 
-// Initializes this instance by intersection of two Regions.
-//	Typically for that purpose is used Interval Tree,
-//	but this implementation uses Regions ordering and is simpler.
 void Regions::FillOverlap(const Regions& regn1, const Regions& regn2)
 {
 	chrlen start = 0, end = 0, start1, start2, end1, end2;
@@ -1488,12 +1284,6 @@ void Regions::FillOverlap(const Regions& regn1, const Regions& regn2)
 	}
 }
 
-// Initializes this instance by inverted external Regions,
-// so the regions turns to the gaps and vice versa.
-// Each new region is less than proper old gap by 1 from each side.
-//	@regn: external Regions
-//	@maxEnd: the maximum possible end-coordinate of region:
-//	the chromosome length in case of nucleotides sequance.
 void Regions::FillInvert(const Regions& regn, chrlen maxEnd)
 {
 	Region rgn;
