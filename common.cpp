@@ -683,6 +683,13 @@ void Options::Print()
 }
 #endif
 
+Options::PairVals::PairVals(float val1, float val2, float min1, float min2, float max1, float max2)
+{
+	vals[SET] = make_pair(val1, val2);
+	vals[MIN] = make_pair(min1, min2);
+	vals[MAX] = make_pair(max1, max2);
+}
+
 /************************ end of class Options ************************/
 
 /************************ class Err ************************/
@@ -1317,38 +1324,3 @@ void Regions::Print() const
 }
 #endif
 /************************ end of class Regions ************************/
-
-/************************  MemStatus ************************/
-
-//bool	MemStatus::_enable;
-//LLONG	MemStatus::_startVolume;
-//
-//LLONG MemStatus::getAvailMemory()
-//{
-//#ifdef OS_Windows
-//	MEMORYSTATUSEX status;
-//	status.dwLength = sizeof(status);
-//	GlobalMemoryStatusEx(&status);
-//	//return (size_t)status.ullAvailPhys;
-//	return (size_t)status.ullAvailVirtual;
-//#else
-//	long pages = sysconf(_SC_PHYS_PAGES);
-//	long page_size = sysconf(_SC_PAGE_SIZE);
-//	return pages * page_size;
-//#endif
-//}
-//
-//void MemStatus::StartObserve(bool enable)
-//{
-//	if(_enable = enable)	
-//		_startVolume = getAvailMemory(); 
-//}
-//
-//void MemStatus::StopObserve()
-//{
-//	if(_enable) {
-//		size_t rem = getAvailMemory();
-//		cout << "Unallocated memory: " << (_startVolume - rem) << LF;
-//	}
-//}
-/************************  end of MemStatus ************************/

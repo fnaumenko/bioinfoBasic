@@ -555,13 +555,9 @@ public:
 	public:
 		enum Type { SET=0, MIN=1, MAX=2 };
 
-		PairVals(float val1, float val2, float min1, float min2, float max1, float max2) {
-			vals[SET] = make_pair(val1, val2);
-			vals[MIN] = make_pair(min1, min2);
-			vals[MAX] = make_pair(max1, max2);
-		}
+		PairVals(float val1, float val2, float min1, float min2, float max1, float max2);
 
-		// Gets values
+		// Gets pair of values
 		const pairVal& Values(Type t = SET) const { return vals[t]; }
 	};
 
@@ -596,11 +592,11 @@ public:
 	// Get string value by index
 	static const char* GetSVal(int opt)	{ return List[opt].SVal; }
 	// Get booling value by index
-	static bool GetBVal	(int opt)	{ return List[opt].NVal != 0; }
+	static bool GetBVal	(int opt)		{ return List[opt].NVal != 0; }
 	// Get UINT value by index
 	static UINT GetUIVal	(int opt)	{ return UINT(List[opt].NVal); }
 	// Get int value by index
-	static int GetIVal	(int opt)	{ return int(List[opt].NVal); }
+	static int GetIVal	(int opt)		{ return int(List[opt].NVal); }
 #ifdef _READS
 	// Get read duplicates level
 	static char GetRDuplLevel(int opt) { return GetBVal(opt) ? vUNDEF : 0; }
@@ -941,8 +937,7 @@ public:
 	//	@param files: external vector of strings that should be filled by file's names
 	//	@param dirName: name of directory
 	//	@param ext: file's extention as a choosing filter
-	//	@param all: true if all files with given extention should be placed into external vector,
-	//	otherwise only one (any)
+	//	@param all: true if all files with given extention should be placed into external vector, otherwise only one (any)
 	//	@returns:  true if files with given extention are found
 	static bool GetFiles (vector<string>& files, const string& dirName, const string& ext, bool all = true);
 #endif	// _WIGREG, _FQSTATN
@@ -1414,18 +1409,5 @@ public:
 	void Print() const;
 #endif
 };
-
-
-// 'MemStatus' outputs RAM remainder  
-//static class MemStatus
-//{
-//	static bool	_enable;
-//	static LLONG _startVolume;
-//
-//	static LLONG getAvailMemory();
-//public:
-//	static void StartObserve(bool enable);
-//	static void StopObserve();
-//} ramControl;
 
 #endif	// _COMMON_H
