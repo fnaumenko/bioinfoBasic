@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 04/18/2024
+Last modified: 04/20/2024
 ***********************************************************/
 
 #include "common.h"
@@ -767,9 +767,9 @@ Err::Err(const Err& src)
 }
 
 void Err::Throw(bool throwExc, bool eol) {
-	if (throwExc)
-		throw* this;
-	else {
+	//if (throwExc)
+	//	throw* this;
+	//else {
 		dout << what();
 		if (eol)		dout << LF;
 		fflush(stdout);
@@ -779,6 +779,7 @@ void Err::Throw(bool throwExc, bool eol) {
 void Err::Warning(bool eol, bool prefix)
 {
 	if (prefix)	dout << SepCl;
+	else		dout << LF;
 	dout << _msgs[ErrWARNING];
 	if (*what() != ':') dout << SepCl;	// check if sender is not recorded
 	dout << what();
@@ -1104,7 +1105,7 @@ const string	Chrom::Short = "chrom";
 const string	Chrom::sTitle = "chromosome";
 const BYTE		Chrom::MaxShortNameLength = BYTE(Short.length()) + MaxMarkLength;
 const BYTE		Chrom::MaxNamedPosLength = BYTE(strlen(Abbr)) + MaxMarkLength + CHRLEN_CAPAC + 1;
-BYTE		Chrom::CustomOpt;
+BYTE			Chrom::CustomOpt = UCHAR_MAX;
 
 chrid Chrom::cID = UnID;		// user-defined chrom ID
 chrid Chrom::firstHeteroID = 0;	// first heterosome (X,Y) ID
@@ -1171,8 +1172,23 @@ chrid Chrom::ValidateID(const char* cName, size_t prefixLen)
 	return CaseInsHeteroID(*cName);				// heterosome
 }
 
+void Chrom::ValidateIDs(const string& samHeader, function<void(chrid cID, const char* header)> f, bool callFunction)
+{
+	for (const char* header = samHeader.c_str();
+		header = strstr(header, Abbr);
+		header = strchr(header, LF) + strlen("\n@SQ\tSN:"))
+	{
+		chrid cID = ValidateIDbyAbbrName(header);
+		if (callFunction)
+			f(cID, strchr(header, TAB) + strlen("\tLN:"));
+	}
+	SetCustomID(true);
+}
+
 void Chrom::SetCustomID(bool prColon)
 {
+	if (CustomOpt == UCHAR_MAX)
+		return;
 	const char* mark = Options::GetSVal(CustomOpt);		// null if no chrom is set by user
 	if (mark && (cID = CaseInsID(mark)) == UnID) {
 		ostringstream ss;

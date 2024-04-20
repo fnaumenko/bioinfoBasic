@@ -133,7 +133,7 @@ BamReader::BamReader(const char* fName, ChromSizes* cSizes, bool prName) : _prFN
 	const string headerSAM = GetHeaderText();
 	if (cSizes)
 		cSizes->Init(headerSAM);
-	else			// validate all chroms ID via SAM header; empty functor
+	else			// validate all chroms ID via SAM header; empty function
 		Chrom::ValidateIDs(headerSAM, [](chrid, const char*) {});
 #endif // _NO_CUSTOM_CHROM
 }

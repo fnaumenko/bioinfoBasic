@@ -1,6 +1,6 @@
 /**********************************************************
 ChromData.cpp
-Last modified: 11/22/2023
+Last modified: 04/20/2024
 ***********************************************************/
 
 #include "ChromData.h"
@@ -130,8 +130,10 @@ ChromSizes::ChromSizes(const char* gName, BYTE customChrOpt, bool prMsg, const c
 void ChromSizes::Init(const string& headerSAM)
 {
 	if (!IsFilled())
-		Chrom::ValidateIDs(headerSAM,
-			[this](chrid cID, const char* header) { AddValue(cID, atol(header)); }
+		Chrom::ValidateIDs(
+			headerSAM,
+			[this](chrid cID, const char* header) { AddValue(cID, atol(header)); },
+			true
 		);
 }
 

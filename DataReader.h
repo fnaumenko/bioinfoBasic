@@ -2,13 +2,12 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/26/2023
+Last modified: 04/20/2024
 ***********************************************************/
 #pragma once
 
 #include "TxtFile.h"
 #include <map>
-#include <functional>
 
 static const char* sTotal = "total";
 
@@ -141,22 +140,22 @@ public:
 	// Retrieves next item's record
 	bool GetNextItem() { return TabReader::GetNextLine(); }
 
-	// Returns current item start position
+	// Returns current item's start position
 	chrlen ItemStart()	const { return LongField(1); }
 
-	// Returns current item end position
-	chrlen ItemEnd()		const { return LongField(2); }
+	// Returns current item's end position
+	chrlen ItemEnd()	const { return LongField(2); }
 
-	// Returns current item length
-	readlen ItemLength()	const { return readlen(ItemEnd() - ItemStart()); }
+	// Returns current item's length
+	readlen ItemLength()const { return readlen(ItemEnd() - ItemStart()); }
 
 	// Returns true if alignment part of paired-end read
 	bool IsPairedItem()	const { return strchr(ItemName() + 1, '/'); }
 
-	// Returns current item value (score)
+	// Returns current item's value (score)
 	float ItemValue()	const { return FloatFieldValid(_scoreInd); }
 
-	// Returns current item name
+	// Returns current item's name
 	const char* ItemName() const { return StrFieldValid(NameFieldInd); }
 
 	// Gets string containing file name and current line number.

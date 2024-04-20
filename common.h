@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 04/18/2024
+Last modified: 04/20/2024
 ***********************************************************/
 #pragma once
 
@@ -17,6 +17,7 @@ Last modified: 04/18/2024
 #include <vector>
 #include <sys/stat.h>	// struct stat
 #include <limits>       // std::numeric_limits
+#include <functional>
 #ifdef _MULTITHREAD
 #include <mutex>
 #endif
@@ -1135,7 +1136,7 @@ private:
 	static const string	UndefName;	// string not to convert in run-time
 
 	static chrid cID;				// user-defined chrom ID
-	static chrid firstHeteroID;		// first heterosome (X,Y) ID
+	static chrid firstHeteroID;		// first heterosome (X,Y,M) ID
 
 	// Returns true if relative ID numbering discipline is used
 	static bool IsRelativeID() { return firstHeteroID; }
@@ -1197,19 +1198,10 @@ public:
 	static chrid ValidateIDbyAbbrName(const char* cName) { return ValidateID(cName, strlen(Abbr)); }
 
 	// Validates all chrom ID by SAM header data, establishes relative ID discipline, and sets custom ID
-	template<typename Functor>
-	static void ValidateIDs(const string& samHeader, Functor f)
-	{
-		for (const char* header = samHeader.c_str();
-			header = strstr(header, Abbr);
-			header = strchr(header, LF) + strlen("\n@SQ\tSN:") )
-		{
-			chrid cID = ValidateIDbyAbbrName(header);
-			header = strchr(header, TAB) + strlen("\tLN:");
-			f(cID, header);
-		}	
-		SetCustomID(true);
-	}
+	//	@param samHeader: SAM header data
+	//	@param f: function applied to each chromosome
+	//	@param callFunction: if false do not apply function
+	static void ValidateIDs(const string& samHeader, function<void(chrid cID, const char* header)> f, bool callFunction = false);
 
 	//*** custom ID getters, setters
 

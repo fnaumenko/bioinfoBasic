@@ -2,13 +2,12 @@
 ChromData.h
 Provides chromosomes data functionality
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/26/2023
+Last modified: 04/20/2024
 ***********************************************************/
 #pragma once
 
 #include "TxtFile.h"
 #include <map>
-#include <functional>
 
 //#define	MY_DEBUG
 #define	CID(it)	(it)->first
@@ -135,8 +134,9 @@ public:
 	// Returns true if chromosome cID exists in the container, and false otherwise.
 	bool FindChrom(chrid cID) const { return this->FindItem(cID); }
 
-	// Adds value type to the collection without checking cID
+	// Adds chrom size to the collection without checking cID
 	void AddValue(chrid cid, const T& val) { this->AddVal(cid, ChromData<T>(val)); }
+
 
 #ifdef	_READDENS
 	// Sets common chromosomes as 'Treated' in both of this instance and given Chroms.
