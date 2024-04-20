@@ -657,7 +657,7 @@ const string Options::GetFileName(int indOpt, const char* defName, const string&
 	Option opt = List[indOpt];
 	if (opt.SVal)
 		return string(opt.SVal) + ext;
-	if (opt.IsValEsc() && opt.Sign.Is(tOpt::TRIMMED))
+	if (opt.IsValEsc() /*&& opt.Sign.Is(tOpt::TRIMMED)*/ )
 		return FS::ShortFileName(FS::FileNameWithoutExt(defName)) + ext;
 	return strEmpty;
 }
@@ -767,9 +767,9 @@ Err::Err(const Err& src)
 }
 
 void Err::Throw(bool throwExc, bool eol) {
-	//if (throwExc)
-	//	throw* this;
-	//else {
+	if (throwExc)
+		throw* this;
+	else {
 		dout << what();
 		if (eol)		dout << LF;
 		fflush(stdout);
