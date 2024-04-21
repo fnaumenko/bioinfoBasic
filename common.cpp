@@ -1172,14 +1172,14 @@ chrid Chrom::ValidateID(const char* cName, size_t prefixLen)
 	return CaseInsHeteroID(*cName);				// heterosome
 }
 
-void Chrom::ValidateIDs(const string& samHeader, function<void(chrid cID, const char* header)> f, bool callFunction)
+void Chrom::ValidateIDs(const string& samHeader, function<void(chrid cID, const char* header)> f, bool callFunc)
 {
 	for (const char* header = samHeader.c_str();
 		header = strstr(header, Abbr);
 		header = strchr(header, LF) + strlen("\n@SQ\tSN:"))
 	{
 		chrid cID = ValidateIDbyAbbrName(header);
-		if (callFunction)
+		if (callFunc)
 			f(cID, strchr(header, TAB) + strlen("\tLN:"));
 	}
 	SetCustomID(true);

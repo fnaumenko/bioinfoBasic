@@ -1197,11 +1197,11 @@ public:
 	//	@param cName: string of arbitrary length, starting with chrom's name
 	static chrid ValidateIDbyAbbrName(const char* cName) { return ValidateID(cName, strlen(Abbr)); }
 
-	// Validates all chrom ID by SAM header data, establishes relative ID discipline, and sets custom ID
+	// Validates all chrom ID by SAM header data, applies a function to each, and sets custom ID
 	//	@param samHeader: SAM header data
 	//	@param f: function applied to each chromosome
-	//	@param callFunction: if false do not apply function
-	static void ValidateIDs(const string& samHeader, function<void(chrid cID, const char* header)> f, bool callFunction = false);
+	//	@param callFunc: if false do not apply function
+	static void ValidateIDs(const string& samHeader, function<void(chrid cID, const char* header)> f, bool callFunc = false);
 
 	//*** custom ID getters, setters
 
