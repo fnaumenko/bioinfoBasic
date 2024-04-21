@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 04/20/2024
+Last modified: 04/21/2024
 ***********************************************************/
 
 #include "common.h"
@@ -1015,35 +1015,51 @@ bool FS::GetFiles(vector<string>& files, const string& dirName, const string& ex
 
 /************************  class TimerBasic ************************/
 
-void PrintTime(long elapsed, bool watch, bool parentheses, bool isLF)
+bool	TimerBasic::Enabled = false;
+
+void PrintTime(long elapsed, bool parentheses, bool isLF)
 {
-	int hours = elapsed / 60;
-	int mins = hours % 60;
-	hours /= 60;
+	using namespace std::chrono;
+
+	//if (offset)	cout << setw(offset) << setfill(' ') << ' ';
+	const auto hrs = uint16_t(elapsed / 1000 / 60 / 60);
+	const auto mins = uint16_t(elapsed / 1000 / 60 % 60);
+	const auto secs = uint16_t(elapsed / 1000 % 60);
+	const bool prMins = mins || secs > 9;
+	auto Round = [](int val, int iterations) {
+		int result = val;
+		for (auto i = 0; i < iterations; i++) {
+			int rem = result % 10;
+			result -= rem;
+			if (rem >= 5)	result += 10;
+			result /= 10;
+		}
+		return result;
+	};
+
 	if (parentheses)	dout << '(';
 	dout << setfill('0') << right;		// right couse it may be chanched by previuos output
-	if (hours)	dout << setw(2) << hours << COLON;			// hours
-	if (mins || !watch)	dout << setw(2) << mins << COLON;	// mins
-	// secs
-	if (watch)	dout << setw(5) << fixed << setprecision(2) << (elapsed - mins * 60);
-	else		dout << setw(2) << long(elapsed) % 60;
+	//cout.width(2);	applied to the first 'cout' only...
+	if (hrs)	dout << setw(2) << hrs << COLON;
+	if (prMins)	dout << setw(2) << mins << COLON;
+	dout << setw(2) << secs;
+	if (!hrs && !prMins)
+		dout << '.' << Round(elapsed % 1000, 1 + bool(secs));
 	if (parentheses)	dout << ')';
 	if (isLF)	dout << LF, fflush(stdout);
 }
 
-bool	TimerBasic::Enabled = false;
-
 long TimerBasic::GetElapsed() const
 {
-	time_t stopTime;
-	time(&stopTime);
-	return (long)difftime(stopTime, _startTime);
+	using namespace std::chrono;
+
+	return long(duration_cast<milliseconds>(steady_clock::now() - _begin).count());
 }
 
 void TimerBasic::Print(long elapsed, const char* title, bool parentheses, bool isLF)
 {
 	if (title)	dout << title;
-	PrintTime(elapsed, false, parentheses, isLF);
+	PrintTime(elapsed, parentheses, isLF);
 }
 
 /************************  end ofclass TimerBasic ************************/
@@ -1055,7 +1071,7 @@ void Timer::Stop(int offset, bool parentheses, bool isLF)
 {
 	if (_enabled) {
 		if (offset)	dout << setw(offset) << SPACE;
-		PrintTime(GetElapsed(), NULL, parentheses, isLF);
+		PrintTime(GetElapsed(), parentheses, isLF);
 	}
 }
 
@@ -1065,13 +1081,14 @@ void Timer::Stop(int offset, bool parentheses, bool isLF)
 
 void Stopwatch::Stop(const string title) const
 {
-	if (!_isStarted)		return;
-	_sumTime += GetElapsed();
-	if (title != strEmpty)	PrintTime(_sumTime, (title + sSPACE).c_str(), false, true);
+	if (_isStarted) {
+		_sumTime += GetElapsed();
+		if (title != strEmpty)	PrintTime(_sumTime, false, true);
+	}
 }
 
 /************************  end of class Stopwatch ************************/
-#endif	// _TEST
+
 /************************  class StopwatchCPU ************************/
 
 void StopwatchCPU::Stop(const char* title, bool print, bool isLF)
@@ -1079,12 +1096,12 @@ void StopwatchCPU::Stop(const char* title, bool print, bool isLF)
 	_sumclock += clock() - _clock;
 	if (print) {
 		if (title)	dout << title;
-		PrintTime(_sumclock / CLOCKS_PER_SEC, false, false, isLF);
+		PrintTime(1000 * _sumclock / CLOCKS_PER_SEC, false, isLF);
 	}
 }
 
 /************************  end of class StopwatchCPU ************************/
-
+#endif	// _TEST
 #ifdef _MULTITHREAD
 /************************  class Mutex ************************/
 

@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 04/20/2024
+Last modified: 04/21/2024
 ***********************************************************/
 #pragma once
 
@@ -18,6 +18,7 @@ Last modified: 04/20/2024
 #include <sys/stat.h>	// struct stat
 #include <limits>       // std::numeric_limits
 #include <functional>
+#include <chrono>
 #ifdef _MULTITHREAD
 #include <mutex>
 #endif
@@ -958,18 +959,18 @@ class TimerBasic
 {
 protected:
 	// Prints elapsed wall time interval
-	//	@param elapsed: elapsed time in seconds
+	//	@param elapsed: elapsed time in milliseconds
 	//	@param title: string printed before time output
-	//	@param parentheses: if true then output time in parentheses
+	//	@param parentheses: if true then wrap the time output in parentheses
 	//	@param isLF: if true then ended output by LF
 	static void Print(long elapsed, const char *title, bool parentheses, bool isLF);
 
-	mutable time_t	_startTime;
+	mutable chrono::steady_clock::time_point	_begin;
 	mutable bool	_enabled;	// True if local timing is enabled
 
 	// Creates a new TimerBasic
 	//	@param enabled: if true then set according total timing enabling
-	TimerBasic(bool enabled = true) : _startTime(0) { _enabled = enabled ? Enabled : false;	}
+	TimerBasic(bool enabled = true) { _enabled = enabled ? Enabled : false;	}
 	
 	// Stops timer and return elapsed wall time in seconds
 	long GetElapsed() const;
@@ -982,7 +983,7 @@ public:
 	bool IsEnabled() const { return _enabled; }
 
 	// Starts timer
-	void Start()		{ if(_enabled) time( &_startTime ); }
+	void Start() { if(_enabled)	_begin = chrono::steady_clock::now(); }
 };
 
 // 'Timer' measures the single wall time interval
@@ -998,7 +999,7 @@ public:
 	// Stops enabled CPU timer and print elapsed time
 	//	@param isLF: if true then ended output by LF
 	static void StopCPU(bool isLF=true) {
-		if(Enabled)	Print((clock()-_StartCPUClock)/CLOCKS_PER_SEC, "CPU: ", false, isLF);
+		if(Enabled)	Print( 1000 * (clock()-_StartCPUClock) / CLOCKS_PER_SEC, "CPU: ", false, isLF);
 	}
 
 	// Creates a new Timer and starts it if timing is enabled
@@ -1007,7 +1008,7 @@ public:
 	
 	// Stops enabled timer and prints elapsed time with title
 	//	@param title: string printed before time output
-	//	@param parentheses: if true then output time in parentheses
+	//	@param parentheses: if true then wrap the time output in parentheses
 	//	@param isLF: if true then ended output by LF
 	void Stop(const char *title, bool parentheses = false, bool isLF = true) {
 		if(_enabled)	Print(GetElapsed(), title, parentheses, isLF);
@@ -1015,14 +1016,9 @@ public:
 
 	// Stops enabled timer and prints elapsed time
 	//	@param offset: space before time output
-	//	@param parentheses: if true then output time in parentheses
+	//	@param parentheses: if true then wrap the time output in parentheses
 	//	@param isLF: if true then ended output by LF
 	void Stop(int offset = 0, bool parentheses = false, bool isLF = false);
-
-	// Stops enabled timer and prints elapsed time
-	//	@param parentheses: if true then output time in parentheses
-	//	@param isLF: if true then ended output by LF
-	//void Stop(bool parentheses = false, bool isLF = true)	{ Stop(NULL, parentheses, isLF); }
 };
 
 #ifdef _TEST
@@ -1046,8 +1042,6 @@ class Stopwatch : public TimerBasic
 		void Stop(const string title = strEmpty) const;
 };
 
-#endif	// _TEST
-
 // 'Stopwatch' measures the sum of CPU time (clocks) intervals
 class StopwatchCPU
 {
@@ -1066,6 +1060,8 @@ class StopwatchCPU
 		//	@param isLF: if true then ended output by LF
 		void Stop(const char* title, bool print = false, bool isLF = false);
 };
+
+#endif	// _TEST
 
 static class Mutex
 {
