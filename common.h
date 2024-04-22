@@ -1130,8 +1130,8 @@ public:
 
 private:
 	static const string	sTitle;		// Chromosome title; do not convert to string in run-time
-	static		 BYTE	CustomOpt;	// user-defined chrom option number; used to set custom cID.
-									// Stored separately because SetCustomOption() and SetCustomID() can be invoked independently
+	static		 BYTE	UserChrom;	// user-defined chrom option number; used to set custom cID.
+									// Stored separately because SetUserChrom() and SetCustomID() can be invoked independently
 	static const char*	Marks;		// heterosome marks
 	static const string	UndefName;	// string not to convert in run-time
 
@@ -1217,7 +1217,7 @@ public:
 
 	// Sets number of 'custom chrom' progr option
 	//	@param opt: option number
-	static void SetCustomOption(int opt);
+	static void SetUserChrom(int opt);
 
 	//*** work with name
 

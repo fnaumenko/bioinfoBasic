@@ -1122,7 +1122,7 @@ const string	Chrom::Short = "chrom";
 const string	Chrom::sTitle = "chromosome";
 const BYTE		Chrom::MaxShortNameLength = BYTE(Short.length()) + MaxMarkLength;
 const BYTE		Chrom::MaxNamedPosLength = BYTE(strlen(Abbr)) + MaxMarkLength + CHRLEN_CAPAC + 1;
-BYTE			Chrom::CustomOpt = UCHAR_MAX;
+BYTE			Chrom::UserChrom = UCHAR_MAX;
 const char cM = 'M';
 
 chrid Chrom::customID = UnID;
@@ -1213,20 +1213,20 @@ void Chrom::ValidateIDs(const string& samHeader, function<void(chrid cID, const 
 
 void Chrom::SetCustomID(bool prColon)
 {
-	if (CustomOpt == UCHAR_MAX)		return;
-	const char* mark = Options::GetSVal(CustomOpt);		// null if no chrom is set by user
+	if (UserChrom == UCHAR_MAX)		return;
+	const char* mark = Options::GetSVal(UserChrom);		// null if no chrom is set by user
 	if (mark && (customID = CaseInsID(mark)) == UnID) {
 		ostringstream ss;
 		ss << "no such " << sTitle << " in this genome";
 		if (prColon)	ss << SepCl;
-		ss << Options::OptionToStr(CustomOpt, true);
+		ss << Options::OptionToStr(UserChrom, true);
 		Err(ss.str()).Throw();
 	}
 }
 
-void Chrom::SetCustomOption(int opt)
+void Chrom::SetUserChrom(int opt)
 {
-	CustomOpt = opt;
+	UserChrom = opt;
 	customID = ValidateID(Options::GetSVal(opt));
 }
 
