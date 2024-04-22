@@ -1100,8 +1100,11 @@ RELATIVE: the heterosomes' ID starts with the last autosomes' ID increased by 1,
 ABSOLUTE: the heterosomes' ID is a code of mark character.
 
 Relative discipline is applied when the number of the last autosome is known, i.e. when using chrom sizes data.
-In the absence of chrom sizes data, it is impossible to determine the sequential ID of the first heterosome;
+Otherwise it is impossible to determine the sequential ID of the first heterosome;
 therefore, the code of heterosome's letter is used as its ID.
+
+Absolute discipline (default) applies in case of sequential processing input BED.
+Specifying chrom size data or processing input BAM automatically changes discipline to relative.
 
 ===== CHROM DATA DEPENDENCIES =====
 User selectable chromosome (customization)		needs:	absolute | relative chrom ID discipline
@@ -1210,10 +1213,8 @@ public:
 	static void SetCustomID(bool prColon = false);
 
 	// Sets number of 'custom chrom' progr option
-	//	@param absNumberung: true if absolute ID numbering discipline is applied.
-	//	Absolute discipline applies in case of processing input BED;
-	//	input BAM always automatically changes discipline to relative.
-	static void SetCustomOption(int opt, bool absNumberung = false);
+	//	@param opt: option number
+	static void SetCustomOption(int opt);
 
 	//*** work with name
 

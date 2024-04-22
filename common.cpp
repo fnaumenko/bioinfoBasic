@@ -1213,8 +1213,7 @@ void Chrom::ValidateIDs(const string& samHeader, function<void(chrid cID, const 
 
 void Chrom::SetCustomID(bool prColon)
 {
-	if (CustomOpt == UCHAR_MAX)
-		return;
+	if (CustomOpt == UCHAR_MAX)		return;
 	const char* mark = Options::GetSVal(CustomOpt);		// null if no chrom is set by user
 	if (mark && (customID = CaseInsID(mark)) == UnID) {
 		ostringstream ss;
@@ -1225,10 +1224,9 @@ void Chrom::SetCustomID(bool prColon)
 	}
 }
 
-void Chrom::SetCustomOption(int opt, bool absNumberung)
+void Chrom::SetCustomOption(int opt)
 {
 	CustomOpt = opt;
-	relNumbering = !absNumberung;
 	customID = ValidateID(Options::GetSVal(opt));
 }
 
@@ -1259,7 +1257,7 @@ string Chrom::AbbrName(chrid cid, bool numbSep)
 	return Abbr + (numbSep ? sSPACE : strEmpty) + Mark(cid);
 }
 
-const string Chrom::TitleName(chrid cid = UnID)
+const string Chrom::TitleName(chrid cid)
 {
 	return sTitle + (cid == UnID ? "s" : SPACE + Mark(cid));
 }
