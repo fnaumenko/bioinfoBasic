@@ -1093,24 +1093,24 @@ SHORT CHROM's NAME:					chrom 1, ..., chrom Y
 TITLE CHROM's NAME:					chromosome X, ..., chromosome Y
 PREFIX: substring before mark:		chr | chrom | chromosome.
 
+===== CHROM's ID NUMBERING DISCIPLINES =====
+The autosomes' ID corresponds to the chrom number reduced by 1 (0-based numbering).
+For the heterosomes' 2 different disciplines are applied:
+RELATIVE: the heterosomes' ID starts with the last autosomes' ID increased by 1, in the next order: X, Y, M
+ABSOLUTE: the heterosomes' ID is a code of mark character.
+
+Relative discipline is applied when the number of the last autosome is known, i.e. when using chrom sizes data.
+In the absence of chrom sizes data, it is impossible to determine the sequential ID of the first heterosome;
+therefore, the code of heterosome's letter is used as its ID.
+
 ===== CHROM DATA DEPENDENCIES =====
 User selectable chromosome (customization)		needs:	absolute | relative chrom ID discipline
 Control of the item belonging to the chromosome	needs:	absolute | relative chrom ID discipline
 Chrom size control								needs:	absolute | relative chrom ID discipline + ChromSizes
 Using BAM										needs:	relative chrom ID discipline
 
-===== CHROM's ID NUMBERING DISCIPLINES =====
-RELATIVE DISCIPLINE:
-The autosomes' ID corresponds to the chrom number reduced by 1 (0-based numbering)
-The heterosomes' ID starts with the last autosomes' ID plus 1, in the next order: X, Y, M
-This discipline is coming from BamTools API.
-
-ABSOLUTE DISCIPLINE:
-The autosomes' ID numering is the same as relative.
-The heterosomes' ID is a code of mark character.
-
 Chrom class distinguishes these disciplines by the value of the 'firstHeteroID' variable:
-a zero value indicates an absolute discipline, a non-zero value indicates a relative one.
+a zero (default) value indicates an absolute discipline, a non-zero value indicates a relative one.
 
 ***********************************************************************************/
 {
@@ -1127,11 +1127,12 @@ public:
 
 private:
 	static const string	sTitle;		// Chromosome title; do not convert to string in run-time
-	static		 BYTE	CustomOpt;	// user chrom option number; used to set custom cID
+	static		 BYTE	CustomOpt;	// user-defined chrom option number; used to set custom cID.
+									// Stored separately because SetCustomOption() and SetCustomID() can be invoked independently
 	static const char*	Marks;		// heterosome marks
 	static const string	UndefName;	// string not to convert in run-time
 
-	static chrid cID;				// user-defined chrom ID
+	static chrid customID;			// user-defined chrom ID
 	static chrid firstHeteroID;		// first heterosome (X,Y,M) ID
 
 	// Returns true if relative ID numbering discipline is used
@@ -1202,11 +1203,11 @@ public:
 	//*** custom ID getters, setters
 
 	// Gets custom chrom's ID
-	static chrid CustomID()	{ return cID; }
+	static chrid CustomID()	{ return customID; }
 
 	// Returns true if chrom is set by user, or if no chroms have been set by user (by default)
 	//	@param cid: chrom id specified by user
-	static bool IsCustom(chrid cid = UnID) { return cID == UnID || cID == cid; }
+	static bool IsCustom(chrid cid = UnID) { return customID == UnID || customID == cid; }
 
 	// Sets custom chrom ID with control
 	//	@param prColon: if true then print ": " before exception message

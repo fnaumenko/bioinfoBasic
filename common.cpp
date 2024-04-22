@@ -1124,15 +1124,15 @@ const BYTE		Chrom::MaxShortNameLength = BYTE(Short.length()) + MaxMarkLength;
 const BYTE		Chrom::MaxNamedPosLength = BYTE(strlen(Abbr)) + MaxMarkLength + CHRLEN_CAPAC + 1;
 BYTE			Chrom::CustomOpt = UCHAR_MAX;
 
-chrid Chrom::cID = UnID;		// user-defined chrom ID
-chrid Chrom::firstHeteroID = 0;	// first heterosome (X,Y) ID
+chrid Chrom::customID = UnID;
+chrid Chrom::firstHeteroID;
 
 chrid Chrom::HeteroID(const char cMark)
 {
-	if (!IsRelativeID())		return cMark;		// absolute ID
+	if (!IsRelativeID())		return cMark;	// absolute heterosome ID
 	for (size_t i = 0; i < strlen(Marks); i++)
 		if (cMark == Marks[i])
-			return chrid(firstHeteroID + i);	// relative ID
+			return chrid(firstHeteroID + i);	// relative heterosome ID
 	return UnID;
 }
 
@@ -1207,7 +1207,7 @@ void Chrom::SetCustomID(bool prColon)
 	if (CustomOpt == UCHAR_MAX)
 		return;
 	const char* mark = Options::GetSVal(CustomOpt);		// null if no chrom is set by user
-	if (mark && (cID = CaseInsID(mark)) == UnID) {
+	if (mark && (customID = CaseInsID(mark)) == UnID) {
 		ostringstream ss;
 		ss << "no such " << sTitle << " in this genome";
 		if (prColon)	ss << SepCl;
@@ -1220,7 +1220,7 @@ void Chrom::SetCustomOption(int opt/*, bool absIDNumb*/)
 {
 	CustomOpt = opt;
 	if (!(firstHeteroID/* = !absIDNumb*/))
-		cID = ValidateID(Options::GetSVal(opt));	// apply absolute numeration discipline
+		customID = ValidateID(Options::GetSVal(opt));	// apply absolute numeration discipline
 }
 
 const string AutosomeToStr(chrid cid) { return to_string(cid + 1); }
