@@ -83,11 +83,11 @@ void  ChromSizes::SetTreatedChrom(chrid cID)
 		c.second.Treated = c.first == cID;
 }
 
-ChromSizes::ChromSizes(const char* gName, BYTE customChrOpt, bool prMsg, const char* sPath, bool checkGRef)
+ChromSizes::ChromSizes(const char* gName, bool prMsg, const char* sPath, bool checkGRef)
 {
 	_ext = _gPath = _sPath = strEmpty;
 
-	Chrom::SetCustomOption(customChrOpt);
+	Chrom::SetRelativeMode();
 	if (gName) {
 		if (FS::IsDirExist(FS::CheckedFileDirName(gName))) {	// gName is a directory
 			_ext = FT::Ext(FT::FA);

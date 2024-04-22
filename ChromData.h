@@ -393,11 +393,10 @@ public:
 
 	// Creates and initializes an instance.
 	//	@param gName: reference genome directory or chrom.sizes file
-	//	@param customChrOpt: id of 'custom chrom' option
 	//	@param prMsg: if true then print message about service fodler and chrom.sizes generation
 	//	@param sPath: service directory
 	//	@param checkGRef: if true then check if @gName is a ref genome dir; used in isChIP
-	ChromSizes(const char* gName, BYTE customChrOpt, bool prMsg, const char* sPath = NULL, bool checkGRef = false);
+	ChromSizes(const char* gName, bool prMsg, const char* sPath = NULL, bool checkGRef = false);
 
 	ChromSizes() { _ext = _gPath = _sPath = strEmpty; }
 

@@ -1158,6 +1158,9 @@ public:
 	// Gets the length of prefix, or -1 if name is not finded
 	static short PrefixLength(const char* cName);
 
+	// Sets relative numbering discipline
+	static void SetRelativeMode() { relNumbering = true; }
+
 	//*** ID getters
 
 	// Gets chrom's ID by name without control of case insensitivity and undefined ID
