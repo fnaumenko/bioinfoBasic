@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 04/21/2024
+Last modified: 04/22/2024
 ***********************************************************/
 #pragma once
 
@@ -1134,9 +1134,7 @@ private:
 
 	static chrid customID;			// user-defined chrom ID
 	static chrid firstHeteroID;		// first heterosome (X,Y,M) ID
-
-	// Returns true if relative ID numbering discipline is used
-	static bool IsRelativeID() { return firstHeteroID; }
+	static bool	relNumbering;		// true if relative numbering discipline is applied
 
 	// Gets heterosome ID by mark without control, or undefined ID
 	static chrid HeteroID	(const char cMark);
@@ -1157,9 +1155,6 @@ public:
 	// Gets the length of prefix, or -1 if name is not finded
 	static short PrefixLength(const char* cName);
 
-	// Sets relative ID numbering
-	//static void SetRelativeID() { if(!IsRelativeID()) firstHeteroID = 1; }
-	
 	//*** ID getters
 
 	// Gets chrom's ID by name without control of case insensitivity and undefined ID
@@ -1179,7 +1174,7 @@ public:
 	//*** validation methods
 
 	// Checks chrom ID and returns this ID or undefined ID; used in BamInFile::GetNextChrom() only
-	static chrid ValidateID(chrid cID) { return cID < firstHeteroID + strlen(Marks) ? cID : UnID; }
+	static chrid ValidateID(chrid cID);
 
 	// Validates chrom name and returns chrom ID
 	//	@param cName: string of arbitrary length containing chrom's name
@@ -1215,17 +1210,17 @@ public:
 	static void SetCustomID(bool prColon = false);
 
 	// Sets number of 'custom chrom' progr option
-	//	@param absIDNumb: true if absolute ID numbering discipline is applied
-	static void SetCustomOption(int opt/*, bool absIDNumb = false*/);
+	//	@param absNumberung: true if absolute ID numbering discipline is applied.
+	//	Absolute discipline applies in case of processing input BED;
+	//	input BAM always automatically changes discipline to relative.
+	static void SetCustomOption(int opt, bool absNumberung = false);
 
 	//*** work with name
 
 	static const string Title(bool pl = false) { return pl ? (sTitle + 's') : sTitle;	}
 
 	// Gets mark length by ID; used in WigMap (bioCC)
-	static size_t MarkLength(chrid cID) {
-		return cID == UnID ? UndefName.length() : (cID > firstHeteroID || cID < 9 ? 1 : 2);
-	}
+	static size_t MarkLength(chrid cID);
 
 	// Returns mark by ID
 	static const string Mark(chrid cid);
@@ -1244,11 +1239,9 @@ public:
 
 	// Gets title name 'chromosome X' or 'chromosomes'
 	//	@param cid: chromosome's ID or UnID if plural
-	static string TitleName(chrid cid = UnID) { return sTitle + (cid==UnID ? "s" : SPACE + Mark(cid)); }
+	static const string TitleName(chrid cid = UnID);
 
-	static const string Absent(chrid cid, const string & what) {
-		return AbbrName(cid) + " is absent in " + what + " file: skipped";
-	}
+	static const string Absent(chrid cid, const string& what);
 
 #endif	// _FQSTATN
 } chrom;

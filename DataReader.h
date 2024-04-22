@@ -383,6 +383,7 @@ public:
 
 		while (_file->GetNextItem()) {
 			if (_file->GetNextChrom(nextcID)) {			// the next chrom
+				//printf("chrom %d %s\n", int(nextcID), Chrom::Mark(nextcID));	// for debug
 				if (setCustom) {
 					if (userChromInProc)		break;
 					if (skipChrom = nextcID != Chrom::CustomID()) continue;
