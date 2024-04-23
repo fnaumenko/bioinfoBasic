@@ -766,38 +766,42 @@ static class FS
 	// Checks if file system's object doesn't exist
 	//	@param name: object's name
 	//	@param st_mode: object's system mode
-	//	@param throwExcept: if true throws exception,
+	//	@param throwExcept: if true then throws exception, otherwise prints warning without LF
 	//	@param ecode: error's code
-	//	otherwise outputs Err message as warning without LF
-	//	@returns:  true if file or directory doesn't exist
-	static bool CheckExist	(const char* name,  int st_mode, bool throwExcept, Err::eCode ecode);
+	//	@returns: true if file or directory doesn't exist (make sence while 'throwExcept' set to false)
+	//	@throws 'ecode' if system's object doesn't exist
+	static bool CheckExist	(const char* name, int st_mode, bool throwExcept, Err::eCode ecode);
 
 	// Searches through a file name for the any extention ('/' or '\' insensible).
-	//	@returns:  the index of the DOT matched extention; otherwise npos
-	static size_t GetLastExtPos	(const string &fname);
+	//	@param name: name of file
+	//	@returns: index of the DOT matched extention; otherwise string::npos
+	static size_t GetLastExtPos	(const string &name);
 
-	// Returns true if file name has specified extension ignoring zip extension. Case insensitive
-	static bool HasCaseInsExt(const string &fname, const string &ext, bool knownZip, bool composite = true);
+	// Returns true if file name has specified extention ignoring zip extention (case-insensitive)
+	//	@param name: name of file
+	//	@param ext: file extention
+	//	@param knownZip: if true then file name has ZIP extention
+	//	@param composite: if true then file has a compound extention
+	//	@returns: true if file name has specified extention
+	static bool HasCaseInsExt(const string &name, const string &ext, bool knownZip, bool composite = true);
 
 	// Returns file name without extention ('/' or '\' insensible)
-	static string const FileNameWithoutLastExt (const string& fname) {
-		return fname.substr(0, GetLastExtPos(fname));
+	static string const FileNameWithoutLastExt (const string& name) {
+		return name.substr(0, GetLastExtPos(name));
 	}
-
 
 public:
 	// === file size
 
-	// Gets size of file or -1 if file doesn't exist
-	static LLONG Size 	(const char*);
+	// Returns size of file or -1 if file doesn't exist
+	static LLONG Size 	(const char* name);
 
-	// Gets real size of zipped file  or -1 if file cannot open; limited by UINT
-	static LLONG UncomressSize	(const char*);
+	// Returns real size of zipped file or -1 if file cannot open; limited by UINT
+	static LLONG UncomressSize	(const char* name);
 
 	// === check dir/file existing
 
 	// Returns true if file exists
-	//	@param name: name of file
 	static bool IsFileExist	 (const char* name) { return IsExist(name, S_IFREG); }
 	
 	// Returns true if directory exists
@@ -808,49 +812,52 @@ public:
 	
 	// Checks if file doesn't exist
 	//	@param name: name of file
-	//	@param throwExcept: if true then throws excwption, otherwise prints Err message as warning without LF
-	//	@returns: true if file doesn't exist
+	//	@param throwExcept: if true then throws exception, otherwise prints warning without LF
+	//	@returns: true if file doesn't exist (make sence while 'throwExcept' set to false)
+	//	@throws Err::F_NONE if file doesn't exist
 	static bool CheckFileExist	(const char* name, bool throwExcept = true) {
 		return CheckExist(name, S_IFREG, throwExcept, Err::F_NONE);
 	}
 
 	// Checks if directory doesn't exist
-	//	@param name: name of file or directory
-	//	@param throwExcept: if true throws excwption,
-	//	otherwise outputs Err message as warning without LF
-	//	@returns:  true if file or directory doesn't exist
+	//	@param name: name of directory
+	//	@param throwExcept: if true then throws exception, otherwise prints warning without LF
+	//	@returns: true if directory doesn't exist (make sence while 'throwExcept' set to false)
+	//	@throws Err::D_NONE if directory doesn't exist
 	static bool CheckDirExist	(const char* name, bool throwExcept = true) {
 		return CheckExist(name, S_IFDIR, throwExcept, Err::D_NONE);
 	}
 
-	// Checks if file or directory doesn't exist
+	// Ñhecks file or directory for existence
 	//	@param name: name of file or directory
-	//	@param throwExcept: if true throws excwption,
-	//	otherwise outputs Err message as warning without LF
-	//	@returns:  true if file or directory doesn't exist
-	static bool CheckFileDirExist	(const char* name, bool throwExcept = true) {
+	//	@param throwExcept: if true then throws exception, otherwise prints warning without LF
+	//	@returns: true if file or directory doesn't exist (make sence while 'throwExcept' set to false)
+	//	@throws Err::FD_NONE if file or directory doesn't exist
+	static bool CheckFileDirExist(const char* name, bool throwExcept = true) {
 		return CheckExist(name, S_IFDIR|S_IFREG, throwExcept, Err::FD_NONE);
 	}
 
-	// Throws exsception if file or directory doesn't exist
-	//	@param name: name of file or directory
+	// Ñhecks file or directory for existence
+	//	@param name: name of directory
 	//	@param ext: file extention; if set, check for file first
-	//	@param throwExcept: if true throws exception,
-	//	otherwise outputs Err message as warning without LF
-	//	@returns:  true if file or directory doesn't exist
+	//	@param throwExcept: if true then throws exception, otherwise prints warning without LF
+	//	@returns: true if file or directory doesn't exist (make sence while 'throwExcept' set to false)
+	//	@throws Err::F_NONE or Err::D_NONE if file or directory doesn't exist
 	static bool CheckFileDirExist(const char* name, const string & ext, bool throwExcept);
 
 	// === check dir/file name
 
-	// Returns a pointer to the file name checked if file exist, otherwise throws exception
-	//	@param optsVal: Options char* value
-	//	@returns:  pointer to the checked file name
-	static const char* CheckedFileDirName	(const char* name);
+	// Returns the name of an existing file or directory
+	//	@param name: name of file or directory
+	//	@returns: input parameter 'name'
+	//	@throws Err::FD_NONE if file or directory does not exist
+	static const char* CheckedFileDirName(const char* name);
 
-	// Returns a pointer to the file name checked if it exist, otherwise throws exception
-	//	@param name: pointer to the file name
-	//	@returns:  pointer to the checked file name
-	static const char* CheckedFileName	(const char* name);
+	// Returns the name of an existing file
+	//	@param name: name of file
+	//	@returns: input parameter 'name'
+	//	@throws Err::F_NONE if file does not exist
+	static const char* CheckedFileName(const char* name);
 
 	// Returns a pointer to the path checked if it exist, otherwise throws exception
 	//	@param opt: Options value
@@ -1147,7 +1154,7 @@ public:
 	//*** ID getters
 
 	// Gets chromosome's ID by name
-	//	@param cName: C-string containing chromosome's arbitrary name
+	//	@param cName: chromosome's arbitrary name
 	//  @param prefixLen: length of name prefix before mark
 	static chrid ID(const char* cName, size_t prefixLen=0);
 	
@@ -1163,7 +1170,7 @@ public:
 	//*** validation methods
 
 	// Validates chromosome's arbitrary name and returns chrom ID
-	//	@param cName: C-string containing chromosome's arbitrary name
+	//	@param cName: chromosome's arbitrary name
 	//  @param prefixLen: length of prefix before chromosome's mark
 	static chrid ValidateID(const char* cName, size_t prefixLen = 0);
 
