@@ -139,7 +139,7 @@ private:
 		//	@returns consecutive distribution type with the highest (best) PCC
 		dtype GetBestParams(DParams& dParams);
 
-		// Prints sorted distibutions params
+		// Prints sorted distibutions params on a new line
 		//	@param s: print stream
 		void Print(dostream& s);
 	};
@@ -216,13 +216,16 @@ public:
 	//	@param fname: name of ready distribution file
 	Distrib(const char* fname);
 
+	// Returns size distribution
+	size_t Size() const { return size(); }
+
 	// Returns true if distribution has not enough size
 	//bool IsDegenerate() const { return size() < 5; }
 
 	// Adds value to the instance
 	void AddVal(fraglen val) { (*this)[val]++; }
 
-	// Calculate and print distribution
+	// Calculate and print distribution on a new line
 	//	@param s: print stream
 	//	@param type: combined type of distribution
 	//	@param prDistr: if true then print distribution additionally

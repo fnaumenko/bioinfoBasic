@@ -196,10 +196,13 @@ bool UniBedReader::CheckItem(chrlen cLen)
 void UniBedReader::PrintItemCount(size_t cnt, const string& title)
 {
 	dout << SepCl;
-	if (Chrom::UserCID() == Chrom::UnID)
-		dout << sTotal << SPACE << cnt << SPACE << title;
+	if (cnt)
+		if (Chrom::UserCID() == Chrom::UnID)
+			dout << sTotal << SPACE << cnt << SPACE << title;
+		else
+			dout << cnt << SPACE << title << " per " << Chrom::ShortName(Chrom::UserCID());
 	else
-		dout << cnt << SPACE << title << " per " << Chrom::ShortName(Chrom::UserCID());
+		dout << Chrom::NoChromMsg() << " in this sequence\n";
 }
 
 void UniBedReader::PrintStats(size_t cnt)

@@ -1113,17 +1113,18 @@ mutex	Mutex::_mutexes[int(Mutex::eType::NONE)];
 
 /************************ class Chrom ************************/
 
-const char* Chrom::Abbr = "chr";
+const char*		Chrom::Abbr = "chr";
 const BYTE		Chrom::MaxAbbrNameLength = 5;
 #ifndef _FQSTATN
-const char* Chrom::Marks = "XYM";
+const char cM = 'M';
+const char*		Chrom::userChrom;
+const char*		Chrom::Marks = "XYM";
 const string	Chrom::UndefName = "UNDEF";
 const string	Chrom::Short = "chrom";
 const string	Chrom::sTitle = "chromosome";
 const BYTE		Chrom::MaxShortNameLength = BYTE(Short.length()) + MaxMarkLength;
 const BYTE		Chrom::MaxNamedPosLength = BYTE(strlen(Abbr)) + MaxMarkLength + CHRLEN_CAPAC + 1;
-BYTE			Chrom::UserChrom = UCHAR_MAX;
-const char cM = 'M';
+
 
 chrid Chrom::userCID = UnID;
 chrid Chrom::firstHeteroID;
@@ -1132,7 +1133,7 @@ bool Chrom::relNumbering;
 chrid Chrom::HeteroID(const char cMark)
 {
 	if (!relNumbering)
-		return cMark << int(cMark == cM);			// absolute heterosome ID; multiply by 2 in case 'M'
+		return cMark << int(cMark == cM);		// absolute heterosome ID; multiply by 2 in case 'M'
 	for (size_t i = 0; i < strlen(Marks); i++)
 		if (cMark == Marks[i])
 			return chrid(firstHeteroID + i);	// relative heterosome ID
@@ -1213,37 +1214,31 @@ void Chrom::ValidateIDs(const string& samHeader, function<void(chrid cID, const 
 
 void Chrom::SetUserCID(bool prColon)
 {
-	if (UserChrom == UCHAR_MAX)		return;
-	const char* mark = Options::GetSVal(UserChrom);		// null if no chrom is set by user
-	if (mark && (userCID = CaseInsID(mark)) == UnID) {
-		ostringstream ss;
-		ss << "no such " << sTitle << " in this genome";
-		if (prColon)	ss << SepCl;
-		ss << Options::OptionToStr(UserChrom, true);
-		Err(ss.str()).Throw();
-	}
+	if (userChrom && (userCID = CaseInsID(userChrom)) == UnID)
+		Err(SepCl + NoChromMsg() + " in this genome").Throw();
 }
 
-void Chrom::SetUserChrom(int opt)
+void Chrom::SetUserChrom(const char* cMark)
 {
-	UserChrom = opt;
-	userCID = ValidateID(Options::GetSVal(opt));
+	userCID = ValidateID(userChrom = cMark);
 }
-
-const string AutosomeToStr(chrid cid) { return to_string(cid + 1); }
 
 size_t Chrom::MarkLength(chrid cID)
 {
 	return cID == UnID ? UndefName.length() : (cID > firstHeteroID || cID < 9 ? 1 : 2);
 }
 
+//const string AutosomeToStr(chrid cid) { return to_string(cid + 1); }
+
 const string Chrom::Mark(chrid cid)
 {
+	auto autosomeToStr = [](chrid cid) { return to_string(cid + 1); };
+
 	if (cid == UnID)		return UndefName;
 	if (relNumbering)
-		return cid < firstHeteroID ? AutosomeToStr(cid) :
+		return cid < firstHeteroID ? autosomeToStr(cid) :
 		(cid > firstHeteroID + 2) ? UndefName : string{ Marks[cid - firstHeteroID] };
-	return cid < '9' ? AutosomeToStr(cid) : string{ char(cid >> int(cid == 2*cM)) };	// divide by 2 in case 'M'
+	return cid < '9' ? autosomeToStr(cid) : string{ char(cid >> int(cid == 2*cM)) };	// divide by 2 in case 'M'
 }
 
 const char* Chrom::FindMark(const char* str)
@@ -1262,10 +1257,15 @@ const string Chrom::TitleName(chrid cid)
 	return sTitle + (cid == UnID ? "s" : SPACE + Mark(cid));
 }
 
-const string Chrom::Absent(chrid cid, const string& what)
+const string Chrom::NoChromMsg()
 {
-	return AbbrName(cid) + " is absent in " + what + " file: skipped";
+	return "there is no " + sTitle + sSPACE + userChrom;
 }
+
+//const string Chrom::Absent(chrid cid, const string& what)
+//{
+//	return AbbrName(cid) + " is absent in " + what + " file: skipped";
+//}
 
 #endif	// _FQSTATN
 

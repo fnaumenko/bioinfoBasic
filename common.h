@@ -1130,8 +1130,7 @@ public:
 
 private:
 	static const string	sTitle;		// Chromosome title; do not convert to string in run-time
-	static		 BYTE	UserChrom;	// user-defined chrom option number; used to set custom cID.
-									// Stored separately because SetUserChrom() and SetCustomID() can be invoked independently
+	static const char*	userChrom;	// user-defined chrom mark
 	static const char*	Marks;		// heterosome marks
 	static const string	UndefName;	// string not to convert in run-time
 
@@ -1215,9 +1214,8 @@ public:
 	//	@throws: wrong chrom
 	static void SetUserCID(bool prColon = false);
 
-	// Sets number of 'custom chrom' progr option
-	//	@param opt: option number
-	static void SetUserChrom(int opt);
+	// Sets user-defined chromosome
+	static void SetUserChrom(const char* cMark);
 
 	//*** work with name
 
@@ -1245,7 +1243,10 @@ public:
 	//	@param cid: chromosome's ID or UnID if plural
 	static const string TitleName(chrid cid = UnID);
 
-	static const string Absent(chrid cid, const string& what);
+	// Returns 'there is no chromosome <user-defined-chrom>' string
+	static const string NoChromMsg();
+
+	//static const string Absent(chrid cid, const string& what);
 
 #endif	// _FQSTATN
 } chrom;

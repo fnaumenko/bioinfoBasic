@@ -464,12 +464,12 @@ using namespace std::chrono;
 
 void Distrib::Print(dostream& s, eCType ctype, bool prDistr)
 {
-	if (empty())		s << "empty " << sDistrib << LF;
+	if (empty())		s << "\nempty " << sDistrib << LF;
 	else {
 		fraglen base = GetBase();	// initialized returned value
 		//if (IsDegenerate())
 		if (!base)
-			s << "Degenerate " << sDistrib << " (only " << size() << " points)\n";
+			s << "\nDegenerate " << sDistrib << " (only " << size() << " points)\n";
 		else {
 #ifdef _TIME
 			auto start = high_resolution_clock::now();
