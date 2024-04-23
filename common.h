@@ -855,14 +855,7 @@ public:
 	// Returns a pointer to the path checked if it exist, otherwise throws exception
 	//	@param opt: Options value
 	//	@returns:  pointer to the checked path
-	static const char* CheckedDirName	(int opt);
-
-	// Returns a pointer to the file name checked if file exist, otherwise throws exception
-	//	@param opt: Options value
-	//	@returns:  pointer to the checked file name
-	static const char* CheckedFileName	(int opt) {
-		return CheckedFileName(Options::GetSVal(opt));
-	}
+	//static const char* CheckedDirName	(int opt);
 
 	// Returns true if directory is open to writing
 	static bool IsDirWritable(const char* name) { 

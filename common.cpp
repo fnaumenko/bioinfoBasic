@@ -884,12 +884,12 @@ const char* FS::CheckedFileName(const char* name)
 	return name;
 }
 
-const char* FS::CheckedDirName(int opt)
-{
-	const char* name = Options::GetSVal(opt);
-	if (name && !IsDirExist(name))	Err(Err::D_NONE, name).Throw();
-	return name;
-}
+//const char* FS::CheckedDirName(int opt)
+//{
+//	const char* name = Options::GetSVal(opt);
+//	if (name && !IsDirExist(name))	Err(Err::D_NONE, name).Throw();
+//	return name;
+//}
 
 string const FS::GetExt(const char* fname) {
 	const char* pdot = strrchr(fname, DOT);
