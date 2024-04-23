@@ -847,13 +847,6 @@ public:
 	//	@returns:  pointer to the checked file name
 	static const char* CheckedFileDirName	(const char* name);
 
-	// Returns a pointer to the file name checked if file exist, otherwise throws exception
-	//	@optVal: Options value
-	//	@returns:  pointer to the checked file name
-	static const char* CheckedFileDirName	(int optVal) {
-		return CheckedFileDirName(Options::GetSVal(optVal));
-	}
-
 	// Returns a pointer to the file name checked if it exist, otherwise throws exception
 	//	@param name: pointer to the file name
 	//	@returns:  pointer to the checked file name
