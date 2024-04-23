@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 04/22/2024
+Last modified: 04/23/2024
 ***********************************************************/
 
 #include "common.h"
@@ -1128,25 +1128,26 @@ const BYTE		Chrom::MaxNamedPosLength = BYTE(strlen(Abbr)) + MaxMarkLength + CHRL
 
 chrid Chrom::userCID = UnID;
 chrid Chrom::firstHeteroID;
-bool Chrom::relNumbering;
+bool Chrom::relativeNumbering;
 
 chrid Chrom::HeteroID(const char cMark)
 {
-	if (!relNumbering)
-		return cMark << int(cMark == cM);		// absolute heterosome ID; multiply by 2 in case 'M'
+	if (!relativeNumbering)
+		// absolute heterosome ID; in case of 'M' multiply by 2 so as not to violate the sorting check in input BAM/BED
+		return cMark << int(cMark == cM);
 	for (size_t i = 0; i < strlen(Marks); i++)
 		if (cMark == Marks[i])
-			return chrid(firstHeteroID + i);	// relative heterosome ID
+			return firstHeteroID + chrid(i);	// relative heterosome ID
 	return UnID;
 }
 
-chrid Chrom::CaseInsID(const char* cMark)
+chrid Chrom::GetRelativeID(const char* cMark)
 {
-	if (isdigit(*cMark)) {				// autosome
+	if (isdigit(*cMark)) {		// autosome
 		chrid id = atoi(cMark) - 1;
 		return id < firstHeteroID ? id : UnID;
 	}
-	return CaseInsHeteroID(*cMark);		// heterosome
+	return HeteroID(*cMark);	// heterosome
 }
 
 const char* SubStr(const char* str, const char* templ, size_t templLen)
@@ -1178,11 +1179,6 @@ chrid Chrom::ID(const char* cName, size_t prefixLen)
 	return isdigit(*(cName += prefixLen)) ? atoi(cName) - 1 : HeteroID(*cName);
 }
 
-chrid Chrom::ValidateID(chrid cID)
-{
-	return cID < firstHeteroID + strlen(Marks) ? cID : UnID;
-}
-
 chrid Chrom::ValidateID(const char* cName, size_t prefixLen)
 {
 	if (!cName)					return UnID;
@@ -1192,15 +1188,15 @@ chrid Chrom::ValidateID(const char* cName, size_t prefixLen)
 
 	if (isdigit(*cName)) {						// autosome
 		chrid id = atoi(cName);
-		if (relNumbering && id > firstHeteroID)	firstHeteroID = id;
+		if (relativeNumbering && id > firstHeteroID)	firstHeteroID = id;
 		return id - 1;
 	}
-	return CaseInsHeteroID(*cName);				// heterosome
+	return HeteroID(*cName);					// heterosome
 }
 
 void Chrom::ValidateIDs(const string& samHeader, function<void(chrid cID, const char* header)> f, bool callFunc)
 {
-	relNumbering = true;
+	relativeNumbering = true;
 	for (const char* header = samHeader.c_str();
 		header = strstr(header, Abbr);
 		header = strchr(header, LF) + strlen("\n@SQ\tSN:"))
@@ -1214,13 +1210,15 @@ void Chrom::ValidateIDs(const string& samHeader, function<void(chrid cID, const 
 
 void Chrom::SetUserCID(bool prColon)
 {
-	if (userChrom && (userCID = CaseInsID(userChrom)) == UnID)
+	if (userChrom && (userCID = GetRelativeID(userChrom)) == UnID)
 		Err((prColon ? SepCl : strEmpty) + NoChromMsg() + " in this genome").Throw();
 }
 
 void Chrom::SetUserChrom(const char* cMark)
 {
-	userCID = ValidateID(userChrom = cMark);
+	userChrom = cMark;
+	*(const_cast<char*>(userChrom)) = toupper(*cMark);
+	userCID = ValidateID(userChrom);
 }
 
 size_t Chrom::MarkLength(chrid cID)
@@ -1228,14 +1226,12 @@ size_t Chrom::MarkLength(chrid cID)
 	return cID == UnID ? UndefName.length() : (cID > firstHeteroID || cID < 9 ? 1 : 2);
 }
 
-//const string AutosomeToStr(chrid cid) { return to_string(cid + 1); }
-
 const string Chrom::Mark(chrid cid)
 {
 	auto autosomeToStr = [](chrid cid) { return to_string(cid + 1); };
 
 	if (cid == UnID)		return UndefName;
-	if (relNumbering)
+	if (relativeNumbering)
 		return cid < firstHeteroID ? autosomeToStr(cid) :
 		(cid > firstHeteroID + 2) ? UndefName : string{ Marks[cid - firstHeteroID] };
 	return cid < '9' ? autosomeToStr(cid) : string{ char(cid >> int(cid == 2*cM)) };	// divide by 2 in case 'M'

@@ -2,7 +2,7 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 04/20/2024
+Last modified: 04/23/2024
 ***********************************************************/
 #pragma once
 
@@ -206,9 +206,9 @@ public:
 	chrid ChromCount() const { return _reader.GetReferenceCount(); }
 
 	// Sets the next chromosome as the current one if they are different
-	// @cID: returned next chrom ID
+	// @param cID: returned next chrom ID
 	//	@returns: true, if new chromosome is set as current one
-	bool GetNextChrom(chrid& cID) { return SetNextChrom(cID = Chrom::ValidateID(_read.RefID)); }
+	bool GetNextChrom(chrid& cID) { return SetNextChrom(cID = _read.RefID); }
 
 	// Retrieves next item's record
 	bool GetNextItem() {

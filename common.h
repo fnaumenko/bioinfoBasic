@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 04/22/2024
+Last modified: 04/23/2024
 ***********************************************************/
 #pragma once
 
@@ -1136,65 +1136,60 @@ private:
 
 	static chrid userCID;			// user-defined chrom ID
 	static chrid firstHeteroID;		// first heterosome (X,Y,M) ID
-	static bool	relNumbering;		// true if relative numbering discipline is applied
+	static bool	relativeNumbering;		// true if relative numbering discipline is applied
 
-	// Gets heterosome ID by mark without control, or undefined ID
+	// Gets heterosome ID (relative or absolute) by mark,
+	// or undefined ID (if absolute mode is set and cMark is inappropriate)
 	static chrid HeteroID	(const char cMark);
 
-	// Gets heterosome ID by case insensitive mark, or undefined ID
-	static chrid CaseInsHeteroID(const char cMark) { return HeteroID( toupper(cMark) ); }
-
-	// Gets chrom ID by case insensitive mark
-	//	firstHeteroID should be initialized!
-	static chrid CaseInsID	(const char* cMark);
+	// Gets chromosome relative ID by mark
+	static chrid GetRelativeID	(const char* cMark);
 
 public:
 	//*** common methods
 
-	// Returns true if chrom is autosome, false for somatic; for relative ID discipline only
+	// Returns true if chromosome is autosome, false for somatic
+	//	@param cad: chromosome's relative ID
 	static bool IsAutosome(chrid cid) { return cid < firstHeteroID; }
 
-	// Gets the length of prefix, or -1 if name is not finded
+	// Gets the length of prefix, or -1 if prefix is not finded
 	static short PrefixLength(const char* cName);
 
 	// Sets relative numbering discipline
-	static void SetRelativeMode() { relNumbering = true; }
+	static void SetRelativeMode() { relativeNumbering = true; }
 
 	//*** ID getters
 
-	// Gets chrom's ID by name without control of case insensitivity and undefined ID
-	//	@param cName: chrom's name
-	//  @param prefixLen: length of name prefix
+	// Gets chromosome's ID by name
+	//	@param cName: C-string containing chromosome's arbitrary name
+	//  @param prefixLen: length of name prefix before mark
 	static chrid ID(const char* cName, size_t prefixLen=0);
 	
-	// Gets chrom ID by mark without control of case insensitivity and undefined ID
+	// Gets chrom ID by mark
 	static chrid ID(const string& cMark) { return ID(cMark.c_str()); }
 
-	// Gets chrom ID by abbreviation name without control of case insensitivity and undefined ID
+	// Gets chrom ID by abbreviation name
 	static chrid IDbyAbbrName(const char* cAbbrName) { return ID(cAbbrName, strlen(Abbr)); }
 
-	// Gets chrom's ID by long name without control of case insensitivity and undefined ID
+	// Gets chrom's ID by arbitrary name
 	static chrid IDbyLongName(const char* cName) { return ID(cName, PrefixLength(cName)); }
 
 	//*** validation methods
 
-	// Checks chrom ID and returns this ID or undefined ID; used in BamInFile::GetNextChrom() only
-	static chrid ValidateID(chrid cID);
-
-	// Validates chrom name and returns chrom ID
-	//	@param cName: string of arbitrary length containing chrom's name
-	//  @param prefixLen: length of prefix before chrom's mark
+	// Validates chromosome's arbitrary name and returns chrom ID
+	//	@param cName: C-string containing chromosome's arbitrary name
+	//  @param prefixLen: length of prefix before chromosome's mark
 	static chrid ValidateID(const char* cName, size_t prefixLen = 0);
 
-	// Validates chrom mark and returns chrom ID
-	//	@param cMark: string of arbitrary length, starting with chrom's mark
+	// Validates chromosome's mark and returns chrom ID or undefined ID
+	//	@param cMark: string containing chromosome's mark
 	static chrid ValidateID(const string& cMark)	{ return ValidateID(cMark.c_str()); }
 
 	// Validates chrom abbreviation name and returns chrom ID
-	//	@param cName: string of arbitrary length, starting with chrom's name
+	//	@param cName: C-string starting with abbreviation
 	static chrid ValidateIDbyAbbrName(const char* cName) { return ValidateID(cName, strlen(Abbr)); }
 
-	// Validates all chrom ID by SAM header data, applies a function to each, and sets custom ID
+	// Validates all chrom ID by SAM header, applies a function to each, and sets custom ID
 	//	@param samHeader: SAM header data
 	//	@param f: function applied to each chromosome
 	//	@param callFunc: if false do not apply function
@@ -1214,7 +1209,7 @@ public:
 	//	@throws: wrong chrom
 	static void SetUserCID(bool prColon = false);
 
-	// Sets user-defined chromosome
+	// Sets user-defined chromosome by mark (case-insensitive)
 	static void SetUserChrom(const char* cMark);
 
 	//*** work with name
@@ -1227,19 +1222,21 @@ public:
 	// Returns mark by ID
 	static const string Mark(chrid cid);
 
-	// Locate chrom's mark in string.
-	//	@param str: string checked for chrom number
-	//	@returns:  pointer to the chrom number in str, or a null pointer if Chrom::Abbr is not part of str
+	// Locate chromosome's mark in string.
+	//	@param str: C-string checked for chromosome's abbreviation
+	//	@returns: pointer to the chromosome's mark in str, or a null pointer if abbreviation is not found
 	static const char* FindMark(const char* str);
 
-	// Gets chrom's abbreviation name'chrX'
+	// Returns abbreviation name 'chrX'
+	//	@param cid: chromosome's ID
 	//	@param numbSep: if true then separate chrom's number
 	static string AbbrName(chrid cid, bool numbSep = false);
 
-	// Gets short name 'chrom X'
+	// Returns short name 'chrom X'
+	//	@param cid: chromosome's ID
 	static string ShortName(chrid cid)	{ return Short + SPACE + Mark(cid); }
 
-	// Gets title name 'chromosome X' or 'chromosomes'
+	// Returns title name 'chromosome X' or 'chromosomes'
 	//	@param cid: chromosome's ID or UnID if plural
 	static const string TitleName(chrid cid = UnID);
 
