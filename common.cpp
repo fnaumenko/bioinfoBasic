@@ -1215,7 +1215,7 @@ void Chrom::ValidateIDs(const string& samHeader, function<void(chrid cID, const 
 void Chrom::SetUserCID(bool prColon)
 {
 	if (userChrom && (userCID = CaseInsID(userChrom)) == UnID)
-		Err(SepCl + NoChromMsg() + " in this genome").Throw();
+		Err((prColon ? SepCl : strEmpty) + NoChromMsg() + " in this genome").Throw();
 }
 
 void Chrom::SetUserChrom(const char* cMark)
