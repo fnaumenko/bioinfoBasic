@@ -1125,7 +1125,7 @@ const BYTE		Chrom::MaxNamedPosLength = BYTE(strlen(Abbr)) + MaxMarkLength + CHRL
 BYTE			Chrom::UserChrom = UCHAR_MAX;
 const char cM = 'M';
 
-chrid Chrom::customID = UnID;
+chrid Chrom::userCID = UnID;
 chrid Chrom::firstHeteroID;
 bool Chrom::relNumbering;
 
@@ -1208,14 +1208,14 @@ void Chrom::ValidateIDs(const string& samHeader, function<void(chrid cID, const 
 		if (callFunc)
 			f(cID, strchr(header, TAB) + strlen("\tLN:"));
 	}
-	SetCustomID(true);
+	SetUserCID(true);
 }
 
-void Chrom::SetCustomID(bool prColon)
+void Chrom::SetUserCID(bool prColon)
 {
 	if (UserChrom == UCHAR_MAX)		return;
 	const char* mark = Options::GetSVal(UserChrom);		// null if no chrom is set by user
-	if (mark && (customID = CaseInsID(mark)) == UnID) {
+	if (mark && (userCID = CaseInsID(mark)) == UnID) {
 		ostringstream ss;
 		ss << "no such " << sTitle << " in this genome";
 		if (prColon)	ss << SepCl;
@@ -1227,7 +1227,7 @@ void Chrom::SetCustomID(bool prColon)
 void Chrom::SetUserChrom(int opt)
 {
 	UserChrom = opt;
-	customID = ValidateID(Options::GetSVal(opt));
+	userCID = ValidateID(Options::GetSVal(opt));
 }
 
 const string AutosomeToStr(chrid cid) { return to_string(cid + 1); }

@@ -372,7 +372,7 @@ public:
 	template<typename Functor>
 	void Pass(Functor& func)
 	{
-		const bool setCustom = Chrom::CustomID() != Chrom::UnID;	// 	chrom is specified by user
+		const bool setCustom = Chrom::UserCID() != Chrom::UnID;	// 	chrom is specified by user
 		size_t	cItemCnt = 0;					// count of chrom entries
 		size_t	tItemCnt = 0;					// total count of entries
 		chrid cID = Chrom::UnID, nextcID = cID;	// current, next chrom
@@ -386,7 +386,7 @@ public:
 				//printf("chrom %d %s\n", int(nextcID), Chrom::Mark(nextcID));	// for debug
 				if (setCustom) {
 					if (userChromInProc)		break;
-					if (skipChrom = nextcID != Chrom::CustomID()) continue;
+					if (skipChrom = nextcID != Chrom::UserCID()) continue;
 					userChromInProc = true;
 				}
 				if (cID != Chrom::UnID && nextcID < cID)

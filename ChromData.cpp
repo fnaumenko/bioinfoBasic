@@ -78,9 +78,9 @@ void ChromSizes::SetPath(const string& gPath, const char* sPath, bool prMsg)
 
 void  ChromSizes::SetTreatedChrom(chrid cID)
 {
-	if (cID == Chrom::UnID)	return;
-	for (auto& c : Chroms::Container())
-		c.second.Treated = c.first == cID;
+	if (cID != Chrom::UnID)
+		for (auto& c : Chroms::Container())
+			c.second.Treated = c.first == cID;
 }
 
 ChromSizes::ChromSizes(const char* gName, bool prMsg, const char* sPath, bool checkGRef)
@@ -118,9 +118,9 @@ ChromSizes::ChromSizes(const char* gName, bool prMsg, const char* sPath, bool ch
 			Read(gName);		// gName is a chrom.sizes file
 			_sPath = FS::DirName(gName, true);
 		}
-		Chrom::SetCustomID();
+		Chrom::SetUserCID();
 
-		SetTreatedChrom(Chrom::CustomID());
+		SetTreatedChrom(Chrom::UserCID());
 	}
 	else if (sPath)
 		_gPath = _sPath = FS::MakePath(sPath);	// initialized be service dir; _ext is empty!

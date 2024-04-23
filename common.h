@@ -1135,7 +1135,7 @@ private:
 	static const char*	Marks;		// heterosome marks
 	static const string	UndefName;	// string not to convert in run-time
 
-	static chrid customID;			// user-defined chrom ID
+	static chrid userCID;			// user-defined chrom ID
 	static chrid firstHeteroID;		// first heterosome (X,Y,M) ID
 	static bool	relNumbering;		// true if relative numbering discipline is applied
 
@@ -1203,17 +1203,17 @@ public:
 
 	//*** custom ID getters, setters
 
-	// Gets custom chrom's ID
-	static chrid CustomID()	{ return customID; }
+	// Gets ID of user specified chromosome
+	static chrid UserCID()	{ return userCID; }
 
-	// Returns true if chrom is set by user, or if no chroms have been set by user (by default)
-	//	@param cid: chrom id specified by user
-	static bool IsCustom(chrid cid = UnID) { return customID == UnID || customID == cid; }
+	// Returns true if some chromosome is specified by user
+	//	@param cid: chrom id specified by user, or any chrom specified by user by default
+	static bool IsSetByUser(chrid cid = UnID) { return userCID == UnID || userCID == cid; }
 
 	// Sets custom chrom ID with control
 	//	@param prColon: if true then print ": " before exception message
 	//	@throws: wrong chrom
-	static void SetCustomID(bool prColon = false);
+	static void SetUserCID(bool prColon = false);
 
 	// Sets number of 'custom chrom' progr option
 	//	@param opt: option number

@@ -196,10 +196,10 @@ bool UniBedReader::CheckItem(chrlen cLen)
 void UniBedReader::PrintItemCount(size_t cnt, const string& title)
 {
 	dout << SepCl;
-	if (Chrom::CustomID() == Chrom::UnID)
+	if (Chrom::UserCID() == Chrom::UnID)
 		dout << sTotal << SPACE << cnt << SPACE << title;
 	else
-		dout << cnt << SPACE << title << " per " << Chrom::ShortName(Chrom::CustomID());
+		dout << cnt << SPACE << title << " per " << Chrom::ShortName(Chrom::UserCID());
 }
 
 void UniBedReader::PrintStats(size_t cnt)
@@ -302,10 +302,9 @@ size_t UniBedReader::EstItemCount() const
 {
 	const size_t extCnt = _file->EstItemCount();
 
-	//cout << LF << extCnt << TAB << _cSizes->GenSize() << TAB << Chrom::AbbrName(Chrom::CustomID()) << TAB << ChromSize(Chrom::CustomID()) <<LF;
-	if (!_cSizes)	return extCnt;
-	if (!Chrom::IsCustom()) {				// user stated chrom
-		size_t cnt = size_t((double(extCnt) / _cSizes->GenSize()) * ChromSize(Chrom::CustomID()));
+	//cout << LF << extCnt << TAB << _cSizes->GenSize() << TAB << Chrom::AbbrName(Chrom::UserCID()) << TAB << ChromSize(Chrom::UserCID()) <<LF;
+	if (_cSizes && !Chrom::IsSetByUser()) {
+		auto cnt = size_t((double(extCnt) / _cSizes->GenSize()) * ChromSize(Chrom::UserCID()));
 		return cnt < 2 ? extCnt : cnt;		// if data contains only one chrom, cnt can by near to 0
 	}
 	return extCnt;
