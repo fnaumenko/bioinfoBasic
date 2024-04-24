@@ -3,6 +3,7 @@ DataReader.cpp
 Last modified: 11/26/2023
 ***********************************************************/
 
+#include "Options.h"
 #include "DataReader.h"
 #include "ChromData.h"
 
