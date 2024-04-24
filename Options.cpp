@@ -1,3 +1,7 @@
+/**********************************************************
+Ùחורשעû.cpp
+Last modified: 04/24/2024
+***********************************************************/
 #include "Options.h"
 
 #define ENUM_REPLACE '?'	// symbol in description that is replaced by enum value
@@ -6,7 +10,7 @@
 #define OPT_TO_STREAM(opt)	HPH<<(opt)
 
 const char* optTitle = "option ";
-const char* Spotteruous = "Spotteruous";
+//const char* Spotteruous = "Spotteruous";
 const char* Default = " Default: ";
 const char* Missing = "missing ";
 const char* Warning = "WARNING: ";

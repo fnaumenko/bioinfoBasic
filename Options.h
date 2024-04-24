@@ -1,3 +1,11 @@
+/**********************************************************
+Options.h
+Provides managing executable options
+Fedor Naumenko (fedor.naumenko@gmail.com)
+Last modified: 04/24/2024
+***********************************************************/
+#pragma once
+
 #include "common.h"
 
 // 'Options' implements main() options and parameters treatment.
