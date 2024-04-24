@@ -153,6 +153,12 @@ static const char* sTemplate = "template";
 #define NO_VAL	-1	// option value is prohibited
 #define NO_DEF	-1	// do not print option default value
 
+
+static const char* Booleans[] = { "OFF","ON" };;	// boolean values
+
+// Returns C-string 'ON' or 'OFF'
+inline const char* BoolToStr(bool val) { return Booleans[val]; }
+
 /*************************************************************
 * time testing integer to char[]
 * printing string <numb><char><numb>[<char><numb>] and returing number of charachters printed

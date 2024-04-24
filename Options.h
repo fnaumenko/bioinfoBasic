@@ -33,7 +33,7 @@ private:
 
 	// Option types
 	enum class tOpt {
-		NONE = 0,	// no flags
+		NONE = 0,		// no flags
 		OBLIG = 0x01,	// true if option is obligatory
 		FACULT = 0x02,	// true if option's value is optional
 		ALLOW0 = 0x04,	// true if option's value allowed be 0 while checking min value
@@ -63,10 +63,10 @@ private:
 	struct Option {
 		const char	Char;		// option - character
 		const char* Str;		// option - string
-		Signs	Sign;		// option's signs
+		Signs		Sign;		// option's signs
 		const valType ValType;	// type of value
 		const BYTE	OptGroup;	// option's category
-		float NVal;		// default or established numeric|enum value
+		float		NVal;		// default or established numeric|enum value
 		const float MinNVal;	// minimal permissible value;
 								// for enum should be a first defined value
 		const float MaxNVal;	// maximal permissible value or count of enum values
@@ -79,16 +79,16 @@ private:
 		bool IsValEsc() const { return Sign.Is(tOpt::FACULT); }
 
 		// Sets option value.
-		//	@opt: option
-		//	@isword: true if option is a word, false if option is a char
-		//	@val: value of option
-		//	@nextItem: next token after opt and val, or NULL
-		//	@argInd: the current index in argc; increased by 1 if value is accepted
-		//	@returns:  0 if success, -1 if not found, 1 if option or value is wrong
+		//	@param opt: option
+		//	@param isword: true if option is a word, false if option is a char
+		//	@param val: value of option
+		//	@param nextItem: next token after opt and val, or NULL
+		//	@param argInd: the current index in argc; increased by 1 if value is accepted
+		//	@returns: 0 if success, -1 if not found, 1 if option or value is wrong
 		int	SetVal(const char* opt, bool isword, char* val, char* nextItem, int& argInd);
 
 		// Check option for obligatory.
-		//	@returns:  -1 if option is obligatory but not stated, otherwise 1
+		//	@returns: -1 if option is obligatory but not stated, otherwise 1
 		int CheckOblig() const;
 
 		// Prints option if it's obligatory
@@ -97,13 +97,12 @@ private:
 		// Prints option if it belongs to a group g
 		void PrintGroup(BYTE g) const { if (OptGroup == g) Print(true); }
 
-		// Returns option name and value
+		// Returns option name and value optionally
 		string ToStr(bool prVal) const;
 
 		// Prints option in full or short way.
-		//	@descr: if true, prints in full way: 
-		//	signature, description (marks as Required if needed), default value, 
-		//	otherwise signature only
+		//	@param descr: if true, prints in full way: 
+		//	signature, description (marks as Required if needed), default value, otherwise signature only
 		void Print(bool descr) const;
 
 #ifdef DEBUG
@@ -199,7 +198,6 @@ private:
 	static const char* sPrTime;			// run time string printed in help
 	static const char* sPrUsage;		// usage string printed in help
 	static const char* sPrVersion;		// version string printed in help
-	static const char* Booleans[];	// boolean values
 	static const char* TypeNames[];	// names of option value types in help
 	static const char* OptGroups[];	// names of option groups in help
 	static const Usage	Usages[];	// content of 'Usage' variants in help
@@ -286,11 +284,8 @@ public:
 	static bool IsMaxEnum(int opt) { return List[opt].NVal == List[opt].MaxNVal - 1; }
 	// Get maximal permissible numeric value by index
 	static UINT GetMaxIVal(int opt) { return UINT(List[opt].MaxNVal); }
-	// Returns C string 'ON' or 'OFF'
+	// Returns C-string 'ON' or 'OFF'
 	static const char* BoolToStr(int opt) { return Booleans[GetBVal(opt)]; }
-	static const char* BoolToStr(bool val) { return Booleans[val]; }
-	// Gets pointer to the C string contained 'ON' or 'OFF'
-	//static const char* BoolToStr(bool val)	{ return Booleans[int(val)]; }
 
 	// Returns file name by index: if value is not oblig and is not specified, then defName with given extention
 	static const string GetFileName(int opt, const char* defName, const string& ext = "_out.txt");
@@ -304,4 +299,3 @@ public:
 	static void Print();
 #endif
 } options;
-

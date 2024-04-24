@@ -1,9 +1,8 @@
 /**********************************************************
 DataReader.cpp
-Last modified: 11/26/2023
+Last modified: 04/24/2024
 ***********************************************************/
 
-#include "Options.h"
 #include "DataReader.h"
 #include "ChromData.h"
 
@@ -432,7 +431,7 @@ void Read::PrintParams(const char* signOut, bool isRVL)
 	cout << "length = " << int(FixedLen);
 	if (IsPosInName())	cout << SepSCl << "name includes position";
 	cout << SepSCl << "N-limit" << SepCl;
-	if (LimitN == readlen(vUNDEF))	cout << Options::BoolToStr(false);
+	if (LimitN == readlen(vUNDEF))	cout << BoolToStr(false);
 	else							cout << LimitN;
 	cout << LF;
 }
