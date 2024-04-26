@@ -366,8 +366,6 @@ bool FBedReader::NarrowLenDistr() const
 
 /************************ class Read ************************/
 
-static const string TipNoFind = "Cannot find ";
-
 readlen	Read::FixedLen;				// length of Read
 const char	Read::Strands[] = { '+', '-' };
 
@@ -429,6 +427,8 @@ void Read::PrintParams(const char* signOut, bool isRVL)
 #else
 
 #ifdef _READS
+
+static const string TipNoFind = "Cannot find ";
 
 long GetNumber(const char* str, const RBedReader& file, const string& tipEnd)
 {
