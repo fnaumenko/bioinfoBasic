@@ -657,9 +657,11 @@ void Chrom::SetUserCID(bool prColon)
 
 void Chrom::SetUserChrom(const char* cMark)
 {
-	userChrom = cMark;
-	*(const_cast<char*>(userChrom)) = toupper(*cMark);
-	userCID = ValidateID(userChrom);
+	if (cMark) {
+		userChrom = cMark;
+		*(const_cast<char*>(userChrom)) = toupper(*cMark);
+		userCID = ValidateID(userChrom);
+	}
 }
 
 size_t Chrom::MarkLength(chrid cID)
@@ -696,7 +698,9 @@ const string Chrom::TitleName(chrid cid)
 
 const string Chrom::NoChromMsg()
 {
-	return "there is no " + sTitle + sSPACE + userChrom;
+	// Checking for 'userChrom' is redundant, because checking for empty sequence is already done in the 'UniBedReader' constructor.
+	// It was made for testing purposes and doesn't affect performance, because this is the final output
+	return "there is no " + (userChrom ? sTitle +sSPACE + userChrom : Title(true));
 }
 
 //const string Chrom::Absent(chrid cid, const string& what)
