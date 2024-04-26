@@ -440,20 +440,19 @@ long GetNumber(const char* str, const RBedReader& file, const string& tipEnd)
 
 #ifdef _PE_READ
 
-Read::Read(const RBedReader& file) : Region(file.ItemRegion())
+Read::Read(const RBedReader& file) : Region(file.ItemRegion()), Strand(file.ItemStrand())
 {
 	Numb = GetNumber(
 		strrchr(file.ItemName() + 1, Read::NmNumbDelimiter),
 		file,
 		"number in the read's name. It should be '*.<number>'"
 	);
-	Strand = file.ItemStrand();
 }
 
 #elif defined _VALIGN
 
 // Extended (with saved chrom & position in name) Read constructor
-Read::Read(const RBedReader& file) : Region(file.ItemRegion())
+Read::Read(const RBedReader& file) : Region(file.ItemRegion()), Strand(file.ItemStrand()), Score(file.ItemValue())
 {
 	const char* ss = strchr(file.ItemName() + 1, Read::NmDelimiter);
 	if (ss)		ss = strstr(++ss, Chrom::Abbr);		// to be sure that 'chr' is in ss
@@ -470,9 +469,6 @@ Read::Read(const RBedReader& file) : Region(file.ItemRegion())
 	//if (!ss || !isdigit(*(++ss)))
 	//	file.ThrowExceptWithLineNumb(TipNoFind + "number" + tip1);
 	//Numb = atol(ss);
-
-	Strand = file.ItemStrand();
-	Score = file.ItemValue();
 }
 
 void Read::Print() const
