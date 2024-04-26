@@ -2,7 +2,7 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 04/23/2024
+Last modified: 04/26/2024
 ***********************************************************/
 #pragma once
 
@@ -613,8 +613,6 @@ public:
 #else
 public:
 	bool	Strand;		// true if strand is positive
-
-	//void InitBase(const RBedReader& file);
 
 	//chrlen Centre() const { return Pos + (Len >> 1); }
 #ifdef _PE_READ

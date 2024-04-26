@@ -1,6 +1,6 @@
 /**********************************************************
 DataReader.cpp
-Last modified: 04/24/2024
+Last modified: 04/26/2024
 ***********************************************************/
 
 #include "DataReader.h"
@@ -427,16 +427,6 @@ void Read::PrintParams(const char* signOut, bool isRVL)
 	cout << LF;
 }
 #else
-
-//void Read::InitBase(const RBedReader& file)
-//{
-//	//const Region& rgn = file.ItemRegion();
-//	//Start = rgn.Start;
-//	//End = rgn.End;
-//	//std::copy(rgn.Start, rgn.End, this);
-//	memcpy(this, &file.ItemRegion(), sizeof(Region));
-//	Strand = file.ItemStrand();
-//}
 
 #ifdef _READS
 
