@@ -154,8 +154,7 @@ static const char* sTemplate = "template";
 #define NO_DEF	-1	// do not print option default value
 
 
-static const char* Booleans[] = { "OFF","ON" };;	// boolean values
-
+static const char* Booleans[] = { "OFF","ON" };	// boolean values
 // Returns C-string 'ON' or 'OFF'
 inline const char* BoolToStr(bool val) { return Booleans[val]; }
 
@@ -959,6 +958,10 @@ struct Region
 	chrlen End;		// end position of the region in standard chromosomal coordinates
 
 	Region(chrlen start = 0, chrlen end = 0) : Start(start), End(end) {}
+
+	// Constructs Read
+	//	@param r: original read
+	Region(const Region& r) { memcpy(this, &r, sizeof(Region)); }
 
 	// Constructs extended Read (fragment)
 	//	@param r: original read

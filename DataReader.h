@@ -614,7 +614,7 @@ public:
 public:
 	bool	Strand;		// true if strand is positive
 
-	void InitBase(const RBedReader& file);
+	//void InitBase(const RBedReader& file);
 
 	//chrlen Centre() const { return Pos + (Len >> 1); }
 #ifdef _PE_READ
@@ -624,8 +624,8 @@ public:
 	Read(const RBedReader& file);
 
 	// Returns frag length
-	//	@param r: second read in a pair
-	fraglen FragLen(const Read& r) const { return Strand ? r.End - Start : End - r.Start; }
+	//	@param mate: second read in a pair
+	fraglen FragLen(const Read& mate) const { return Strand ? mate.End - Start : End - mate.Start; }
 
 	void Print() const { dout << Start << TAB << Numb << TAB << Strand << LF; }
 

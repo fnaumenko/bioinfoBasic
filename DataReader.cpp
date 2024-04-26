@@ -368,15 +368,6 @@ bool FBedReader::NarrowLenDistr() const
 
 static const string TipNoFind = "Cannot find ";
 
-#ifdef _READS
-long GetNumber(const char* str, const RBedReader& file, const string& tipEnd)
-{
-	if (!str || !isdigit(*(++str)))
-		file.ThrowExceptWithLineNumb(TipNoFind + tipEnd);
-	return atol(str);
-}
-#endif	// _READS
-
 readlen	Read::FixedLen;				// length of Read
 const char	Read::Strands[] = { '+', '-' };
 
@@ -437,30 +428,42 @@ void Read::PrintParams(const char* signOut, bool isRVL)
 }
 #else
 
-void Read::InitBase(const RBedReader& file)
+//void Read::InitBase(const RBedReader& file)
+//{
+//	//const Region& rgn = file.ItemRegion();
+//	//Start = rgn.Start;
+//	//End = rgn.End;
+//	//std::copy(rgn.Start, rgn.End, this);
+//	memcpy(this, &file.ItemRegion(), sizeof(Region));
+//	Strand = file.ItemStrand();
+//}
+
+#ifdef _READS
+
+long GetNumber(const char* str, const RBedReader& file, const string& tipEnd)
 {
-	const Region& rgn = file.ItemRegion();
-	Start = rgn.Start;
-	End = rgn.End;
-	Strand = file.ItemStrand();
+	if (!str || !isdigit(*(++str)))
+		file.ThrowExceptWithLineNumb(TipNoFind + tipEnd);
+	return atol(str);
 }
+#endif	// _READS
 
 #ifdef _PE_READ
 
-Read::Read(const RBedReader& file)
+Read::Read(const RBedReader& file) : Region(file.ItemRegion())
 {
 	Numb = GetNumber(
 		strrchr(file.ItemName() + 1, Read::NmNumbDelimiter),
 		file,
 		"number in the read's name. It should be '*.<number>'"
 	);
-	InitBase(file);
+	Strand = file.ItemStrand();
 }
 
 #elif defined _VALIGN
 
 // Extended (with saved chrom & position in name) Read constructor
-Read::Read(const RBedReader& file)
+Read::Read(const RBedReader& file) : Region(file.ItemRegion())
 {
 	const char* ss = strchr(file.ItemName() + 1, Read::NmDelimiter);
 	if (ss)		ss = strstr(++ss, Chrom::Abbr);		// to be sure that 'chr' is in ss
@@ -478,7 +481,7 @@ Read::Read(const RBedReader& file)
 	//	file.ThrowExceptWithLineNumb(TipNoFind + "number" + tip1);
 	//Numb = atol(ss);
 
-	InitBase(file);
+	Strand = file.ItemStrand();
 	Score = file.ItemValue();
 }
 
