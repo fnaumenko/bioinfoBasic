@@ -1,6 +1,6 @@
 /**********************************************************
 DataReader.cpp
-Last modified: 04/26/2024
+Last modified: 04/27/2024
 ***********************************************************/
 
 #include "DataReader.h"
@@ -145,14 +145,11 @@ BamReader::BamReader(const char* fName, ChromSizes* cSizes, bool prName) : _prFN
 
 bool UniBedReader::IsTimer = false;	// if true then manage timer by Timer::Enabled, otherwise no timer
 
-// Returns chrom size
-//	Defined in cpp because of call in template function (otherwise ''ChromSize' is no defined')
 chrlen UniBedReader::ChromSize(chrid cID) const
 {
 	return (*_cSizes)[cID];
 }
 
-// Resets the current accounting of items
 void UniBedReader::ResetChrom()
 {
 	_rgn0.Set();
@@ -161,9 +158,6 @@ void UniBedReader::ResetChrom()
 	_cCnt++;
 }
 
-// Validate item
-//	@cLen: current chrom length or 0 if _cSizes is undefined
-//	return: true if item is valid
 bool UniBedReader::CheckItem(chrlen cLen)
 {
 	bool res = true;
@@ -300,7 +294,6 @@ UniBedReader::~UniBedReader()
 		delete (BedReader*)_file;
 }
 
-// Returns estimated number of items
 size_t UniBedReader::EstItemCount() const
 {
 	const size_t extCnt = _file->EstItemCount();
@@ -367,7 +360,7 @@ bool FBedReader::NarrowLenDistr() const
 /************************ class Read ************************/
 
 readlen	Read::FixedLen;				// length of Read
-const char	Read::Strands[] = { '+', '-' };
+const char Read::Strands[] = { '+', '-' };
 
 #ifdef _ISCHIP
 
@@ -428,12 +421,12 @@ void Read::PrintParams(const char* signOut, bool isRVL)
 
 #ifdef _READS
 
-static const string TipNoFind = "Cannot find ";
+static const string MsgNotFind = "Cannot find ";
 
-long GetNumber(const char* str, const RBedReader& file, const string& tipEnd)
+long GetNumber(const char* str, const RBedReader& file, const string& msgEnd)
 {
 	if (!str || !isdigit(*(++str)))
-		file.ThrowExceptWithLineNumb(TipNoFind + tipEnd);
+		file.ThrowExceptWithLineNumb(MsgNotFind + msgEnd);
 	return atol(str);
 }
 #endif	// _READS
@@ -457,7 +450,7 @@ Read::Read(const RBedReader& file) : Region(file.ItemRegion()), Strand(file.Item
 	const char* ss = strchr(file.ItemName() + 1, Read::NmDelimiter);
 	if (ss)		ss = strstr(++ss, Chrom::Abbr);		// to be sure that 'chr' is in ss
 	if (!ss)
-		file.ThrowExceptWithLineNumb(TipNoFind + "chrom mark in the read's name. It should be '*chr<x>*'");
+		file.ThrowExceptWithLineNumb(MsgNotFind + "chrom mark in the read's name. It should be '*chr<x>*'");
 	RecCID = Chrom::ID(ss += strlen(Chrom::Abbr));
 	RecStart = GetNumber(
 		strchr(++ss, Read::NmPos1Delimiter),
@@ -467,7 +460,7 @@ Read::Read(const RBedReader& file) : Region(file.ItemRegion()), Strand(file.Item
 
 	//ss = strchr(++ss, Read::NmNumbDelimiter);	// "number" position, begining with '.'
 	//if (!ss || !isdigit(*(++ss)))
-	//	file.ThrowExceptWithLineNumb(TipNoFind + "number" + tip1);
+	//	file.ThrowExceptWithLineNumb(MsgNotFind + "number" + tip1);
 	//Numb = atol(ss);
 }
 

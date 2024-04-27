@@ -178,7 +178,8 @@ void Distrib::AllDParams::Print(dostream& s)
 	if (notSingle || !IsSetInSorted(eCType::NORM))
 		s << "\tmode\texp.val";
 	s << LF;
-	for (const QualDParams& params : _allParams)	params.Print(s, maxPCC);
+	for (const QualDParams& params : _allParams)
+		params.Print(s, maxPCC);
 	if (note) {
 		s << LF;
 		for (int i = 0; i < 2; i++)
