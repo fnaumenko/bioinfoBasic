@@ -8,6 +8,10 @@ Last modified: 04/27/2024
 #include <algorithm>    // std::sort
 
 const float SDPI = float(sqrt(3.1415926 * 2));		// square of doubled Pi
+// ratio of the summit height to height of the measuring point
+const int hRatio = 2;
+// log of ratio of the summit height to height of the measuring point
+const float lghRatio = float(log(hRatio));
 
 const char* Distrib::sDistrib = "distribution";
 const char* Distrib::sTitle[] = { "Norm", "Lognorm", "Gamma" };
@@ -24,12 +28,6 @@ const string Distrib::sSpec[] = {
 	"looks slightly defective on the left",
 	"looks defective on the left"
 };
-
-// ratio of the summit height to height of the measuring point
-const int hRatio = 2;
-// log of ratio of the summit height to height of the measuring point
-const float lghRatio = float(log(hRatio));
-
 
 // Returns two constant terms of the distrib equation of type, supplied as an index
 //	@param p: distrib params: mean/alpha and sigma/beta
@@ -371,12 +369,6 @@ void Distrib::CalcPCC(dtype type, DParams& dParams, fraglen Mode, bool full) con
 	if (!isNaN(pcc))	dParams.PCC = pcc;
 }
 
-void Distrib::SetPCC(dtype type, const fpair& keypts, DParams& dParams, fraglen Mode) const
-{
-	CalcParams[type](keypts, dParams.Params);
-	CalcPCC(type, dParams, Mode);
-}
-
 void Distrib::CallParams(dtype type, fraglen base, dpoint& summit)
 {
 	const BYTE failCntLim = 2;	// max count of base's decreasing steps after which PCC is considered only decreasing
@@ -392,7 +384,9 @@ void Distrib::CallParams(dtype type, fraglen base, dpoint& summit)
 	for (; base; base--) {
 		//for (int i=0; !i; i++) {	// to print spline for fixed base
 		const fpair keypts = GetKeyPoints(base, summit0);
-		SetPCC(type, keypts, dParams0, summit0.first);
+
+		CalcParams[type](keypts, dParams.Params);
+		CalcPCC(type, dParams, summit0.first);
 #ifdef MY_DEBUG
 		* _s << setw(4) << setfill(SPACE) << left << ++i;
 		*_s << "base: " << setw(2) << base << "  summitX: " << keypts.first << "\tpcc: " << dParams0.PCC;

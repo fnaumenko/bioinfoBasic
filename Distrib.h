@@ -1,7 +1,8 @@
 /**********************************************************
-Distrib 2023 Fedor Naumenko (fedor.naumenko@gmail.com)
+Distrib.h
+2023 Fedor Naumenko (fedor.naumenko@gmail.com)
 -------------------------
-Last modified: 11/19/2023
+Last modified: 04/27/2024
 -------------------------
 Provides value (typically frequency) distribution functionality
 ***********************************************************/
@@ -169,25 +170,18 @@ private:
 	//	@returns key points: X-coord of highest point, X-coord of right middle hight point
 	fpair GetKeyPoints(fraglen base, dpoint& summit) const;
 
-	// Compares this sequence with calculated one by given mean & sigma, and returns PCC
-	//	@param type: consecutive distribution type
-	//	@param dParams: returned PCC, input mean(alpha) & sigma(beta)
-	//	@param Mode: X-coordinate of summit
-	//	@param full: if true then correlate from the beginning, otherwiase from summit
+	// Compares this sequence with calculated one with given mean&sigma, and returns PCC
+	//	@param type[in]: consecutive distribution type
+	//	@param dParams[in, out]: returned PCC, input mean(alpha) & sigma(beta)
+	//	@param Mode[in]: X-coordinate of summit
+	//	@param full[in]: if true then correlate from the beginning, otherwiase from summit
 	//	calculated on the basis of the "start of the sequence" – "the first value less than 0.1% of the maximum".
 	void CalcPCC(dtype type, DParams& dParams, fraglen Mode, bool full = true) const;
 
-	// Calculates distribution parameters
-	//	@param type: consecutive distribution type
-	//	@param keyPts: key points: X-coord of highest point, X-coord of right middle hight point
-	//	@param dParams: returned PCC, mean(alpha) & sigma(beta)
-	//	@param Mode: X-coordinate of summit
-	void SetPCC(dtype type, const fpair& keypts, DParams& dParams, fraglen Mode) const;
-
-	// Calculates called distribution parameters
-	//	@param type: consecutive distribution type
-	//	@param base: moving window half-length
-	//	@param summit: returned X,Y coordinates of best spliced (smoothed) summit
+	// Calculates the best distribution parameters
+	//	@param type[in]: consecutive distribution type
+	//	@param base[in]: moving window half-length
+	//	@param summit[out]: returned X,Y coordinates of best spliced (smoothed) summit
 	void CallParams(dtype type, fraglen base, dpoint& summit);
 
 	// Prints original distribution features
