@@ -63,8 +63,6 @@ private:
 	static const string sParams;
 	static const string sInaccurate;
 	const fraglen smoothBase = 1;	// splining base for the smooth distribution
-	static const int hRatio = 2;	// ratio of the summit height to height of the measuring point
-	static const float lghRatio;	// log of ratio of the summit height to height of the measuring point
 
 	// Keeps distribution params: PCC, mean(alpha), sigma(beta)
 	struct DParams
@@ -153,12 +151,6 @@ private:
 	// Returns true if combo type is represented in combo cType
 	static bool IsType(eCType cType, eCType type) { return cType & type; }
 
-	// Calls distribution parameters by consecutive distribution type
-	//	@param keypts: key points: X-coord of highest point, X-coord of right middle hight point
-	//	@param params: returned mean(alpha) & sigma(beta)
-	//	Defined as a member of the class only to use the private short name lghRatio
-	static void (*SetParams[])(const fpair& keypts, fpair& params);
-
 	eSpec _spec = eSpec::CLEAR;		// distribution specification
 	AllDParams	_allParams;			// distributions parameters
 #ifdef MY_DEBUG
@@ -192,7 +184,7 @@ private:
 	//	@param Mode: X-coordinate of summit
 	void SetPCC(dtype type, const fpair& keypts, DParams& dParams, fraglen Mode) const;
 
-	// Calculates and print called distribution parameters
+	// Calculates called distribution parameters
 	//	@param type: consecutive distribution type
 	//	@param base: moving window half-length
 	//	@param summit: returned X,Y coordinates of best spliced (smoothed) summit

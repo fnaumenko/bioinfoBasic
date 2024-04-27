@@ -1,3 +1,8 @@
+/**********************************************************
+Distrib.cpp
+Last modified: 04/27/2024
+***********************************************************/
+
 #include "Distrib.h"
 #include "spline.h"
 #include <algorithm>    // std::sort
@@ -7,7 +12,6 @@ const float SDPI = float(sqrt(3.1415926 * 2));		// square of doubled Pi
 const char* Distrib::sDistrib = "distribution";
 const char* Distrib::sTitle[] = { "Norm", "Lognorm", "Gamma" };
 const float Distrib::DParams::UndefPCC = -1;
-const float Distrib::lghRatio = float(log(Distrib::hRatio));	// log of ratio of the summit height to height of the measuring point
 const string Distrib::sParams = "parameters";
 const string Distrib::sInaccurate = " may be inaccurate";
 const string Distrib::sSpec[] = {
@@ -20,6 +24,11 @@ const string Distrib::sSpec[] = {
 	"looks slightly defective on the left",
 	"looks defective on the left"
 };
+
+// ratio of the summit height to height of the measuring point
+const int hRatio = 2;
+// log of ratio of the summit height to height of the measuring point
+const float lghRatio = float(log(hRatio));
 
 
 // Returns two constant terms of the distrib equation of type, supplied as an index
@@ -55,37 +64,36 @@ double Distrib::GetVal(eCType ctype, float mean, float sigma, fraglen x)
 
 // Returns distribution mode
 //	@param p: distrib params: mean/alpha and sigma/beta
-float(*GetMode[])(const fpair& p) = {
-	[](const fpair& p) -> float { return 0; },									// normal
-	[](const fpair& p) -> float { return exp(p.first - p.second * p.second); },	// lognormal
-	[](const fpair& p) -> float { return (p.first - 1) * p.second; }			// gamma 
+float (*GetMode[])(const fpair& p) = {
+	[](const fpair& p) { return 0.0f; },								// normal
+	[](const fpair& p) { return exp(p.first - p.second * p.second); },	// lognormal
+	[](const fpair& p) { return (p.first - 1) * p.second; }				// gamma 
 };
 
 // Returns distribution Mean (expected value)
 //	@param p: distrib params: mean/alpha and sigma/beta
-float(*GetMean[])(const fpair& p) = {
-	[](const fpair& p) -> float { return 0; },										// normal
-	[](const fpair& p) -> float { return exp(p.first + p.second * p.second / 2); },	// lognormal
-	[](const fpair& p) -> float { return p.first * p.second; }						// gamma 
+float (*GetMean[])(const fpair& p) = {
+	[](const fpair& p) { return 0.0f; },									// normal
+	[](const fpair& p) { return exp(p.first + p.second * p.second / 2); },	// lognormal
+	[](const fpair& p) { return p.first * p.second; }						// gamma 
 };
 
-// Calls distribution parameters by consecutive distribution type as index
-//	@param keypts: key points: X-coord of highest point, X-coord of right middle hight point
-//	@param p: returned params: mean(alpha) & sigma(beta)
-//	Defined as a member of the class only to use the private short 'lghRatio'
-void (*Distrib::SetParams[])(const fpair& keypts, fpair& p) = {
-	[](const fpair& keypts, fpair& p) {	//** normal
-		p.first = keypts.first;														// mean
-		p.second = float(sqrt(pow(keypts.second - p.first, 2) / lghRatio / 2));		// sigma
+// Calculates distribution parameters
+//	@param keypts[in]: key points: X-coord of highest point, X-coord of right middle hight point
+//	@param p[out]: returned params: mean(alpha) & sigma(beta)
+void (*CalcParams[])(const fpair& keypts, fpair& p) = {
+	[](const fpair& keypts, fpair& p) {		//*** normal
+		p.first = keypts.first;
+		p.second = float(sqrt(pow(keypts.second - p.first, 2) / lghRatio / 2));
 	},
-	[](const fpair& keypts, fpair& p) {	//** lognormal
-		const float lgM = log(keypts.first);	// logarifm of Mode
-		const float lgH = log(keypts.second);	// logarifm of middle height
+	[](const fpair& keypts, fpair& p) {		//*** lognormal
+		const float lgM = log(keypts.first);		// logarifm of Mode
+		const float lgH = log(keypts.second);		// logarifm of middle height
 
 		p.first = (lgM * (lghRatio + lgM - lgH) + (lgH * lgH - lgM * lgM) / 2) / lghRatio;
 		p.second = sqrt(p.first - lgM);
 	},
-	[](const fpair& keypts, fpair& p) {	//** gamma
+	[](const fpair& keypts, fpair& p) {		//*** gamma
 		p.second = (keypts.second - keypts.first * (1 + log(keypts.second / keypts.first))) / lghRatio;
 		p.first = (keypts.first / p.second) + 1;
 	}
@@ -365,7 +373,7 @@ void Distrib::CalcPCC(dtype type, DParams& dParams, fraglen Mode, bool full) con
 
 void Distrib::SetPCC(dtype type, const fpair& keypts, DParams& dParams, fraglen Mode) const
 {
-	SetParams[type](keypts, dParams.Params);
+	CalcParams[type](keypts, dParams.Params);
 	CalcPCC(type, dParams, Mode);
 }
 
