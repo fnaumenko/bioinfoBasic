@@ -261,9 +261,8 @@ fraglen Distrib::GetBase()
 
 	// from now odd is always dip, even - peak, last - peak
 	// looking critical dip in extr
-	//s << p0.first << TAB << p0.second << LF;
 	for (itv++; itv != extr.end(); i++, itv++) {
-		p = *itv;	// we don't need point, using the Y-coordinate is enough. Çoint is used for debugging
+		p = *itv;	// we don't need point, using the Y-coordinate is enough. Point is used for debugging
 		//cout << p.first << TAB << p.second << TAB;
 		//if(i % 2)		cout << float(p0.second - p.second) / pMMax.second << "\tdip\n";
 		//else			cout << float(p.second - p0.second) / pMMax.second << "\tpeak\n";
