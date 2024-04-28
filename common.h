@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 04/24/2024
+Last modified: 04/28/2024
 ***********************************************************/
 #pragma once
 
@@ -158,6 +158,11 @@ static const char* Booleans[] = { "OFF","ON" };	// boolean values
 // Returns C-string 'ON' or 'OFF'
 inline const char* BoolToStr(bool val) { return Booleans[val]; }
 
+// Converts string to chrlen
+chrlen atoui(const char* p);
+// Converts string to size_t
+size_t atoul(const char* p);
+
 /*************************************************************
 * time testing integer to char[]
 * printing string <numb><char><numb>[<char><numb>] and returing number of charachters printed
@@ -171,31 +176,6 @@ sprintf 123456789-123456789	19	03.59	01.47	common the best
 oss     123456789-123456789	19	23.36	04.98
 one oss 123456789-123456789	19	18.76	01.67
 **************************************************************/
-
-// Prints number to buffer without checkup
-//	@buf: buffer to print
-//	@numb: number to print
-//	@returns:  total number of characters written
-//	NOT USED in Linux (sprintf() is used instead due to performance) 
-//template <typename T>
-//BYTE	PrintNumbToBuff(char* const buf, T numb)
-//{
-//	const string s = to_string(numb);
-//	move(s.begin(), s.end(), buf);
-//	return BYTE(s.size());
-//}
-
-// Prints the number following the delimiter to buffer without checkup
-//	@buf: buffer to print
-//	@delim: delimiter to print
-//	@numb: number to print
-//	@returns:  total number of characters written
-//	NOT USED in Linux (sprintf() is used instead due to performance) 
-//template <typename T>
-//BYTE	PrintDelimNumbToBuff(char* const buf, char delim, T numb) {
-//	*buf = delim;
-//	return PrintNumbToBuff(buf + 1, numb) + 1;
-//}
 
 // Gets number of members in static array
 #define ArrCnt(arr)	sizeof(arr)/sizeof(arr[0])

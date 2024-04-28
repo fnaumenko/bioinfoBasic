@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 04/24/2024
+Last modified: 04/28/2024
 ***********************************************************/
 
 #include "common.h"
@@ -14,6 +14,22 @@ Last modified: 04/24/2024
 #endif
 
 /************************ common Functions ************************/
+
+chrlen atoui(const char* p)
+{
+	chrlen x = 0;
+	for (; *p >= '0' && *p <= '9'; ++p)
+		x = x * 10 + (*p - '0');
+	return x;
+}
+
+size_t atoul(const char* p)
+{
+	size_t x = 0;
+	for (; *p >= '0' && *p <= '9'; ++p)
+		x = x * 10 + (*p - '0');
+	return x;
+}
 
 int OnesCount(int n)
 {
@@ -585,7 +601,8 @@ chrid Chrom::HeteroID(const char cMark)
 chrid Chrom::GetRelativeID(const char* cMark)
 {
 	if (isdigit(*cMark)) {		// autosome
-		chrid id = atoi(cMark) - 1;
+		//chrid id = atoi(cMark) - 1;
+		chrid id = chrid(atoui(cMark) - 1);
 		return id < firstHeteroID ? id : UnID;
 	}
 	return HeteroID(*cMark);	// heterosome
@@ -617,7 +634,8 @@ short Chrom::PrefixLength(const char* cName)
 
 chrid Chrom::ID(const char* cName, size_t prefixLen)
 {
-	return isdigit(*(cName += prefixLen)) ? atoi(cName) - 1 : HeteroID(*cName);
+	//return isdigit(*(cName += prefixLen)) ? atoi(cName) - 1 : HeteroID(*cName);
+	return isdigit(*(cName += prefixLen)) ? chrid(atoui(cName)) - 1 : HeteroID(*cName);
 }
 
 chrid Chrom::ValidateID(const char* cName, size_t prefixLen)
@@ -628,7 +646,8 @@ chrid Chrom::ValidateID(const char* cName, size_t prefixLen)
 		if (cName[i] == USCORE)	return UnID;	// exclude chroms with '_'
 
 	if (isdigit(*cName)) {						// autosome
-		chrid id = atoi(cName);
+		//chrid id = atoi(cName);
+		chrid id = atoui(cName);
 		if (relativeNumbering && id > firstHeteroID)	firstHeteroID = id;
 		return id - 1;
 	}

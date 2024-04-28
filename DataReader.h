@@ -2,7 +2,7 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 04/26/2024
+Last modified: 04/28/2024
 ***********************************************************/
 #pragma once
 
@@ -141,10 +141,10 @@ public:
 	bool GetNextItem() { return TabReader::GetNextLine(); }
 
 	// Returns current item's start position
-	chrlen ItemStart()	const { return LongField(1); }
+	chrlen ItemStart()	const { return UIntField(1); }
 
 	// Returns current item's end position
-	chrlen ItemEnd()	const { return LongField(2); }
+	chrlen ItemEnd()	const { return UIntField(2); }
 
 	// Returns current item's length
 	readlen ItemLength()const { return readlen(ItemEnd() - ItemStart()); }
@@ -616,7 +616,7 @@ public:
 
 	//chrlen Centre() const { return Pos + (Len >> 1); }
 #ifdef _PE_READ
-	ULONG	Numb;		// read number keeped in name
+	size_t	Numb;		// read number keeped in name
 
 	// PE Read constructor
 	Read(const RBedReader& file);

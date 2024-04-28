@@ -1,6 +1,6 @@
 /**********************************************************
 ChromData.cpp
-Last modified: 04/20/2024
+Last modified: 04/28/2024
 ***********************************************************/
 
 #include "ChromData.h"
@@ -21,7 +21,7 @@ void ChromSizes::Read(const string& fName)
 	while (file.GetNextLine()) {
 		chrid cID = Chrom::ValidateIDbyAbbrName(file.StrField(0));
 		if (cID != Chrom::UnID)
-			AddValue(cID, ChromSize(file.LongField(1)));
+			AddValue(cID, ChromSize(file.UIntField(1)));
 	}
 }
 
@@ -132,7 +132,8 @@ void ChromSizes::Init(const string& headerSAM)
 	if (!IsFilled())
 		Chrom::ValidateIDs(
 			headerSAM,
-			[this](chrid cID, const char* header) { AddValue(cID, atol(header)); },
+			//[this](chrid cID, const char* header) { AddValue(cID, atol(header)); },
+			[this](chrid cID, const char* header) { AddValue(cID, atoui(header)); },
 			true
 		);
 }

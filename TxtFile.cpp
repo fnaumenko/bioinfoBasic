@@ -1,6 +1,6 @@
 /**********************************************************
 TxtFile.cpp
-Last modified: 11/26/2023
+Last modified: 04/28/2024
 ***********************************************************/
 
 #include "TxtFile.h"
@@ -779,9 +779,9 @@ ChromDefRegions::ChromDefRegions(const string& fName, chrlen minGapLen) : _gapLe
 
 		Reserve(file.EstLineCount());
 		if (file.GetNextLine()) {
-			_gapLen = file.LongField(1);	// first line contains total length of gaps
+			_gapLen = file.UIntField(1);	// first line contains total length of gaps
 			while (file.GetNextLine()) {
-				rgn.Set(file.LongField(0), file.LongField(1));
+				rgn.Set(file.UIntField(0), file.UIntField(1));
 				if (!minGapLen || comb.ExceptRegion(rgn))
 					Add(rgn);
 			}

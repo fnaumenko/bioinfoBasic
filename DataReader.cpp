@@ -1,6 +1,6 @@
 /**********************************************************
 DataReader.cpp
-Last modified: 04/27/2024
+Last modified: 04/28/2024
 ***********************************************************/
 
 #include "DataReader.h"
@@ -423,11 +423,11 @@ void Read::PrintParams(const char* signOut, bool isRVL)
 
 static const string MsgNotFind = "Cannot find ";
 
-long GetNumber(const char* str, const RBedReader& file, const string& msgEnd)
+size_t GetNumber(const char* str, const RBedReader& file, const string& msgEnd)
 {
 	if (!str || !isdigit(*(++str)))
 		file.ThrowExceptWithLineNumb(MsgNotFind + msgEnd);
-	return atol(str);
+	return atoui(str);
 }
 #endif	// _READS
 
@@ -452,11 +452,11 @@ Read::Read(const RBedReader& file) : Region(file.ItemRegion()), Strand(file.Item
 	if (!ss)
 		file.ThrowExceptWithLineNumb(MsgNotFind + "chrom mark in the read's name. It should be '*chr<x>*'");
 	RecCID = Chrom::ID(ss += strlen(Chrom::Abbr));
-	RecStart = GetNumber(
+	RecStart = chrlen(GetNumber(
 		strchr(++ss, Read::NmPos1Delimiter),
 		file,
 		"position in the read's name. It should be ' * :<pos>. < number>'"
-	);
+	));
 
 	//ss = strchr(++ss, Read::NmNumbDelimiter);	// "number" position, begining with '.'
 	//if (!ss || !isdigit(*(++ss)))

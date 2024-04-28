@@ -2,7 +2,7 @@
 TxtFile.h
 Provides read|write basic bioinfo text files functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/26/2023
+Last modified: 04/28/2024
 ***********************************************************/
 #pragma once
 
@@ -666,7 +666,9 @@ public:
 	//	@param str: null-terminated string to search the key
 	//	@param key: string to search for
 	//	@returns: key value, or throws an exception if key does not appear in str
-	chrlen GetIntKey(const char* str, const string& key) { return atoi(CheckSpec(str, key) + 1); }
+	chrlen GetIntKey(const char* str, const string& key) { 
+		return chrlen(atoui(CheckSpec(str, key) + 1)); 
+	}
 
 	// Gets file bioinfo type
 	FT::eType Type() const { return _fType; }
@@ -705,35 +707,39 @@ public:
 		return IsFieldValid(fInd) ? StrField(fInd) : nullptr;
 	}
 
-	// Reads checked integer by field's index from current line without check up
-	//	@param fInd: field index
-	int IntField(BYTE fInd)	const { return atoi(StrField(fInd)); }
-
-	// Reads checked integer by field's index from current line with check up
-	//	@param fInd: field index
-	int	 IntFieldValid(BYTE fInd)	const {
-		return IsFieldValid(fInd) ? IntField(fInd) : vUNDEF;
-	}
-
 	// Reads float by field's index from current line without check up
 	//	@param fInd: field index
 	float FloatField(BYTE fInd)	const { return float(atof(StrField(fInd))); }
 
 	// Reads float by field's index from current line with check up
 	//	@param fInd: field index
-	float FloatFieldValid(BYTE fInd)	const {
+	float FloatFieldValid(BYTE fInd) const {
 		return IsFieldValid(fInd) ? FloatField(fInd) : vUNDEF;
 	}
 
+	// Reads integer by field's index from current line without check up
+	//	@param fInd: field index
+	//int IntField(BYTE fInd)	const { return atoi(StrField(fInd)); }
+
+	// Reads integer by field's index from current line with check up
+	//	@param fInd: field index
+	//int IntFieldValid(BYTE fInd)	const {	return IsFieldValid(fInd) ? IntField(fInd) : vUNDEF; }
+
+	// Reads unsigned integer by field's index from current line without check up
+	//	@param fInd: field index
+	chrlen UIntField(BYTE fInd)	const { return atoui(StrField(fInd)); }
+
+	// Reads unsigned long by field's index from current line without check up.
+	//	@param fInd: field index
+	//size_t ULongField(BYTE fInd)	const { return atoul(StrField(fInd)); }
+
 	// Reads long by field's index from current line without check up.
 	//	@param fInd: field index
-	long LongField(BYTE fInd)	const { return atol(StrField(fInd)); }
+	//long LongField(BYTE fInd)	const { return atoui(StrField(fInd)); }
 
 	// Reads long by field's index from current line with check up.
 	//	@param fInd: field index
-	long LongFieldValid(BYTE fInd)	const {
-		return IsFieldValid(fInd) ? LongField(fInd) : vUNDEF;
-	}
+	//long LongFieldValid(BYTE fInd)	const {	return IsFieldValid(fInd) ? LongField(fInd) : vUNDEF; }
 };
 
 

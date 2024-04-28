@@ -1,6 +1,6 @@
 /**********************************************************
 Distrib.cpp
-Last modified: 04/27/2024
+Last modified: 04/28/2024
 ***********************************************************/
 
 #include "Distrib.h"
@@ -454,8 +454,8 @@ Distrib::Distrib(const char* fName)
 	TabReader file(fName, FT::DIST);
 
 	for (int x; file.GetNextLine();)
-		if (x = file.IntField(0))	// IntField(0) returns 0 if zero field is not an integer
-			(*this)[x] = file.IntField(1);
+		if (x = file.UIntField(0))	// returns 0 if zero field is not an integer
+			(*this)[x] = file.UIntField(1);
 }
 
 //#define _TIME
