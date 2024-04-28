@@ -381,11 +381,11 @@ void Distrib::CallParams(dtype type, fraglen base, dpoint& summit)
 	//base = 9;					// to print spline for fixed base
 	// progressive calculate PCC with unknown key points & summit
 	for (; base; base--) {
-		//for (int i=0; !i; i++) {	// to print spline for fixed base
+	//for (int i=0; !i; i++) {	// to print spline for fixed base
 		const fpair keypts = GetKeyPoints(base, summit0);
 
-		CalcParams[type](keypts, dParams.Params);
-		CalcPCC(type, dParams, summit0.first);
+		CalcParams[type](keypts, dParams0.Params);
+		CalcPCC(type, dParams0, summit0.first);
 #ifdef MY_DEBUG
 		* _s << setw(4) << setfill(SPACE) << left << ++i;
 		*_s << "base: " << setw(2) << base << "  summitX: " << keypts.first << "\tpcc: " << dParams0.PCC;
