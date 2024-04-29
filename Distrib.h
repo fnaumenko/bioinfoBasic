@@ -201,7 +201,7 @@ public:
 
 	// Constructor by ready distribution file
 	//	@param fname: name of ready distribution file
-	Distrib(const char* fname);
+	Distrib(const char* fname, dostream& s);
 
 	// Returns size distribution
 	size_t Size() const { return size(); }

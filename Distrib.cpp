@@ -449,13 +449,15 @@ void Distrib::PrintSeq(ofstream& s) const
 	}
 }
 
-Distrib::Distrib(const char* fName)
+Distrib::Distrib(const char* fName, dostream& s)
 {
 	TabReader file(fName, FT::DIST);
+	size_t cnt = 0;
 
 	for (int x; file.GetNextLine();)
-		if (x = file.UIntField(0))	// returns 0 if zero field is not an integer
-			(*this)[x] = file.UIntField(1);
+		if (x = file.UIntField(0))		// returns 0 if zero field is not an integer
+			cnt += (*this)[x] = file.UIntField(1);
+	if (cnt)	s << SepCl << this->Size() << " records, " << cnt << " items";
 }
 
 //#define _TIME
