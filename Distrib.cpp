@@ -1,6 +1,6 @@
 /**********************************************************
 Distrib.cpp
-Last modified: 04/28/2024
+Last modified: 04/29/2024
 ***********************************************************/
 
 #include "Distrib.h"
@@ -378,10 +378,10 @@ void Distrib::CallParams(dtype type, fraglen base, dpoint& summit)
 	int i = 0;					// counter of steps
 #endif
 
+	// calculate the highest PCC by iteratively searching through the 'base' values
 	//base = 9;					// to print spline for fixed base
-	// progressive calculate PCC with unknown key points & summit
-	for (; base; base--) {
 	//for (int i=0; !i; i++) {	// to print spline for fixed base
+	for (; base; base--) {
 		const fpair keypts = GetKeyPoints(base, summit0);
 
 		CalcParams[type](keypts, dParams0.Params);
@@ -438,7 +438,7 @@ void Distrib::PrintTraits(dostream& s, fraglen base, const Distrib::dpoint& summ
 	}
 }
 
-void Distrib::PrintSeq(dostream& s) const
+void Distrib::PrintSeq(ofstream& s) const
 {
 	const fraglen maxLen = INT_MAX / 10;
 
@@ -506,7 +506,7 @@ void Distrib::Print(dostream& s, eCType ctype, bool prDistr)
 			PrintTraits(s, base, summit);
 			_allParams.Print(s);
 		}
-		if (prDistr)	PrintSeq(s);
+		if (prDistr)	PrintSeq(s.File());
 	}
 	fflush(stdout);		// when called from a package
 }

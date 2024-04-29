@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 04/28/2024
+Last modified: 04/29/2024
 ***********************************************************/
 #pragma once
 
@@ -264,6 +264,8 @@ public:
 	dostream() : std::ostream(cout.rdbuf()) {}
 
 	~dostream() { if (file.is_open())	file.close(); }		// in case of exception or holding execution by user
+
+	std::ofstream& File() { return file; }
 
 	// Open output file with given name
 	//	@returns: true if file is open

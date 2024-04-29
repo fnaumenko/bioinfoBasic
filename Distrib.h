@@ -2,7 +2,7 @@
 Distrib.h
 2023 Fedor Naumenko (fedor.naumenko@gmail.com)
 -------------------------
-Last modified: 04/27/2024
+Last modified: 04/29/2024
 -------------------------
 Provides value (typically frequency) distribution functionality
 ***********************************************************/
@@ -140,6 +140,7 @@ private:
 
 		// Prints sorted distibutions params on a new line
 		//	@param s: print stream
+		//void Print(dostream& s);
 		void Print(dostream& s);
 	};
 
@@ -192,7 +193,7 @@ private:
 
 	// Prints original distribution as a set of <value>-<size> pairs
 	//	@param s: print stream
-	void PrintSeq(dostream& s) const;
+	void PrintSeq(ofstream& s) const;
 
 public:
 	// Default constructor
