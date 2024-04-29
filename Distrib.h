@@ -52,7 +52,7 @@ private:
 		CLEAR,		// normal quality;	exclusive
 		SMOOTH,		// complementary
 		MODUL,		// modulated;	complementary
-		EVEN,		// exclusive
+		EVEN,		// flat;	exclusive
 		CROP,		// cropped;	exclusive
 		HCROP,		// heavily cropped;		exclusive
 		SDEFECT,	// slightly defective;	exclusive
@@ -185,11 +185,11 @@ private:
 	//	@param summit[out]: returned X,Y coordinates of best spliced (smoothed) summit
 	void CallParams(dtype type, fraglen base, dpoint& summit);
 
-	// Prints original distribution features
+	// Prints original distribution specification (flaws)
 	//	@param s: print stream
 	//	@param base: moving window half-length
 	//	@param summit: X,Y coordinates of spliced (smoothed) summit
-	void PrintTraits(dostream& s, fraglen base, const dpoint& summit);
+	void PrintSpecs(dostream& s, fraglen base, const dpoint& summit);
 
 	// Prints original distribution as a set of <value>-<size> pairs
 	//	@param s: print stream
@@ -205,9 +205,6 @@ public:
 
 	// Returns size distribution
 	size_t Size() const { return size(); }
-
-	// Returns true if distribution has not enough size
-	//bool IsDegenerate() const { return size() < 5; }
 
 	// Adds value to the instance
 	void AddVal(fraglen val) { (*this)[val]++; }

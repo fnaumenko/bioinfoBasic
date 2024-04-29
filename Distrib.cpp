@@ -173,7 +173,7 @@ void Distrib::AllDParams::Print(dostream& s)
 	float maxPCC = 0;
 	bool note = false;
 
-	Sort();			// should already be sorted by PrintTraits(), but just in case
+	Sort();			// should already be sorted by PrintSpecs(), but just in case
 	s << LF << "\t PCC\t";
 	if (notSingle)
 		s << "relPCC\t",
@@ -414,7 +414,7 @@ void Distrib::CallParams(dtype type, fraglen base, dpoint& summit)
 #endif
 }
 
-void Distrib::PrintTraits(dostream& s, fraglen base, const Distrib::dpoint& summit)
+void Distrib::PrintSpecs(dostream& s, fraglen base, const Distrib::dpoint& summit)
 {
 	if (base == smoothBase)		s << Spec(eSpec::SMOOTH) << LF;
 	if (summit.first - begin()->first < SSpliner<dVal_t>::SilentLength(eCurveType::SMOOTH, base)
@@ -457,7 +457,8 @@ Distrib::Distrib(const char* fName, dostream& s)
 	for (int x; file.GetNextLine();)
 		if (x = file.UIntField(0))		// returns 0 if zero field is not an integer
 			cnt += (*this)[x] = file.UIntField(1);
-	if (cnt)	s << SepCl << this->Size() << " records, " << cnt << " items";
+	if (cnt)
+		s << SepCl << Size() << " records, " << cnt << " items";
 }
 
 //#define _TIME
@@ -471,7 +472,6 @@ void Distrib::Print(dostream& s, eCType ctype, bool prDistr)
 	if (empty())		s << "\nempty " << sDistrib << LF;
 	else {
 		fraglen base = GetBase();	// initialized returned value
-		//if (IsDegenerate())
 		if (!base)
 			s << "\nDegenerate " << sDistrib << " (only " << size() << " points)\n";
 		else {
@@ -505,10 +505,10 @@ void Distrib::Print(dostream& s, eCType ctype, bool prDistr)
 				_allParams.ClearNormDistBelowThreshold(1.02F);	// threshold 2%
 			}
 #endif
-			PrintTraits(s, base, summit);
+			PrintSpecs(s, base, summit);
 			_allParams.Print(s);
+			if (prDistr)	PrintSeq(s.File());
 		}
-		if (prDistr)	PrintSeq(s.File());
 	}
 	fflush(stdout);		// when called from a package
 }
