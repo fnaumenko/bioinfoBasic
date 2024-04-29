@@ -91,7 +91,7 @@ void PrintHorLine(int lw)
 #ifdef OS_Windows
 	wcout << setw(++lw) << setfill(L'\304') << L'\n';
 #ifdef _DUP_OUTPUT
-	dout.ToFile(string(lw, HPH) + LF);
+	dout.File() << string(lw, HPH) << LF;
 #endif
 #else
 	for (int i = 0; i < lw; dout << "─", i++);	dout << LF;

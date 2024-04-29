@@ -276,9 +276,6 @@ public:
 		file << val;
 		return *this;
 	}
-
-	template <typename T> 
-	void ToFile(T val) { file << val; }
 };
 
 extern dostream dout;		// stream's duplicator
