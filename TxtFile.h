@@ -2,7 +2,7 @@
 TxtFile.h
 Provides read|write basic bioinfo text files functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 04/28/2024
+Last modified: 04/30/2024
 ***********************************************************/
 #pragma once
 
@@ -717,6 +717,10 @@ public:
 		return IsFieldValid(fInd) ? FloatField(fInd) : vUNDEF;
 	}
 
+	// Reads unsigned integer by field's index from current line without check up
+	//	@param fInd: field index
+	chrlen UIntField(BYTE fInd)	const { return atoui(StrField(fInd)); }
+
 	// Reads integer by field's index from current line without check up
 	//	@param fInd: field index
 	//int IntField(BYTE fInd)	const { return atoi(StrField(fInd)); }
@@ -724,10 +728,6 @@ public:
 	// Reads integer by field's index from current line with check up
 	//	@param fInd: field index
 	//int IntFieldValid(BYTE fInd)	const {	return IsFieldValid(fInd) ? IntField(fInd) : vUNDEF; }
-
-	// Reads unsigned integer by field's index from current line without check up
-	//	@param fInd: field index
-	chrlen UIntField(BYTE fInd)	const { return atoui(StrField(fInd)); }
 
 	// Reads unsigned long by field's index from current line without check up.
 	//	@param fInd: field index
@@ -740,6 +740,11 @@ public:
 	// Reads long by field's index from current line with check up.
 	//	@param fInd: field index
 	//long LongFieldValid(BYTE fInd)	const {	return IsFieldValid(fInd) ? LongField(fInd) : vUNDEF; }
+
+	// Initializes region by two consecutive integer fields
+	//	@param fInd: first field index
+	//	@param rgn: region that is initialized
+	void InitRegion(BYTE fInd, Region& rgn) const;
 };
 
 

@@ -74,7 +74,7 @@ BedReader::BedReader(const char* fName, FT::eType type, BYTE scoreNumb, bool msg
 {
 	if (type == FT::ABED)
 		_getStrand = [this]() { return *StrField(StrandFieldInd) == PLUS; };
-	else			// for BED ignore strand to omit duplicates even when strand is defined
+	else		// for BED ignore strand to omit duplicates in CheckItem() even when strand is defined
 		_getStrand = []() { return true; };
 
 	// ** read track definition line and clarify types
@@ -174,13 +174,13 @@ bool UniBedReader::CheckItem(chrlen cLen)
 			else	return false;
 		}
 
-	_strand = _file->ItemStrand();				// the only reading strand from file
+	_strand = _file->ItemStrand();				// single reading strand from file
 	if (_rgn0 == _rgn && _strand0 == _strand)	// duplicates
 		_cDuplCnt++,
 		res = _MaxDuplCnt == BYTE_UNDEF || ++_duplCnt < _MaxDuplCnt;
 	else {
 		_duplCnt = 0;
-		_lenFreq[_file->ItemLength()]++;
+		_lenFreq[_rgn.Length()]++;
 		res = ChildCheckItem();					// RBed: rlen accounting; FBed: overlap check
 	}
 	_strand0 = _strand;

@@ -15,7 +15,7 @@ Last modified: 04/30/2024
 
 /************************ common Functions ************************/
 
-chrlen atoui(const char* p)
+chrlen atoui_by_ref(const char*& p)
 {
 	chrlen x = 0;
 	for (; *p >= '0' && *p <= '9'; ++p)

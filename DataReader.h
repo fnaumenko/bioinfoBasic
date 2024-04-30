@@ -44,13 +44,17 @@ public:
 	virtual bool GetNextItem() = 0;
 
 	// Returns current item start position
-	virtual chrlen ItemStart() const = 0;
+	//virtual chrlen ItemStart() const = 0;
 
 	// Returns current item end position
-	virtual chrlen ItemEnd() const = 0;
+	//virtual chrlen ItemEnd() const = 0;
 
 	// Returns current item length
-	virtual readlen ItemLength() const = 0;
+	//virtual readlen ItemLength() const = 0;
+
+	// Initializes item region
+	//	@param rgn: region that is initialized
+	virtual void InitRegion(Region& rgn) const = 0;
 
 	// Returns true if alignment part of paired-end read
 	virtual bool IsPairedItem() const = 0;
@@ -141,13 +145,17 @@ public:
 	bool GetNextItem() { return TabReader::GetNextLine(); }
 
 	// Returns current item's start position
-	chrlen ItemStart()	const { return UIntField(1); }
+	//chrlen ItemStart()	const { return UIntField(1); }
 
 	// Returns current item's end position
-	chrlen ItemEnd()	const { return UIntField(2); }
+	//chrlen ItemEnd()	const { return UIntField(2); }
 
 	// Returns current item's length
-	readlen ItemLength()const { return readlen(ItemEnd() - ItemStart()); }
+	//readlen ItemLength()const { return readlen(ItemEnd() - ItemStart()); }
+
+	// Initializes item region
+	//	@param rgn: region that is initialized
+	void InitRegion(Region& rgn) const { TabReader::InitRegion(1, rgn); }
 
 	// Returns true if alignment part of paired-end read
 	bool IsPairedItem()	const { return strchr(ItemName() + 1, '/'); }
@@ -218,13 +226,19 @@ public:
 	}
 
 	// Returns current item start position
-	chrlen ItemStart()	const { return _read.Position; }
+	//chrlen ItemStart()	const { return _read.Position; }
 
 	// Returns current item end position
-	chrlen ItemEnd()		const { return _read.Position + _read.Length; }
+	//chrlen ItemEnd()		const { return _read.Position + _read.Length; }
 
 	// Returns current item length
-	readlen ItemLength()	const { return readlen(_read.Length); }
+	//readlen ItemLength()	const { return readlen(_read.Length); }
+
+	// Initializes item region
+	//	@param rgn: region that is initialized
+	void InitRegion(Region& rgn) const {
+		rgn.End = (rgn.Start = _read.Position) + _read.Length;
+	}
 
 	// Returns true if alignment part of paired-end read
 	bool IsPairedItem()	const { return _read.IsPaired(); }
@@ -398,7 +412,7 @@ public:
 				if (_cSizes)	cLen = ChromSize(cID);
 			}
 			else if (skipChrom)		continue;
-			_rgn.Set(_file->ItemStart(), _file->ItemEnd());	// the only invoke ItemStart()/ItemEnd()
+			_file->InitRegion(_rgn);
 			if (CheckItem(cLen)) {
 				cItemCnt += func(); 						// treat entry
 				_rgn0 = _rgn;
@@ -435,7 +449,7 @@ public:
 	chrlen PrevItemEnd() const { return _rgn0.End; }
 
 	// Returns current item length
-	readlen ItemLength()	const { return _rgn.Length(); }
+	//readlen ItemLength()	const { return _rgn.Length(); }
 
 	// Returns current item strand: true - positive, false - negative
 	bool ItemStrand() const { return _strand; }

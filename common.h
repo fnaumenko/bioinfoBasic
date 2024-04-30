@@ -159,9 +159,14 @@ static const char* Booleans[] = { "OFF","ON" };	// boolean values
 inline const char* BoolToStr(bool val) { return Booleans[val]; }
 
 // Converts string to chrlen
+//	@param str: reference to C-string beginning with the representation of an unsigned integral number.
+//	Must start with a digit.
+chrlen atoui_by_ref(const char*& str);
+
+// Converts string to chrlen
 //	@param str: C-string beginning with the representation of an unsigned integral number.
 //	Must start with a digit.
-chrlen atoui(const char* str);
+inline chrlen atoui(const char* str) { return atoui_by_ref(str); }
 
 // Converts string to size_t
 //	@param str: C-string beginning with the representation of an unsigned long integral number.

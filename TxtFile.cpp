@@ -1,6 +1,6 @@
 /**********************************************************
 TxtFile.cpp
-Last modified: 04/28/2024
+Last modified: 04/30/2024
 ***********************************************************/
 
 #include "TxtFile.h"
@@ -751,6 +751,14 @@ const char* TabReader::GetNextLine(bool checkTab)
 	return _currLine = line;
 }
 
+void TabReader::InitRegion(BYTE fInd, Region& rgn) const
+{
+	const char* str = StrField(fInd);
+	rgn.Start = atoui_by_ref(str);
+	rgn.End = atoui_by_ref(++str);
+}
+
+
 /************************ end of TabReader ************************/
 
 #ifndef _WIGREG
@@ -781,7 +789,7 @@ ChromDefRegions::ChromDefRegions(const string& fName, chrlen minGapLen) : _gapLe
 		if (file.GetNextLine()) {
 			_gapLen = file.UIntField(1);	// first line contains total length of gaps
 			while (file.GetNextLine()) {
-				rgn.Set(file.UIntField(0), file.UIntField(1));
+				file.InitRegion(0, rgn);
 				if (!minGapLen || comb.ExceptRegion(rgn))
 					Add(rgn);
 			}
