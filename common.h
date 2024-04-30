@@ -893,7 +893,7 @@ public:
 
 	// Returns true if some chromosome is specified by user
 	//	@param cid: chrom id specified by user, or any chrom specified by user by default
-	static bool IsSetByUser(chrid cid = UnID) { return userCID == UnID || userCID == cid; }
+	static bool IsSetByUser(chrid cid = UnID) { return cid == UnID ? userCID != UnID : cid == userCID; }
 
 	// Sets custom chrom ID with control
 	//	@param prColon: if true then print ": " before exception message
