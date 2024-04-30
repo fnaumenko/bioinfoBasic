@@ -132,7 +132,6 @@ void ChromSizes::Init(const string& headerSAM)
 	if (!IsFilled())
 		Chrom::ValidateIDs(
 			headerSAM,
-			//[this](chrid cID, const char* header) { AddValue(cID, atol(header)); },
 			[this](chrid cID, const char* header) { AddValue(cID, atoui(header)); },
 			true
 		);

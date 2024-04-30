@@ -601,7 +601,6 @@ chrid Chrom::HeteroID(const char cMark)
 chrid Chrom::GetRelativeID(const char* cMark)
 {
 	if (isdigit(*cMark)) {		// autosome
-		//chrid id = atoi(cMark) - 1;
 		chrid id = chrid(atoui(cMark) - 1);
 		return id < firstHeteroID ? id : UnID;
 	}
@@ -634,7 +633,6 @@ short Chrom::PrefixLength(const char* cName)
 
 chrid Chrom::ID(const char* cName, size_t prefixLen)
 {
-	//return isdigit(*(cName += prefixLen)) ? atoi(cName) - 1 : HeteroID(*cName);
 	return isdigit(*(cName += prefixLen)) ? chrid(atoui(cName)) - 1 : HeteroID(*cName);
 }
 
@@ -646,8 +644,7 @@ chrid Chrom::ValidateID(const char* cName, size_t prefixLen)
 		if (cName[i] == USCORE)	return UnID;	// exclude chroms with '_'
 
 	if (isdigit(*cName)) {						// autosome
-		//chrid id = atoi(cName);
-		chrid id = atoui(cName);
+		chrid id = chrid(atoui(cName));
 		if (relativeNumbering && id > firstHeteroID)	firstHeteroID = id;
 		return id - 1;
 	}

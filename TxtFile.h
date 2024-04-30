@@ -667,7 +667,7 @@ public:
 	//	@param key: string to search for
 	//	@returns: key value, or throws an exception if key does not appear in str
 	chrlen GetIntKey(const char* str, const string& key) { 
-		return chrlen(atoui(CheckSpec(str, key) + 1)); 
+		return atoui(CheckSpec(str, key) + 1);
 	}
 
 	// Gets file bioinfo type
@@ -735,7 +735,7 @@ public:
 
 	// Reads long by field's index from current line without check up.
 	//	@param fInd: field index
-	//long LongField(BYTE fInd)	const { return atoui(StrField(fInd)); }
+	//long LongField(BYTE fInd)	const { return atoul(StrField(fInd)); }
 
 	// Reads long by field's index from current line with check up.
 	//	@param fInd: field index
