@@ -511,7 +511,7 @@ public:
 	const char* ParsedReadName() const { return ItemName() + _rNamePrefix; }
 
 	// Returns read's number without checking whether the number parser is initialized
-	size_t ReadNumber() const { return atoui(ParsedReadName()); }
+	size_t ReadNumber() const { return atoul(ParsedReadName()); }
 
 #ifdef	_VALIGN
 	void SetReadNameParser(reclen len) const { _rNamePrefix = len; }
