@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 04/28/2024
+Last modified: 04/30/2024
 ***********************************************************/
 
 #include "common.h"
@@ -683,9 +683,9 @@ void Chrom::SetUserChrom(const char* cMark)
 	}
 }
 
-size_t Chrom::MarkLength(chrid cID)
+BYTE Chrom::MarkLength(chrid cID)
 {
-	return cID == UnID ? UndefName.length() : (cID > firstHeteroID || cID < 9 ? 1 : 2);
+	return cID == UnID ? BYTE(UndefName.length()) : (cID >= firstHeteroID || cID < 9 ? 1 : 2);
 }
 
 const string Chrom::Mark(chrid cid)

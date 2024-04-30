@@ -2,7 +2,7 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 04/28/2024
+Last modified: 04/30/2024
 ***********************************************************/
 #pragma once
 
@@ -473,9 +473,12 @@ public:
 #ifdef _READS
 class RBedReader : public UniBedReader
 {
-	mutable readlen _rLen = 0;		// most frequent (common) read length
+	mutable readlen _rLen = 0;				// most frequent (common) read length
+	mutable reclen _rNamePrefix = SHRT_MAX;	// length of the substring of the read name to its number
 
 public:
+	static const string MsgNotFind;
+
 	// Creates new instance for reading and open file
 	//	@param fName: file name
 	//	@param cSizes: chrom sizes
@@ -484,7 +487,7 @@ public:
 	//	@param prName: true if file name should be printed unconditionally
 	//	@param checkSorted: true if reads should be sorted within chrom
 	//	@param abortInval: true if invalid instance should be completed by throwing exception
-	RBedReader(const char* fName, ChromSizes* cSizes, BYTE dupLevel, 
+	RBedReader(const char* fName, ChromSizes* cSizes, BYTE dupLevel,
 		eOInfo oinfo, bool prName, bool checkSorted = true, bool abortInval = true) :
 		UniBedReader(fName, FT::GetType(fName, true), cSizes, 0, dupLevel, oinfo, prName, checkSorted, abortInval)
 	{}
@@ -493,9 +496,28 @@ public:
 	// last in _rfreq because typically reads can be shorter, not longer
 	readlen ReadLength() const { return _rLen ? _rLen : (_rLen = prev(_lenFreq.cend())->first); }
 
-	// Returns true if alignment part of paired-end read
+	// Returns true if read is paired-end
 	bool IsPairedRead() const { return BaseFile().IsPairedItem(); }
+
+	//***  Read sequence number
+
+	// Returns true if read's number parser is not initialized
+	bool IsReadNameParserUninit() const { return _rNamePrefix == SHRT_MAX; }
+
+	// Initializes read's number parser to get the read's number later
+	void InitReadNameParser() const;
+
+	// Returns read name substring started from initialized number parser value
+	const char* ParsedReadName() const { return ItemName() + _rNamePrefix; }
+
+	// Returns read's number without checking whether the number parser is initialized
+	size_t ReadNumber() const { return atoui(ParsedReadName()); }
+
+#ifdef	_VALIGN
+	void SetReadNameParser(reclen len) const { _rNamePrefix = len; }
+#endif
 };
+
 #endif	// _READS
 #ifdef _FEATURES
 
@@ -544,7 +566,6 @@ public:
 	static const char	Strands[2];			// strand markers: [0] - positive, [1] - negative
 #if defined _ISCHIP || defined _VALIGN || defined _PE_READ
 	static const char	NmDelimiter = ':';		// delimiter between progTitle and chrom
-	static const char	NmNumbDelimiter = DOT;	// delimiter between prog title and number
 	static const char	NmPos1Delimiter = ':';	// delimiter before first recorded position
 	static const char	NmPos2Delimiter = '-';	// delimiter between two recorded positions in pair
 #endif
@@ -616,7 +637,7 @@ public:
 
 	//chrlen Centre() const { return Pos + (Len >> 1); }
 #ifdef _PE_READ
-	size_t	Numb;		// read number keeped in name
+	size_t	Numb;		// read's number keeped in name
 
 	// PE Read constructor
 	Read(const RBedReader& file);
@@ -632,7 +653,7 @@ public:
 	chrlen	RecStart;	// recorded (true) Read start position
 	float	Score;		// Read's score
 
-	// Extended (with saved chrom & position in name) Read constructor
+	// Extended Read constructor
 	Read(const RBedReader& file);
 
 	void Print() const;

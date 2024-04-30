@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 04/29/2024
+Last modified: 04/30/2024
 ***********************************************************/
 #pragma once
 
@@ -159,9 +159,14 @@ static const char* Booleans[] = { "OFF","ON" };	// boolean values
 inline const char* BoolToStr(bool val) { return Booleans[val]; }
 
 // Converts string to chrlen
-chrlen atoui(const char* p);
+//	@param str: C-string beginning with the representation of an unsigned integral number.
+//	Must start with a digit.
+chrlen atoui(const char* str);
+
 // Converts string to size_t
-size_t atoul(const char* p);
+//	@param str: C-string beginning with the representation of an unsigned long integral number.
+//	Must start with a digit.
+size_t atoul(const char* str);
 
 /*************************************************************
 * time testing integer to char[]
@@ -898,7 +903,7 @@ public:
 	static const string Title(bool pl = false) { return pl ? (sTitle + 's') : sTitle;	}
 
 	// Gets mark length by ID; used in WigMap (bioCC)
-	static size_t MarkLength(chrid cID);
+	static BYTE MarkLength(chrid cID);
 
 	// Returns mark by ID
 	static const string Mark(chrid cid);

@@ -1,6 +1,6 @@
 /**********************************************************
 DataReader.cpp
-Last modified: 04/28/2024
+Last modified: 04/30/2024
 ***********************************************************/
 
 #include "DataReader.h"
@@ -308,6 +308,19 @@ size_t UniBedReader::EstItemCount() const
 
 /************************ end of UniBedReader ************************/
 
+//========== RBedReader
+
+const string RBedReader::MsgNotFind = "Cannot find ";
+
+void RBedReader::InitReadNameParser() const
+{
+	const char* name = ItemName();
+	const char* numb = strrchr(name + 1, DOT);
+	if (!numb || !isdigit(*(++numb)))
+		ThrowExceptWithLineNumb(MsgNotFind + "number in the read's name. It should be '*.<number>'");
+	_rNamePrefix = reclen(numb - name);
+}
+
 #ifdef _FEATURES
 /************************ FBedReader ************************/
 
@@ -419,49 +432,37 @@ void Read::PrintParams(const char* signOut, bool isRVL)
 }
 #else
 
-#ifdef _READS
-
-static const string MsgNotFind = "Cannot find ";
-
-size_t GetNumber(const char* str, const RBedReader& file, const string& msgEnd)
-{
-	if (!str || !isdigit(*(++str)))
-		file.ThrowExceptWithLineNumb(MsgNotFind + msgEnd);
-	return atoui(str);
-}
-#endif	// _READS
-
 #ifdef _PE_READ
 
 Read::Read(const RBedReader& file) : Region(file.ItemRegion()), Strand(file.ItemStrand())
 {
-	Numb = GetNumber(
-		strrchr(file.ItemName() + 1, Read::NmNumbDelimiter),
-		file,
-		"number in the read's name. It should be '*.<number>'"
-	);
+	if (file.IsReadNameParserUninit())
+		file.InitReadNameParser();
+	Numb = file.ReadNumber();
 }
 
 #elif defined _VALIGN
 
-// Extended (with saved chrom & position in name) Read constructor
 Read::Read(const RBedReader& file) : Region(file.ItemRegion()), Strand(file.ItemStrand()), Score(file.ItemValue())
 {
-	const char* ss = strchr(file.ItemName() + 1, Read::NmDelimiter);
-	if (ss)		ss = strstr(++ss, Chrom::Abbr);		// to be sure that 'chr' is in ss
-	if (!ss)
-		file.ThrowExceptWithLineNumb(MsgNotFind + "chrom mark in the read's name. It should be '*chr<x>*'");
-	RecCID = Chrom::ID(ss += strlen(Chrom::Abbr));
-	RecStart = chrlen(GetNumber(
-		strchr(++ss, Read::NmPos1Delimiter),
-		file,
-		"position in the read's name. It should be ' * :<pos>. < number>'"
-	));
+	const string msgEnd = " in the read's name. It should be '*:chr<x>:<pos>.<number>'";
 
-	//ss = strchr(++ss, Read::NmNumbDelimiter);	// "number" position, begining with '.'
-	//if (!ss || !isdigit(*(++ss)))
-	//	file.ThrowExceptWithLineNumb(MsgNotFind + "number" + tip1);
-	//Numb = atol(ss);
+	if (file.IsReadNameParserUninit()) {
+		const char* name = file.ItemName();
+		const char* str = strchr(name + 1, Read::NmDelimiter);
+
+		if (!str || !(str = strstr(str, Chrom::Abbr)))
+			file.ThrowExceptWithLineNumb(RBedReader::MsgNotFind + "chrom mark" + msgEnd);
+		file.SetReadNameParser(reclen(str + strlen(Chrom::Abbr) - name));
+	}
+
+	const char* str = file.ParsedReadName();
+	RecCID = Chrom::ID(str);
+
+	str += Chrom::MarkLength(RecCID);
+	if (*str != Read::NmPos1Delimiter || !isdigit(*(++str)))
+		file.ThrowExceptWithLineNumb(RBedReader::MsgNotFind + "position" + msgEnd);
+	RecStart = atoui(str);
 }
 
 void Read::Print() const
