@@ -193,7 +193,7 @@ private:
 
 	// Prints original distribution as a set of <value>-<size> pairs
 	//	@param s: print stream
-	void PrintSeq(ofstream& s) const;
+	void PrintSeq(dostream& s) const;
 
 public:
 	// Default constructor

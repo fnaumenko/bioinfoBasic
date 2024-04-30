@@ -438,8 +438,13 @@ void Distrib::PrintSpecs(dostream& s, fraglen base, const Distrib::dpoint& summi
 	}
 }
 
-void Distrib::PrintSeq(ofstream& s) const
+void Distrib::PrintSeq(dostream& dos) const
 {
+#ifdef _DUP_OUTPUT
+	ofstream& s = dos.File();
+#else
+	auto& s = dos;
+#endif
 	const fraglen maxLen = INT_MAX / 10;
 
 	s << "\nOriginal " << sDistrib << COLON << "\nlength\tfrequency\n";
@@ -507,7 +512,7 @@ void Distrib::Print(dostream& s, eCType ctype, bool prDistr)
 #endif
 			PrintSpecs(s, base, summit);
 			_allParams.Print(s);
-			if (prDistr)	PrintSeq(s.File());
+			if (prDistr)	PrintSeq(s);
 		}
 	}
 	fflush(stdout);		// when called from a package

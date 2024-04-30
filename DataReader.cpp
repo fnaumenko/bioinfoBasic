@@ -308,6 +308,7 @@ size_t UniBedReader::EstItemCount() const
 
 /************************ end of UniBedReader ************************/
 
+#ifdef _READS
 //========== RBedReader
 
 const string RBedReader::MsgNotFind = "Cannot find ";
@@ -321,6 +322,7 @@ void RBedReader::InitReadNameParser() const
 	_rNamePrefix = reclen(numb - name);
 }
 
+#endif	// _READS
 #ifdef _FEATURES
 /************************ FBedReader ************************/
 
