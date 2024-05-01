@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 04/30/2024
+Last modified: 05/01/2024
 ***********************************************************/
 #pragma once
 
@@ -143,7 +143,7 @@ static const char* sOutput = "out";
 //#ifdef _DUP_OUTPUT
 static const char* sSumm = "summ";		// to invoke app from bioStat
 static const string sFileDuplBegin = "duplicate standard output to specified file\nor to ";
-static const string sFileDuplEnd = " if file is not specified";
+static const string sFileDuplEnd = " if <name> is not specified";
 
 static const char* sTemplate = "template";
 
@@ -279,7 +279,10 @@ public:
 
 	// Open output file with given name
 	//	@returns: true if file is open
-	bool OpenFile(const string fname);
+	bool OpenFile(const string& fname);
+
+	// Associates 'loc' to the dostream as the new locale object to be used with locale-sensitive operations
+	void Imbue(const std::locale& loc);
 
 	template <typename T> dostream& operator<< (T val) {
 		cout << val;
@@ -619,8 +622,18 @@ public:
 	//	@param name: long dir name
 	static string const LastDirName (const string& fname);
 
-	// Returns the name ended by slash without checking
+	// Returns the name ended by slash. 
+	// If the name already ends with a slash, returns it.
+	//	@param name: short or long name
 	static string const MakePath(const string& name);
+
+	// Returns composed file name
+	//	@param oName: used as a base output short or long file name, or iutput directory name, or NULL. 
+	//	If NULL then the input file name is used as a base 
+	//	@param iName: input short or long file name
+	//	@param suffix: output file suffix (can be extention, started with DOT), empty by default. 
+	//	If output file extention matches the extension of the input file, the suffix '_out' is added to the resulting file name
+	static string const ComposeFileName(const char* oName, const char* iName, const string& suffix = strEmpty);
 
 	// === files in dir
 
@@ -642,7 +655,6 @@ public:
 //		unlink(fname);
 //#endif
 //	}
-
 } fs;
 
 // Basic class for wall time measurement
@@ -730,7 +742,7 @@ class Stopwatch : public TimerBasic
 		// Stops Stopwatch
 		//	@param title: if not empty, and if instance was launched, output sum wall time with title
 		//	'const' to apply to constant objects
-		void Stop(const string title = strEmpty) const;
+		void Stop(const string& title = strEmpty) const;
 };
 
 // 'Stopwatch' measures the sum of CPU time (clocks) intervals

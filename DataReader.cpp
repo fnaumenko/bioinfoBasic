@@ -1,6 +1,6 @@
 /**********************************************************
 DataReader.cpp
-Last modified: 04/30/2024
+Last modified: 05/01/2024
 ***********************************************************/
 
 #include "DataReader.h"
@@ -298,8 +298,7 @@ size_t UniBedReader::EstItemCount() const
 {
 	const size_t extCnt = _file->EstItemCount();
 
-	//cout << LF << extCnt << TAB << _cSizes->GenSize() << TAB << Chrom::AbbrName(Chrom::UserCID()) << TAB << ChromSize(Chrom::UserCID()) <<LF;
-	if (_cSizes && !Chrom::IsSetByUser()) {
+	if (_cSizes && Chrom::IsSetByUser()) {
 		auto cnt = size_t((double(extCnt) / _cSizes->GenSize()) * ChromSize(Chrom::UserCID()));
 		return cnt < 2 ? extCnt : cnt;		// if data contains only one chrom, cnt can by near to 0
 	}

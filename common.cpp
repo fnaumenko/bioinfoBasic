@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 04/30/2024
+Last modified: 05/01/2024
 ***********************************************************/
 
 #include "common.h"
@@ -132,12 +132,19 @@ chrlen AlignPos(chrlen pos, BYTE res, BYTE relative)
 /************************ end of common Functions ************************/
 
 #ifdef _DUP_OUTPUT
+//========== dostream
 
-bool dostream::OpenFile(const string fname)
+bool dostream::OpenFile(const string& fname)
 {
 	if (!fname.length())	return false;
 	file.open(fname.c_str());
 	return true;
+}
+
+void dostream::Imbue(const locale& loc)
+{
+	cout.imbue(loc);
+	file.imbue(loc);
 }
 
 #endif
@@ -424,6 +431,38 @@ string const FS::MakePath(const string& name)
 	return name[name.length() - 1] == SLASH ? name : name + SLASH;
 }
 
+string const FS::ComposeFileName(const char* oName, const char* iName, const string& suffix)
+{
+	bool nameMatches = true;		// if true then check for in/out name matches
+	bool addSuffix = suffix.length();
+	const string baseName = FileNameWithoutExt(iName);
+	string res;
+	// returns short iName without extention if suffix is set
+	auto getShortName = [&]() { return ShortFileName(addSuffix ? baseName : iName); };
+
+	if (oName)
+		if (IsDirExist(oName))
+			res = MakePath(oName) + getShortName();
+		else
+			nameMatches = (res = oName) == baseName;
+	else
+		res = getShortName();
+
+	// the condition makes sense and can only be satisfied if the suffix is an extention
+	if (addSuffix) {
+		if (suffix[0] == DOT) {
+			if (nameMatches && !strcmp(GetExt(iName).c_str(), suffix.c_str() + 1))
+				res += "_out";
+		}
+		else if (!nameMatches)
+			addSuffix = false;
+	}
+
+	if(addSuffix)	res += suffix;
+	return res;
+}
+
+
 #if !defined _WIGREG && !defined _FQSTATN
 bool FS::GetFiles(vector<string>& files, const string& dirName, const string& ext, bool all)
 {
@@ -500,8 +539,10 @@ void PrintTime(long elapsed, bool parentheses, bool isLF)
 	if (hrs)	dout << setw(2) << hrs << COLON;
 	if (prMins)	dout << setw(2) << mins << COLON;
 	dout << setw(2) << secs;
-	if (!hrs && !prMins)
+	if (!hrs && !prMins) {
 		dout << '.' << Round(elapsed % 1000, 1 + bool(secs));
+		if (!parentheses)	dout << " sec";
+	}
 	if (parentheses)	dout << ')';
 	if (isLF)	dout << LF, fflush(stdout);
 }
@@ -536,7 +577,7 @@ void Timer::Stop(int offset, bool parentheses, bool isLF)
 #ifdef _TEST
 /************************  class Stopwatch ************************/
 
-void Stopwatch::Stop(const string title) const
+void Stopwatch::Stop(const string& title) const
 {
 	if (_isStarted) {
 		_sumTime += GetElapsed();

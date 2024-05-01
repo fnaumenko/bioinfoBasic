@@ -70,7 +70,7 @@ protected:
 	// Returns count of elements
 	size_t Count() const { return _cMap.size(); }
 
-	// Adds class type value to the collection without checking cID.
+	// Adds class type value to the collection without checking cID. 
 	// Avoids unnecessery copy constructor call
 	//	@param cID: chromosome's ID
 	//	@param val: class type value
