@@ -2,7 +2,7 @@
 Options.h
 Provides managing executable options
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 04/24/2024
+Last modified: 05/01/2024
 ***********************************************************/
 #pragma once
 
@@ -286,14 +286,6 @@ public:
 	static UINT GetMaxIVal(int opt) { return UINT(List[opt].MaxNVal); }
 	// Returns C-string 'ON' or 'OFF'
 	static const char* BoolToStr(int opt) { return Booleans[GetBVal(opt)]; }
-
-	// Returns file name by index: if value is not oblig and is not specified, then defName with given extention
-	static const string GetFileName(int opt, const char* defName, const string& ext = "_out.txt");
-
-	// Returns file name by option index: if option value is not specified, then default name; if value is a path, then partial then default name
-	//	@param[in] opt: option index
-	//	@param[in] defName: default name
-	static const string GetPartFileName(int opt, const char* defName);
 
 #ifdef DEBUG
 	static void Print();

@@ -1,6 +1,6 @@
 /**********************************************************
-Ùחורשעû.cpp
-Last modified: 04/24/2024
+Options.cpp
+Last modified: 05/01/2024
 ***********************************************************/
 #include "Options.h"
 
@@ -526,26 +526,6 @@ int Options::Parse(int argc, char* argv[], const char* obligPar)
 		res = -1;
 	}
 	return i * res;
-}
-
-const string Options::GetFileName(int indOpt, const char* defName, const string& ext)
-{
-	Option opt = List[indOpt];
-	if (opt.SVal)
-		return string(opt.SVal) + ext;
-	if (opt.IsValEsc() /*&& opt.Sign.Is(tOpt::TRIMMED)*/)
-		return FS::ShortFileName(FS::FileNameWithoutExt(defName)) + ext;
-	return strEmpty;
-}
-
-const string Options::GetPartFileName(int opt, const char* defName)
-{
-	const char* outName = Options::GetSVal(opt);
-
-	if (!outName)
-		return FS::FileNameWithoutExt(defName);
-	string sOutName = string(outName);
-	return FS::IsDirExist(outName) ? FS::MakePath(sOutName) + FS::FileNameWithoutExt(defName) : sOutName;
 }
 
 #ifdef DEBUG
