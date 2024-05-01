@@ -250,7 +250,10 @@ void UniBedReader::PrintStats(size_t cnt, size_t issCnt, const vector<Issue>& is
 		}
 	if (prStat)	dout << setw(pWidth) << SPACE << sTotal;
 	else		dout << COMMA;
-	dout << SPACE << sActions[0], PrintValAndPercent(cnt - issCnt, cnt);
+	if (issCnt)
+		dout << SPACE << sActions[0], PrintValAndPercent(cnt - issCnt, cnt);
+	else
+		dout << " all " << sActions[0];
 };
 
 UniBedReader::UniBedReader(const char* fName, const FT::eType type, ChromSizes* cSizes,
