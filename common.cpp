@@ -522,16 +522,16 @@ void PrintTime(long elapsed, bool parentheses, bool prSec)
 	const auto secs = uint16_t(elapsed / 1000 % 60);
 	const bool prMins = mins || secs > 9;
 	// round up/down
-	auto Round = [](uint16_t val, uint8_t iterations) {
+	auto Round = [](uint16_t val) {
 		auto result = val;
-		for (auto i = 0; i < iterations; i++) {
-			bool up = result % 10 >= 5;
-			result /= 10;
-			result += up;
-		}
+		bool up = result % 10 >= 5;
+		result /= 10;
+		result += up;
+
 		return result;
 	};
 
+	//dout << (elapsed % 1000) << LF;
 	if (parentheses)	dout << '(';
 	dout << setfill('0') << right;		// right couse it may be chanched by previuos output
 	//cout.width(2);	applied to the first 'cout' only...
@@ -539,7 +539,7 @@ void PrintTime(long elapsed, bool parentheses, bool prSec)
 	if (prMins)	dout << setw(2) << mins << COLON;
 	dout << setw(2) << secs;
 	if (!hrs && !prMins) {
-		dout << '.' << setw(2) << Round(elapsed % 1000, 1 + bool(secs));
+		dout << '.' << setw(2) << Round(elapsed % 1000);
 		if (!parentheses && prSec)	dout << " sec";
 	}
 	if (parentheses)	dout << ')';
