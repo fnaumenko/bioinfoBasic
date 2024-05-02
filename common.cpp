@@ -513,7 +513,7 @@ bool FS::GetFiles(vector<string>& files, const string& dirName, const string& ex
 
 bool	TimerBasic::Enabled = false;
 
-void PrintTime(long elapsed, bool parentheses, bool isLF)
+void PrintTime(long elapsed, bool parentheses, bool prSec)
 {
 	using namespace std::chrono;
 
@@ -535,15 +535,14 @@ void PrintTime(long elapsed, bool parentheses, bool isLF)
 	if (parentheses)	dout << '(';
 	dout << setfill('0') << right;		// right couse it may be chanched by previuos output
 	//cout.width(2);	applied to the first 'cout' only...
-	if (hrs)	dout << setw(2) << hrs << COLON;
+	if (hrs)	dout << setw(2) << hrs	<< COLON;
 	if (prMins)	dout << setw(2) << mins << COLON;
 	dout << setw(2) << secs;
 	if (!hrs && !prMins) {
 		dout << '.' << setw(2) << Round(elapsed % 1000, 1 + bool(secs));
-		if (!parentheses)	dout << " sec";
+		if (!parentheses && prSec)	dout << " sec";
 	}
 	if (parentheses)	dout << ')';
-	if (isLF)	dout << LF, fflush(stdout);
 }
 
 long TimerBasic::GetElapsed() const
@@ -553,10 +552,10 @@ long TimerBasic::GetElapsed() const
 	return long(duration_cast<milliseconds>(steady_clock::now() - _begin).count());
 }
 
-void TimerBasic::Print(long elapsed, const char* title, bool parentheses, bool isLF)
+void TimerBasic::Print(long elapsed, const char* title, bool parentheses, bool prSec)
 {
 	if (title)	dout << title;
-	PrintTime(elapsed, parentheses, isLF);
+	PrintTime(elapsed, parentheses, prSec);
 }
 
 /************************  end ofclass TimerBasic ************************/
@@ -564,11 +563,11 @@ void TimerBasic::Print(long elapsed, const char* title, bool parentheses, bool i
 /************************  class Timer ************************/
 clock_t	Timer::_StartCPUClock;
 
-void Timer::Stop(int offset, bool parentheses, bool isLF)
+void Timer::Stop(int offset, bool parentheses, bool prSec)
 {
 	if (_enabled) {
 		if (offset)	dout << setw(offset) << SPACE;
-		PrintTime(GetElapsed(), parentheses, isLF);
+		PrintTime(GetElapsed(), parentheses, prSec);
 	}
 }
 

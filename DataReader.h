@@ -2,7 +2,7 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 04/30/2024
+Last modified: 05/02/2024
 ***********************************************************/
 #pragma once
 
@@ -422,7 +422,8 @@ public:
 		func(cID, cLen, cItemCnt, tItemCnt);				// close last chrom
 
 		if (_oinfo >= eOInfo::STD)	PrintStats(tItemCnt);
-		timer.Stop(1, true, _oinfo > eOInfo::NM);
+		//timer.Stop(1, true, _oinfo > eOInfo::NM);
+		timer.Stop(1, true);	if (_oinfo > eOInfo::NM)	dout << 'LF';
 	}
 
 	DataReader& BaseFile() const { return *_file; }

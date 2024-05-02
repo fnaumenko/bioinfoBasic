@@ -665,8 +665,8 @@ protected:
 	//	@param elapsed: elapsed time in milliseconds
 	//	@param title: string printed before time output
 	//	@param parentheses: if true then wrap the time output in parentheses
-	//	@param isLF: if true then ended output by LF
-	static void Print(long elapsed, const char *title, bool parentheses, bool isLF);
+	//	@param prSec: if true and parentheses are not set then print "sec" after seconds with fractional part
+	static void Print(long elapsed, const char *title, bool parentheses, bool prSec);
 
 	mutable chrono::steady_clock::time_point	_begin;
 	mutable bool	_enabled;	// True if local timing is enabled
@@ -712,16 +712,16 @@ public:
 	// Stops enabled timer and prints elapsed time with title
 	//	@param title: string printed before time output
 	//	@param parentheses: if true then wrap the time output in parentheses
-	//	@param isLF: if true then ended output by LF
-	void Stop(const char *title, bool parentheses = false, bool isLF = true) {
-		if(_enabled)	Print(GetElapsed(), title, parentheses, isLF);
+	//	@param prSec: if true and parentheses are not set then print "sec" after seconds with fractional part
+	void Stop(const char *title, bool parentheses = false, bool prSec = true) {
+		if(_enabled)	Print(GetElapsed(), title, parentheses, prSec);
 	}
 
 	// Stops enabled timer and prints elapsed time
 	//	@param offset: space before time output
 	//	@param parentheses: if true then wrap the time output in parentheses
-	//	@param isLF: if true then ended output by LF
-	void Stop(int offset = 0, bool parentheses = false, bool isLF = false);
+	//	@param prSec: if true and parentheses are not set then print "sec" after seconds with fractional part
+	void Stop(int offset = 0, bool parentheses = false, bool prSec = true);
 };
 
 #ifdef _TEST
