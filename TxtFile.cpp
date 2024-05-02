@@ -1,6 +1,6 @@
 /**********************************************************
 TxtFile.cpp
-Last modified: 04/30/2024
+Last modified: 05/02/2024
 ***********************************************************/
 
 #include "TxtFile.h"
@@ -478,7 +478,7 @@ void TxtWriter::LineAddInts(ULONG v1, ULONG v2, bool addDelim)
 	LineAddDelim(addDelim);
 }
 
-void TxtWriter::LineAddInts(ULONG v1, ULONG v2, ULONG v3, bool addDelim)
+void TxtWriter::LineAddUInts(chrlen v1, chrlen v2, chrlen v3, bool addDelim)
 {
 	_lineBuffOffset += sprintf(_lineBuff + _lineBuffOffset, "%u%c%u%c%u", v1, _delim, v2, _delim, v3);
 	LineAddDelim(addDelim);

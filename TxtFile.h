@@ -2,7 +2,7 @@
 TxtFile.h
 Provides read|write basic bioinfo text files functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 04/30/2024
+Last modified: 05/02/2024
 ***********************************************************/
 #pragma once
 
@@ -428,7 +428,7 @@ protected:
 	//	@param ch: char to be set
 	void LineAddChar(char ch) { _lineBuff[_lineBuffOffset++] = ch; }
 
-	// Adds character to the current position in the line write buffer with optional adding delimiter
+	// Adds character to the current position in the line write buffer with adding delimiter
 	//	@param ch: char to be set
 	//	@param addDelim: if true then adds delimiter and increases current position
 	void LineAddChar(char ch, bool addDelim);
@@ -493,12 +493,12 @@ protected:
 	//	@param addDelim: if true then adds delimiter and increases current position
 	void LineAddInts(ULONG val1, ULONG val2, bool addDelim = true);
 
-	// Adds three integral values separated by default delimiter to the current position of the line write buffer
+	// Adds three unsigned integral values separated by default delimiter to the current position of the line buffer
 	//	@param val1: first value to be set
 	//	@param val2: second value to be set
 	//	@param val3: third value to be set
 	//	@param addDelim: if true then adds delimiter and increases current position
-	void LineAddInts(ULONG val1, ULONG val2, ULONG val3, bool addDelim = true);
+	void LineAddUInts(chrlen val1, chrlen val2, chrlen val3, bool addDelim = true);
 
 	// Adds floating point value to the current position of the line write buffer,
 	//	adds delimiter after value and increases current position.

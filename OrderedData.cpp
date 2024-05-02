@@ -1,6 +1,6 @@
 /**********************************************************
 OrderedData.cpp
-Last modified: 11/23/2023
+Last modified: 05/02/2024
 ***********************************************************/
 
 #include "OrderedData.h"
@@ -200,7 +200,7 @@ void BedGrWriter::WriteChromData(chrid cID, const covmap& cover)
 
 	for (++it; it != end; it0 = it++)
 		if (it0->second)
-			LineAddInts(it0->first, it->first, it0->second, false),		// start, end, coverage
+			LineAddUInts(it0->first, it->first, it0->second, false),		// start, end, coverage
 			LineToIOBuff(offset);
 }
 
