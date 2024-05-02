@@ -422,8 +422,7 @@ public:
 		func(cID, cLen, cItemCnt, tItemCnt);				// close last chrom
 
 		if (_oinfo >= eOInfo::STD)	PrintStats(tItemCnt);
-		//timer.Stop(1, true, _oinfo > eOInfo::NM);
-		timer.Stop(1, true);	if (_oinfo > eOInfo::NM)	dout << 'LF';
+		timer.Stop(1, true);	if (_oinfo > eOInfo::NM)	dout << LF;
 	}
 
 	DataReader& BaseFile() const { return *_file; }
