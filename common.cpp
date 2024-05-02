@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 05/01/2024
+Last modified: 05/02/2024
 ***********************************************************/
 
 #include "common.h"
@@ -517,18 +517,17 @@ void PrintTime(long elapsed, bool parentheses, bool isLF)
 {
 	using namespace std::chrono;
 
-	//if (offset)	cout << setw(offset) << setfill(' ') << ' ';
-	const auto hrs = uint16_t(elapsed / 1000 / 60 / 60);
+	const auto hrs	= uint16_t(elapsed / 1000 / 60 / 60);
 	const auto mins = uint16_t(elapsed / 1000 / 60 % 60);
 	const auto secs = uint16_t(elapsed / 1000 % 60);
 	const bool prMins = mins || secs > 9;
-	auto Round = [](int val, int iterations) {
-		int result = val;
+	// round up/down
+	auto Round = [](uint16_t val, uint8_t iterations) {
+		auto result = val;
 		for (auto i = 0; i < iterations; i++) {
-			int rem = result % 10;
-			result -= rem;
-			if (rem >= 5)	result += 10;
+			bool up = result % 10 >= 5;
 			result /= 10;
+			result += up;
 		}
 		return result;
 	};
@@ -540,7 +539,7 @@ void PrintTime(long elapsed, bool parentheses, bool isLF)
 	if (prMins)	dout << setw(2) << mins << COLON;
 	dout << setw(2) << secs;
 	if (!hrs && !prMins) {
-		dout << '.' << Round(elapsed % 1000, 1 + bool(secs));
+		dout << '.' << setw(2) << Round(elapsed % 1000, 1 + bool(secs));
 		if (!parentheses)	dout << " sec";
 	}
 	if (parentheses)	dout << ')';
