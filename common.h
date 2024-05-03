@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/02/2024
+Last modified: 05/03/2024
 ***********************************************************/
 #pragma once
 
@@ -154,9 +154,37 @@ static const char* sTemplate = "template";
 #define NO_DEF	-1	// do not print option default value
 
 
+// Gets number of members in static array
+#define ArrCnt(arr)	sizeof(arr)/sizeof(arr[0])
+
 static const char* Booleans[] = { "OFF","ON" };	// boolean values
 // Returns C-string 'ON' or 'OFF'
 inline const char* BoolToStr(bool val) { return Booleans[val]; }
+
+//===== operations with integers
+
+// Returns number of ones in the bit representation of an integer
+int OnesCount(int n);
+
+// Returns right position of right one in the bit representation of an integer
+int RightOnePos(int n);
+
+// Gets number of digist in a integral value
+//	@param val: integral value
+//	@returns: number of digist without minus symbol or 0 if value is 0
+BYTE DigitsCount (uint32_t val);
+
+// Gets number of digist in a long integral value
+//	@param val: long integral value
+//	@returns: number of digist without minus symbol or 0 if value is 0
+BYTE DigitsCountLong(uint64_t val);
+
+// Gets number of digist in a integral value
+//	@param val: integral value
+//	@param isLocale: if true then adds number of '1000' separators
+//	@returns: number of digist without minus symbol or 0 if value is 0
+BYTE DigitsCountLocale(uint64_t val, bool isLocale = false);
+
 
 // Converts string to chrlen
 //	@param str: reference to C-string beginning with the representation of an unsigned integral number.
@@ -173,39 +201,12 @@ inline chrlen atoui(const char* str) { return atoui_by_ref(str); }
 //	Must start with a digit.
 size_t atoul(const char* str);
 
-/*************************************************************
-* time testing integer to char[]
-* printing string <numb><char><numb>[<char><numb>] and returing number of charachters printed
-* 
-* func		string			len	time, ss.mcs
-*								Windows	Linux
-* ------------------------------------------------------------
-itoa    123456789-123456789	19	04.79
-to_str  123456789-123456789	19	02.46	03.99
-sprintf 123456789-123456789	19	03.59	01.47	common the best
-oss     123456789-123456789	19	23.36	04.98
-one oss 123456789-123456789	19	18.76	01.67
-**************************************************************/
-
-// Gets number of members in static array
-#define ArrCnt(arr)	sizeof(arr)/sizeof(arr[0])
-
 // Digital to STRing
 // Returns value's string representation. http://rootdirectory.de/wiki/NSTR()
 // Instead of std::to_string(x) [C++11] because of compatibility
 //#define NSTR(x) std::to_string(x)
 
-// Returns number of ones in the bit representation of an integer
-int OnesCount(int n);
-
-// Returns right position of right one in the bit representation of an integer
-int RightOnePos(int n);
-
-// Gets number of digist in a integral value
-//	@param val: integral value
-//	@param isLocale: if true then adds number of '1000' separators
-//	@returns: number of digist without minus symbol or 0 if value is 0
-int DigitsCount (size_t val, bool isLocale = false);
+// ===== miscellaneous
 
 // Returns percent of part value relatively total value
 //	@param part: part of the total value

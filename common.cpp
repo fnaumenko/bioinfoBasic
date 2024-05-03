@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 05/02/2024
+Last modified: 05/03/2024
 ***********************************************************/
 
 #include "common.h"
@@ -14,6 +14,95 @@ Last modified: 05/02/2024
 #endif
 
 /************************ common Functions ************************/
+
+//===== operations with integers
+
+int OnesCount(int n)
+{
+	int cnt = 0;
+	//for (; n; n >>= 1)  cnt += n & 1;		// sample 11001: 5 cycles
+	for (; n; n &= n - 1)   cnt++;			// sample 11001: 3 cycles
+	return cnt;
+}
+
+int RightOnePos(int n)
+{
+	int pos = 0;
+	for (; n ^ 1; n >>= 1)	pos++;
+	return pos;
+}
+
+BYTE DigitsCount(uint32_t val)
+{
+	if (val >= 10'000)
+		if (val >= 10'000'000)
+			if (val >= 1'000'000'000)	return 10;
+			else
+				if (val >= 10'0000'000) return 9;
+				else                    return 8;
+		else
+			if (val >= 1'000'000)	return 7;
+			else
+				if (val >= 100'000) return 6;
+				else                return 5;
+	else
+		if (val >= 100)
+			if (val >= 1'000)	return 4;
+			else                return 3;
+		else
+			if (val >= 10)      return 2;
+			else
+				if (val)    return 1;
+				else        return 0;
+
+	// this version is up to 10 (for 9-digits), and up to 70 (for 19-digits) times slower 
+	//BYTE res = 0;
+	//for (; val; val /= 10, res++);
+	//return res;
+}
+
+BYTE DigitsCountLong(uint64_t val)
+{
+	if (val >= 10'000'000'000'000)
+		if (val >= 10'000'000'000'000'000)
+			if (val >= 1'000'000'000'000'000'000)   return 19;
+			else
+				if (val >= 100'000'000'000'000'000) return 18;
+				else                                return 17;
+		else
+			if (val >= 1'000'000'000'000'000)   return 16;
+			else
+				if (val >= 100'000'000'000'000) return 15;
+				else                            return 14;
+	else
+		if (val >= 100'000'000'000)
+			if (val >= 1'000'000'000'000)   return 13;
+			else                            return 12;
+		else
+			if (val >= 10'000'000'000)      return 11;
+			else   return DigitsCount(uint32_t(val));
+}
+
+BYTE DigitsCountLocale(uint64_t val, bool isLocale)
+{
+	auto res = DigitsCountLong(val);
+	if (isLocale)	res += (res - 1) / 3;
+	return res;
+}
+
+/*************************************************************
+* time testing integer to char[]
+* printing string <numb><char><numb>[<char><numb>] and returing number of charachters printed
+*
+* func		string			len	time, ss.mcs
+*								Windows	Linux
+* ------------------------------------------------------------
+itoa    123456789-123456789	19	04.79
+to_str  123456789-123456789	19	02.46	03.99
+sprintf 123456789-123456789	19	03.59	01.47	common the best
+oss     123456789-123456789	19	23.36	04.98
+one oss 123456789-123456789	19	18.76	01.67
+**************************************************************/
 
 chrlen atoui_by_ref(const char*& p)
 {
@@ -31,28 +120,7 @@ size_t atoul(const char* p)
 	return x;
 }
 
-int OnesCount(int n)
-{
-	int cnt = 0;
-	//for (; n; n >>= 1)  cnt += n & 1;		// sample 11001: 5 cycles
-	for (; n; n &= n - 1)   cnt++;			// sample 11001: 3 cycles
-	return cnt;
-}
-
-int RightOnePos(int n)
-{
-	int pos = 0;
-	for (; n ^ 1; n >>= 1)	pos++;
-	return pos;
-}
-
-int DigitsCount(size_t val, bool isLocale)
-{
-	int res = 0;
-	for (; val; val /= 10, res++);
-	if (isLocale)	res += (res - 1) / 3;
-	return res;
-}
+// ===== miscellaneous
 
 string	PercentToStr(float val, BYTE precision, BYTE fieldWith, bool parentheses)
 {
@@ -521,7 +589,7 @@ void PrintTime(long elapsed, bool parentheses, bool prSec)
 	const auto mins = uint16_t(elapsed / 1000 / 60 % 60);
 	const auto secs = uint16_t(elapsed / 1000 % 60);
 	const bool prMins = mins || secs > 9;
-	// round up/down
+	// round up/down the last digit
 	auto Round = [](uint16_t val) {
 		auto result = val;
 		bool up = result % 10 >= 5;
