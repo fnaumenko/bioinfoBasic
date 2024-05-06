@@ -68,31 +68,31 @@ BYTE DigitsCountInt(int32_t val)
 	return res + DigitsCountUInt(val);
 }
 
-BYTE DigitsCountLong(uint64_t val)
+BYTE DigitsCountULong(uint64_t val)
 {
-	if (val >= 10'000'000'000'000)
-		if (val >= 10'000'000'000'000'000)
-			if (val >= 1'000'000'000'000'000'000)   return 19;
-			else
-				if (val >= 100'000'000'000'000'000) return 18;
-				else                                return 17;
+	if (val < 10'000'000'000)   return DigitsCountUInt(uint32_t(val));
+
+	if (val < 100'000'000'000'000)
+		if (val < 1'000'000'000'000)
+			if (val < 100'000'000'000)              return 11;
+			else                                    return 12;
 		else
-			if (val >= 1'000'000'000'000'000)   return 16;
-			else
-				if (val >= 100'000'000'000'000) return 15;
-				else                            return 14;
+			if (val < 10'000'000'000'000)           return 13;
+			else                                    return 14;
 	else
-		if (val >= 100'000'000'000)
-			if (val >= 1'000'000'000'000)   return 13;
-			else                            return 12;
+		if (val < 10'000'000'000'000'000)
+			if (val < 1'000'000'000'000'000)        return 15;
+			else                                    return 16;
 		else
-			if (val >= 10'000'000'000)      return 11;
-			else   return DigitsCountUInt(uint32_t(val));
+			if (val < 100'000'000'000'000'000)      return 17;
+			else
+				if (val < 1000'000'000'000'000'000) return 18;
+				else                                return 19;
 }
 
 BYTE DigitsCountLocale(uint64_t val, bool isLocale)
 {
-	auto res = DigitsCountLong(val);
+	auto res = DigitsCountULong(val);
 	if (isLocale)	res += (res - 1) / 3;
 	return res;
 }

@@ -182,7 +182,7 @@ BYTE DigitsCountInt(int32_t val);
 // Gets number of digist in a long integral value
 //	@param val: long integral value
 //	@returns: number of digist without minus symbol or 0 if value is 0
-BYTE DigitsCountLong(uint64_t val);
+BYTE DigitsCountULong(uint64_t val);
 
 // Gets number of digist in a integral value
 //	@param val: integral value
