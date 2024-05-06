@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/03/2024
+Last modified: 05/06/2024
 ***********************************************************/
 #pragma once
 
@@ -98,7 +98,7 @@ typedef chrlen		genlen;		// type length of genome
 #define	CHRLEN_UNDEF	-1			// undefined length of chromosome
 #define	CHRLEN_MAX		LONG_MAX //-1	// max length of chromosome
 //#define CHRLEN_CAPAC	10	// capacity of max chrom length;
-							// may be count by DigitsCount() every time,
+							// may be count by DigitsCountUInt() every time,
 							// but is the same if chrlen defined as int or long,
 							// so is defined as static value
 
@@ -169,10 +169,15 @@ int OnesCount(int n);
 // Returns right position of right one in the bit representation of an integer
 int RightOnePos(int n);
 
+// Gets number of digist in a unsigned integral value
+//	@param val: unsigned integral value
+//	@returns: number of digist without minus symbol or 0 if value is 0
+BYTE DigitsCountUInt (uint32_t val);
+
 // Gets number of digist in a integral value
 //	@param val: integral value
 //	@returns: number of digist without minus symbol or 0 if value is 0
-BYTE DigitsCount (uint32_t val);
+BYTE DigitsCountInt(int32_t val);
 
 // Gets number of digist in a long integral value
 //	@param val: long integral value

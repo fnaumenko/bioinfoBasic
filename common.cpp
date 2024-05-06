@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 05/03/2024
+Last modified: 05/06/2024
 ***********************************************************/
 
 #include "common.h"
@@ -32,7 +32,7 @@ int RightOnePos(int n)
 	return pos;
 }
 
-BYTE DigitsCount(uint32_t val)
+BYTE DigitsCountUInt(uint32_t val)
 {
 	if (val >= 10'000)
 		if (val >= 10'000'000)
@@ -61,6 +61,13 @@ BYTE DigitsCount(uint32_t val)
 	//return res;
 }
 
+BYTE DigitsCountInt(int32_t val)
+{
+	BYTE res = 0;
+	if (val < 0) { res++; val = -val; }
+	return res + DigitsCountUInt(val);
+}
+
 BYTE DigitsCountLong(uint64_t val)
 {
 	if (val >= 10'000'000'000'000)
@@ -80,7 +87,7 @@ BYTE DigitsCountLong(uint64_t val)
 			else                            return 12;
 		else
 			if (val >= 10'000'000'000)      return 11;
-			else   return DigitsCount(uint32_t(val));
+			else   return DigitsCountUInt(uint32_t(val));
 }
 
 BYTE DigitsCountLocale(uint64_t val, bool isLocale)
