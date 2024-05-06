@@ -10,6 +10,7 @@ Last modified: 05/02/2024
 
 void AccumCover::AddRegion0(const Region& frag)
 {
+	// version using 'find'
 	covmap::iterator it1 = find(frag.Start), it2;	// 'start', 'end' entries iterator
 
 	// *** set up 'start' entry
@@ -46,6 +47,7 @@ void AccumCover::AddRegion0(const Region& frag)
 }
 void AccumCover::AddRegion(const Region& frag)
 {
+	// version using 'lower_bound'
 	covmap::iterator it1 = lower_bound(frag.Start), it2;	// 'start', 'end' entries iterator
 
 	// *** set up 'start' entry
