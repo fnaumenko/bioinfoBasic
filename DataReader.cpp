@@ -1,6 +1,6 @@
 /**********************************************************
 DataReader.cpp
-Last modified: 05/01/2024
+Last modified: 05/07/2024
 ***********************************************************/
 
 #include "DataReader.h"
@@ -318,7 +318,7 @@ const string RBedReader::MsgNotFind = "Cannot find ";
 void RBedReader::InitReadNameParser() const
 {
 	const char* name = ItemName();
-	const char* numb = strrchr(name + 1, DOT);
+	const char* numb = strchr(name + 1, DOT);
 	if (!numb || !isdigit(*(++numb)))
 		ThrowExceptWithLineNumb(MsgNotFind + "number in the read's name. It should be '*.<number>'");
 	_rNamePrefix = reclen(numb - name);
@@ -475,7 +475,46 @@ void Read::Print() const
 		<< RecStart << TAB << setprecision(1) << Score << TAB << LF;
 }
 
-#endif	// no  _VALIGN
+#endif	// _PE_READ || _VALIGN
 /************************ end of struct Read ************************/
 #endif
+
 #endif
+
+#ifdef _PE_READ
+
+//========== FragIdent
+
+bool FragIdent::operator()(const Read& read, Region& frag)
+{
+	auto getFrag = [](const Read& r1, const Read& r2, Region& frag) {
+		if (r1.Strand)	frag.Set(r1.Start, r2.End);
+		else			frag.Set(r2.Start, r1.End);
+		return true;
+	};
+	bool res = false;
+	const auto itMate = _waits.find(read.Numb);	// look for the read with given Numb
+
+	if (itMate == _waits.end())					// is read not on the waiting list?
+		_waits.emplace(read.Numb, read);		// add read to the waiting list
+	else {										// mate case
+		const Read& mate = itMate->second;
+		if (mate.Start != _pos[mate.Strand] || read.Start != _pos[read.Strand])	// not a duplicate
+			res = getFrag(mate, read, frag);	// uniq fragment
+		else {
+			if (_dupl)
+				res = getFrag(mate, read, frag);// dupl fragment
+			_duplCnt++;
+		}
+		_pos[mate.Strand] = mate.Start;
+		_pos[read.Strand] = read.Start;
+#ifdef MY_DEBUG
+		if (_maxSize < _waits.size())	_maxSize = _waits.size();
+#endif
+		_waits.erase(itMate);					// remove read from the waiting list
+		_cnt++;
+	}
+	return res;
+}
+
+#endif	// _PE_READ

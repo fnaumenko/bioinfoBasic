@@ -2,12 +2,13 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/02/2024
+Last modified: 05/07/2024
 ***********************************************************/
 #pragma once
 
 #include "TxtFile.h"
 #include <map>
+#include <unordered_map>
 
 static const char* sTotal = "total";
 
@@ -531,8 +532,8 @@ public:
 	void SetReadNameParser(reclen len) const { _rNamePrefix = len; }
 #endif
 };
-
 #endif	// _READS
+
 #ifdef _FEATURES
 
 class FBedReader : public UniBedReader
@@ -676,3 +677,38 @@ public:
 #endif
 };
 #endif
+
+#ifdef _PE_READ
+
+// PE Fragment Identifier
+class FragIdent
+{
+	unordered_map<ULONG, Read> _waits;	// 'waiting list' - pair mate candidate's collection
+	chrlen	_pos[2] = { 0,0 };			// mates start positions ([0] - neg read, [1] - pos read)
+	const bool	_dupl;					// if TRUE if duplicate frags are allowed
+	size_t _cnt = 0, _duplCnt = 0;		// total, duplicate count
+#ifdef MY_DEBUG
+	size_t	_maxSize = 0;				// maximum waiting _waits size
+#endif
+
+public:
+	FragIdent(bool allowDupl) : _dupl(allowDupl) {}
+
+	// Returns number of total fragments
+	size_t Count() const { return _cnt; }
+
+	// Returns number of duplicate fragments
+	size_t DuplCount() const { return _duplCnt; }
+
+	// Identifies fragment
+	//	@param read[in]: accepted PE read
+	//	@param frag[out]: identified fragment
+	//	@returns: if true then fragment is identified
+	bool operator()(const Read& read, Region& frag);
+
+#ifdef MY_DEBUG
+	size_t MaxMapSize() const { return _maxSize; }
+#endif
+};
+
+#endif	// _PE_READ
