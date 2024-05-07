@@ -598,11 +598,9 @@ public:
 	static const readlen VarMaxLen = 3000;	// maximum Read length in variable Read mode
 	static readlen		FixedLen;			// fixed length of Read
 	static const char	Strands[2];			// strand markers: [0] - positive, [1] - negative
-#if defined _ISCHIP || defined _VALIGN || defined _PE_READ
 	static const char	NmDelimiter = ':';		// delimiter between progTitle and chrom
 	static const char	NmPos1Delimiter = ':';	// delimiter before first recorded position
 	static const char	NmPos2Delimiter = '-';	// delimiter between two recorded positions in pair
-#endif
 
 	// Returns Read's length
 	readlen Length() const { return readlen(Region::Length()); }
