@@ -497,10 +497,10 @@ bool FragIdent::operator()(const Read& read, Region& frag)
 		return true;
 	};
 	bool res = false;
-	const auto itMate = _waits.find(read.Numb);	// look for the read with given Numb
+	const auto itMate = _waits.find(read.Number);	// look for the read with given Numb
 
 	if (itMate == _waits.end())					// is read not on the waiting list?
-		_waits.emplace(read.Numb, read);		// add read to the waiting list
+		_waits.emplace(read.Number, read);		// add read to the waiting list
 	else {										// mate case
 		const Read& mate = itMate->second;
 		if (mate.Start != _pos[mate.Strand] || read.Start != _pos[read.Strand])	// not a duplicate

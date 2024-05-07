@@ -673,20 +673,20 @@ public:
 	//static bool CompareByNum(const Read& r1, const Read& r2) {	return r1.Num < r2.Num; }
 #endif
 #ifdef _PE_READ
-	size_t	Numb;		// read's number keeped in name
+	size_t	Number;		// read's number keeped in name
 
 	// PE Read constructor
 	Read(const RBedReader& file) :
 		Region(file.ItemRegion()),
 		Strand(file.ItemStrand()),
-		Numb(file.ReadNumber())
+		Number(file.ReadNumber())
 	{}
 
 	// Returns frag length
 	//	@param mate: second read in a pair
 	//fraglen FragLen(const Read& mate) const { return Strand ? mate.End - Start : End - mate.Start; }
 
-	void Print() const { dout << Start << TAB << Numb << TAB << Strand << LF; }
+	void Print() const { dout << Start << TAB << Number << TAB << Strand << LF; }
 #endif
 
 #ifdef _VALIGN
