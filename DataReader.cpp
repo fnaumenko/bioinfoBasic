@@ -315,13 +315,28 @@ size_t UniBedReader::EstItemCount() const
 
 const string RBedReader::MsgNotFind = "Cannot find ";
 
-void RBedReader::InitReadNameParser() const
+bool RBedReader::IsPaired() const
 {
-	const char* name = ItemName();
-	const char* numb = strchr(name + 1, DOT);
-	if (!numb || !isdigit(*(++numb)))
-		ThrowExceptWithLineNumb(MsgNotFind + "number in the read's name. It should be '*.<number>'");
-	_rNamePrefix = reclen(numb - name);
+	if (IsFlag(IS_PE_CHECKED))
+		return IsFlag(IS_PE);
+	bool res = BaseFile().IsPairedItem();
+	if (res)
+		RaiseFlag(IS_PE);
+	RaiseFlag(IS_PE_CHECKED);
+	return res;
+}
+
+size_t RBedReader::ReadNumber() const
+{
+	if (IsReadNameParserUninit()) {
+		const char* name = ItemName();
+		const char* numb = strchr(name + 1, DOT);
+		if (!numb || !isdigit(*(++numb)))
+			ThrowExceptWithLineNumb(MsgNotFind + "number in the read's name. It should be '*.<number>'");
+		_rNamePrefix = reclen(numb - name);
+
+	}
+	return atoul(ParsedReadName());
 }
 
 #endif	// _READS
@@ -437,13 +452,6 @@ void Read::PrintParams(const char* signOut, bool isRVL)
 #else
 
 #ifdef _PE_READ
-
-Read::Read(const RBedReader& file) : Region(file.ItemRegion()), Strand(file.ItemStrand())
-{
-	if (file.IsReadNameParserUninit())
-		file.InitReadNameParser();
-	Numb = file.ReadNumber();
-}
 
 #elif defined _VALIGN
 

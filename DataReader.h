@@ -488,8 +488,19 @@ public:
 #ifdef _READS
 class RBedReader : public UniBedReader
 {
-	mutable readlen _rLen = 0;				// most frequent (common) read length
-	mutable reclen _rNamePrefix = SHRT_MAX;	// length of the substring of the read name to its number
+	enum eFlag {
+		IS_PE = 0x01,
+		IS_PE_CHECKED = 0x02,
+	};
+
+	// length of the substring of the read name before read number;
+	// constant within given file, lazy-initialized
+	mutable reclen	_rNamePrefix = SHRT_MAX;
+	mutable readlen _rLen = 0;		// most frequent (common) read length
+	mutable BYTE	_flag = 0;
+
+	void RaiseFlag(eFlag f)	const { _flag |= f; }
+	bool IsFlag(eFlag f)	const { return _flag & f; }
 
 public:
 	static const string MsgNotFind;
@@ -502,31 +513,37 @@ public:
 	//	@param prName: true if file name should be printed unconditionally
 	//	@param checkSorted: true if reads should be sorted within chrom
 	//	@param abortInval: true if invalid instance should be completed by throwing exception
-	RBedReader(const char* fName, ChromSizes* cSizes, BYTE dupLevel,
-		eOInfo oinfo, bool prName, bool checkSorted = true, bool abortInval = true) :
-		UniBedReader(fName, FT::GetType(fName, true), cSizes, 0, dupLevel, oinfo, prName, checkSorted, abortInval)
+	RBedReader(
+		const char* fName,
+		ChromSizes* cSizes,
+		BYTE dupLevel,
+		eOInfo oinfo,
+		bool prName,
+		bool checkSorted = true,
+		bool abortInval = true
+	) : UniBedReader(fName, FT::GetType(fName, true), cSizes, 0, dupLevel, oinfo, prName, checkSorted, abortInval)
 	{}
 
 	// Returns the most frequent Read length
 	// last in _rfreq because typically reads can be shorter, not longer
 	readlen ReadLength() const { return _rLen ? _rLen : (_rLen = prev(_lenFreq.cend())->first); }
 
-	// Returns true if read is paired-end
-	bool IsPairedRead() const { return BaseFile().IsPairedItem(); }
+	// Returns true if reads are paired-end. 
+	//	Can be called after reading at least one read.
+	bool IsPaired() const;
 
 	//***  Read sequence number
 
 	// Returns true if read's number parser is not initialized
 	bool IsReadNameParserUninit() const { return _rNamePrefix == SHRT_MAX; }
 
-	// Initializes read's number parser to get the read's number later
-	void InitReadNameParser() const;
-
 	// Returns read name substring started from initialized number parser value
+	//	Can be called after reading at least one read.
 	const char* ParsedReadName() const { return ItemName() + _rNamePrefix; }
 
-	// Returns read's number without checking whether the number parser is initialized
-	size_t ReadNumber() const { return atoul(ParsedReadName()); }
+	// Returns read's number
+	//	Can be called after reading at least one read.
+	size_t ReadNumber() const;
 
 #ifdef	_VALIGN
 	void SetReadNameParser(reclen len) const { _rNamePrefix = len; }
@@ -655,11 +672,15 @@ public:
 	size_t	Numb;		// read's number keeped in name
 
 	// PE Read constructor
-	Read(const RBedReader& file);
+	Read(const RBedReader& file) :
+		Region(file.ItemRegion()),
+		Strand(file.ItemStrand()),
+		Numb(file.ReadNumber())
+	{}
 
 	// Returns frag length
 	//	@param mate: second read in a pair
-	fraglen FragLen(const Read& mate) const { return Strand ? mate.End - Start : End - mate.Start; }
+	//fraglen FragLen(const Read& mate) const { return Strand ? mate.End - Start : End - mate.Start; }
 
 	void Print() const { dout << Start << TAB << Numb << TAB << Strand << LF; }
 
@@ -680,7 +701,8 @@ public:
 
 #ifdef _PE_READ
 
-// PE Fragment Identifier
+// Fragment Identifier 
+// Accepts PE reads and returns a fragment when it's recognized
 class FragIdent
 {
 	unordered_map<ULONG, Read> _waits;	// 'waiting list' - pair mate candidate's collection
