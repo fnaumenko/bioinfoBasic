@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 05/06/2024
+Last modified: 05/07/2024
 ***********************************************************/
 
 #include "common.h"
@@ -174,7 +174,7 @@ void PrintHorLine(int lw)
 #endif
 }
 
-#if defined _WIGREG || defined _BIOCC
+#ifdef _BIOCC
 
 chrlen AlignPos(chrlen pos, BYTE res, BYTE relative)
 {
@@ -538,7 +538,8 @@ string const FS::ComposeFileName(const char* oName, const char* iName, const str
 }
 
 
-#if !defined _WIGREG && !defined _FQSTATN
+#ifndef _FQSTATN
+
 bool FS::GetFiles(vector<string>& files, const string& dirName, const string& ext, bool all)
 {
 #ifdef OS_Windows
@@ -581,7 +582,7 @@ bool FS::GetFiles(vector<string>& files, const string& dirName, const string& ex
 	return files.size() > 0;
 #endif	// OS_Windows
 }
-#endif	// _WIGREG, _FQSTATN
+#endif	// _FQSTATN
 /************************ end of class FileSystem ************************/
 
 /************************  class TimerBasic ************************/

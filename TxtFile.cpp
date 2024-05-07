@@ -1,6 +1,6 @@
 /**********************************************************
 TxtFile.cpp
-Last modified: 05/02/2024
+Last modified: 05/07/2024
 ***********************************************************/
 
 #include "TxtFile.h"
@@ -761,7 +761,6 @@ void TabReader::InitRegion(BYTE fInd, Region& rgn) const
 
 /************************ end of TabReader ************************/
 
-#ifndef _WIGREG
 /************************ ChromDefRegions ************************/
 
 const string ChromDefRegions::Ext = ".region";	// regions file extension
@@ -919,7 +918,6 @@ FaReader::FaReader(const string& fName, ChromDefRegions* rgns) : TxtReader(fName
 
 /************************ end of class FaReader ************************/
 
-#endif	// _ISCHIP, _READDENS, _BIOCC
 #endif	// no _FQSTATN
 
 // Creates new instance with read buffer belonges to aggregated file: constructor for concatenating.

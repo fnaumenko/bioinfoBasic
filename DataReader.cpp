@@ -340,6 +340,7 @@ size_t RBedReader::ReadNumber() const
 }
 
 #endif	// _READS
+
 #ifdef _FEATURES
 /************************ FBedReader ************************/
 
@@ -387,7 +388,6 @@ bool FBedReader::NarrowLenDistr() const
 /************************ end of FBedReader ************************/
 #endif	// _FEATURES
 
-#ifndef _WIGREG
 
 /************************ class Read ************************/
 
@@ -451,9 +451,7 @@ void Read::PrintParams(const char* signOut, bool isRVL)
 }
 #else
 
-#ifdef _PE_READ
-
-#elif defined _VALIGN
+#ifdef _VALIGN
 
 Read::Read(const RBedReader& file) : Region(file.ItemRegion()), Strand(file.ItemStrand()), Score(file.ItemValue())
 {
@@ -483,10 +481,8 @@ void Read::Print() const
 		<< RecStart << TAB << setprecision(1) << Score << TAB << LF;
 }
 
-#endif	// _PE_READ || _VALIGN
+#endif	// _VALIGN
 /************************ end of struct Read ************************/
-#endif
-
 #endif
 
 #ifdef _PE_READ

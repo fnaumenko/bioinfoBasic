@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/06/2024
+Last modified: 05/07/2024
 ***********************************************************/
 #pragma once
 
@@ -247,7 +247,7 @@ inline float LinearDens(size_t cnt, chrlen len) { return len ? 1000.f * cnt / le
 //	@param lw: width of line
 void PrintHorLine(int lw);
 
-#if defined _WIGREG || defined _BIOCC
+#ifdef _BIOCC
 
 // Align position to the up or down resoluation level
 // f.e. by resoluation==5 pos 102 -> 100+relative, pos 104 -> 105++relative
@@ -298,8 +298,6 @@ public:
 };
 
 extern dostream dout;		// stream's duplicator
-#elif defined _WIGREG
-	#define dout	cerr
 #else
 	#define dout	cout
 	#define dostream ostream
@@ -643,7 +641,7 @@ public:
 
 	// === files in dir
 
-#if !defined _WIGREG && !defined _FQSTATN
+#ifndef _FQSTATN
 	// Fills external vector of strings by file's names found in given directory
 	// Implementation depends of OS.
 	//	@param files: external vector of strings that should be filled by file's names
@@ -652,7 +650,7 @@ public:
 	//	@param all: true if all files with given extention should be placed into external vector, otherwise only one (any)
 	//	@returns:  true if files with given extention are found
 	static bool GetFiles (vector<string>& files, const string& dirName, const string& ext, bool all = true);
-#endif	// _WIGREG, _FQSTATN
+#endif
 
 //	static void	Delete		(const char* fname) {
 //#ifdef OS_Windows

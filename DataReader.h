@@ -10,6 +10,10 @@ Last modified: 05/07/2024
 #include <map>
 #include <unordered_map>
 
+#ifdef _PE_READ
+#define _READS
+#endif
+
 static const char* sTotal = "total";
 
 // 'eOInfo' defines types of outputted oinfo
@@ -586,8 +590,6 @@ public:
 };
 #endif	// _FEATURES
 
-#ifndef _WIGREG
-
 // 'Read' represents Read (with name and score in case of _VALIGN) as item
 class Read : public Region
 {
@@ -668,6 +670,8 @@ public:
 	bool	Strand;		// true if strand is positive
 
 	//chrlen Centre() const { return Pos + (Len >> 1); }
+	//static bool CompareByNum(const Read& r1, const Read& r2) {	return r1.Num < r2.Num; }
+#endif
 #ifdef _PE_READ
 	size_t	Numb;		// read's number keeped in name
 
@@ -683,8 +687,9 @@ public:
 	//fraglen FragLen(const Read& mate) const { return Strand ? mate.End - Start : End - mate.Start; }
 
 	void Print() const { dout << Start << TAB << Numb << TAB << Strand << LF; }
+#endif
 
-#elif defined _VALIGN
+#ifdef _VALIGN
 	chrid	RecCID;		// recorded (true) chrom - owner
 	chrlen	RecStart;	// recorded (true) Read start position
 	float	Score;		// Read's score
@@ -694,10 +699,7 @@ public:
 
 	void Print() const;
 #endif
-	//static bool CompareByNum(const Read& r1, const Read& r2) {	return r1.Num < r2.Num; }
-#endif
 };
-#endif
 
 #ifdef _PE_READ
 

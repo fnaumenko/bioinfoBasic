@@ -2,7 +2,7 @@
 TxtFile.h
 Provides read|write basic bioinfo text files functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/02/2024
+Last modified: 05/07/2024
 ***********************************************************/
 #pragma once
 
@@ -748,8 +748,6 @@ public:
 };
 
 
-#ifndef _WIGREG
-
 // 'ChromDefRegions' represents a container of defined regions within chromosome
 // Defined in TxtFile.h since it's used in Fa class
 class ChromDefRegions : public Regions
@@ -875,5 +873,4 @@ public:
 	void CLoseReading() { if (_rgnMaker) _rgnMaker->CloseAddGaps(_cLen); }
 };
 
-#endif	// _WIGREG
 #endif	// no _FQSTATN
