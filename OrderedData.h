@@ -395,6 +395,10 @@ public:
 		if (Mutex::isOn())	_primer._mutex.unlock();
 	}
 
+	// For current chrom adds fragment to total coverage
+	//	@param frag: added fragment
+	void AddFrag(const Region& frag) { _data->DataByInd().AddRegion(frag); }
+
 	// For current chrom adds SE fragment to total coverage, and to strands coverage if strands are defined
 	//	@param frag: added fragment
 	//	@param reverse: true if read is reversed (neg strand)
