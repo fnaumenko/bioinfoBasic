@@ -63,9 +63,9 @@ BYTE DigitsCountUInt(uint32_t val)
 
 BYTE DigitsCountInt(int32_t val)
 {
-	BYTE res = 0;
-	if (val < 0) { res++; val = -val; }
-	return res + DigitsCountUInt(val);
+	BYTE neg = BYTE(val < 0);
+	if (neg) val = -val;
+	return neg + DigitsCountUInt(val);
 }
 
 BYTE DigitsCountULong(uint64_t val)
