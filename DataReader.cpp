@@ -343,6 +343,7 @@ bool RBedReader::IsPaired() const
 {
 	if (IsFlag(IS_PE_CHECKED))
 		return IsFlag(IS_PE);
+
 	bool res = BaseFile().IsPairedItem();
 	if (res)
 		RaiseFlag(IS_PE);
