@@ -298,7 +298,7 @@ public:
 
 private:
 	FT::eType _type;			// should be const, but can be edited (from BEDGRAPF to WIGGLE)
-	const BYTE	_MaxDuplCnt;	// max allowed number of duplicates; BYTE_UNDEF if keep all
+	const BYTE	_MaxDuplLevel;	// max allowed number of duplicates; BYTE_UNDEF if keep all
 	const bool	_abortInv;		// true if invalid instance should be completed by throwing exception
 	const eOInfo _oinfo;		// level of output stat info
 
@@ -306,7 +306,7 @@ private:
 	Region	_rgn0{ 0,0 };		// previous item's region
 	Region	_rgn{ 0,0 };		// current item's region
 	size_t	_cDuplCnt = 0;		// number of duplicates per chrom; the first 'originals' are not counted
-	BYTE	_duplCnt = 0;		// current number of duplicates
+	BYTE	_duplLevel = 0;		// current allowed number of duplicates
 	bool	_strand = true;		// current item's strand
 	bool	_strand0 = true;	// previous item's strand; first sorted read is always negative
 	bool	_checkSorted;		// checking for unsorted items 

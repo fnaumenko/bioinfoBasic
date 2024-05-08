@@ -177,9 +177,9 @@ bool UniBedReader::CheckItem(chrlen cLen)
 	_strand = _file->ItemStrand();				// single reading strand from file
 	if (_rgn0 == _rgn && _strand0 == _strand)	// duplicates
 		_cDuplCnt++,
-		res = _MaxDuplCnt == BYTE_UNDEF || ++_duplCnt < _MaxDuplCnt;
+		res = _MaxDuplLevel == BYTE_UNDEF || ++_duplLevel < _MaxDuplLevel;
 	else {
-		_duplCnt = 0;
+		_duplLevel = 0;
 		_lenFreq[_rgn.Length()]++;
 		res = ChildCheckItem();					// RBed: rlen accounting; FBed: overlap check
 	}
@@ -206,10 +206,10 @@ void UniBedReader::PrintStats(size_t cnt)
 		size_t issCnt = 0;
 		for (const Issue& iss : _issues)	issCnt += iss.Cnt;
 		if (issCnt) {
-			if (_MaxDuplCnt == BYTE_UNDEF)	_issues[DUPL].Action = ACCEPT;
-			else if (_MaxDuplCnt) {
+			if (_MaxDuplLevel == BYTE_UNDEF)	_issues[DUPL].Action = ACCEPT;
+			else if (_MaxDuplLevel) {
 				stringstream ss(" except for the first ");
-				ss << int(_MaxDuplCnt);
+				ss << int(_MaxDuplLevel);
 				_issues[DUPL].Extra = ss.str();
 			}
 			_issues[OVERL].Action = GetOverlAction();
@@ -269,7 +269,7 @@ UniBedReader::UniBedReader(
 	bool preReading
 ) :
 	_type(type),
-	_MaxDuplCnt(dupLevel), 
+	_MaxDuplLevel(dupLevel), 
 	_checkSorted(checkSorted), 
 	_abortInv(abortInval), 
 	_oinfo(oinfo), 
