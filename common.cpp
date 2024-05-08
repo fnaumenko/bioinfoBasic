@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 05/07/2024
+Last modified: 05/08/2024
 ***********************************************************/
 
 #include "common.h"
@@ -517,7 +517,7 @@ string const FS::ComposeFileName(const char* oName, const char* iName, const str
 
 	if (oName)
 		if (IsDirExist(oName))
-			res = MakePath(oName) + getShortName();
+			res = MakePath(oName) + ShortFileName(baseName);
 		else
 			nameMatches = (res = oName) == baseName;
 	else

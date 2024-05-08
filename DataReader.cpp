@@ -1,6 +1,6 @@
 /**********************************************************
 DataReader.cpp
-Last modified: 05/07/2024
+Last modified: 05/08/2024
 ***********************************************************/
 
 #include "DataReader.h"
@@ -256,16 +256,28 @@ void UniBedReader::PrintStats(size_t cnt, size_t issCnt, const vector<Issue>& is
 		dout << " all " << sActions[0];
 };
 
-UniBedReader::UniBedReader(const char* fName, const FT::eType type, ChromSizes* cSizes,
-	BYTE scoreNumb, BYTE dupLevel, eOInfo oinfo,
-	bool prName, bool checkSorted, bool abortInval) :
+UniBedReader::UniBedReader(
+	const char* fName,
+	const FT::eType type,
+	ChromSizes* cSizes,
+	BYTE scoreNumb,
+	BYTE dupLevel,
+	eOInfo oinfo,
+	bool prName,
+	bool checkSorted,
+	bool abortInval,
+	bool preReading
+) :
 	_type(type),
 	_MaxDuplCnt(dupLevel), 
 	_checkSorted(checkSorted), 
 	_abortInv(abortInval), 
 	_oinfo(oinfo), 
-	_cSizes(cSizes)
+	_cSizes(cSizes),
+	_readItem(!preReading)
 {
+	if (preReading)  _readItem = false, _preItem = true;
+
 	if (prName) { dout << fName; fflush(stdout); }
 
 #ifdef _BAM
@@ -295,6 +307,18 @@ UniBedReader::~UniBedReader()
 	else
 #endif
 		delete (BedReader*)_file;
+}
+
+bool UniBedReader::GetNextItem()
+{
+	if (_preItem) {
+		if (_readItem) {
+			_preItem = false;
+			return true;		// first item has been pre-read
+		}
+		_readItem = true;		// pre-read first item
+	}
+	return _file->GetNextItem();
 }
 
 size_t UniBedReader::EstItemCount() const

@@ -2,7 +2,7 @@
 OrderedData.h
 Provides chromosomally sorted data functionality
 2022 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/25/2023
+Last modified: 05/08/2024
 ***********************************************************/
 #pragma once
 
@@ -207,7 +207,7 @@ public:
 
 public:
 	// Ñreates writers according to dimension
-	//	@param dim: number (dimension) of data; should be 1 (total only), 2 (strands only) or 3 (total and strands)
+	//	@param dim: number of data (dimension); should be 1 (total only), 2 (strands only) or 3 (total and strands)
 	//	@param fields: BED/WIG track fields
 	Writers(BYTE dim, const TrackFields& fields)
 	{
@@ -248,7 +248,7 @@ public:
 	bool Unsaved = true;	// true if data is still unsaved
 
 	// Constructor
-	//	@param dim: number (dimension) of data; should be 1 (total only), 2 (strands only) or 3 (total and strands)
+	//	@param dim: number of data (dimension); should be 1 (total only), 2 (strands only) or 3 (total and strands)
 	DataSet(BYTE dim = 1) : _strandShift(StrandShift(dim)) { assert(dim); _data.resize(dim); }
 
 	// Returns a direct pointer to the DATA array
@@ -291,7 +291,7 @@ class OrderedData
 	{
 		// Initializing constructor
 		//	@param cSizes: chrom sizes instance
-		//	@param dim: number (dimension) of data of the same type
+		//	@param dim: number of data (dimension); should be 1 (total only), 2 (strands only) or 3 (total and strands)
 		ChromDataSet(const ChromSizes& cSizes, BYTE dim) {
 			for (const auto& cs : cSizes)
 				if (cs.second.Treated)
@@ -300,6 +300,7 @@ class OrderedData
 	};
 
 	mutable mutex _mutex;						// only primer mutex is used
+	BYTE _dim;									// dimension
 	unique_ptr<ChromDataSet<DATA>> _chromsData;	// common chroms data collection (datasets)
 	const OrderedData& _primer;					// primer instance to share mutex and collections
 
@@ -309,8 +310,8 @@ protected:
 
 	// Primer constructor without writers
 	//	@param cSizes: chrom sizes
-	//	@param dim: chrom's dataset dimension
-	OrderedData(const ChromSizes& cSizes, BYTE dim) : _primer(*this)
+	//	@param dim: number of data (dimension); should be 1 (total only), 2 (strands only) or 3 (total and strands)
+	OrderedData(const ChromSizes& cSizes, BYTE dim) : _dim(dim), _primer(*this)
 	{
 		assert(dim);
 		_chromsData.reset(new ChromDataSet<DATA>(cSizes, dim));
@@ -331,22 +332,11 @@ private:
 			data.Clear();
 	}
 
-	// Primer constructor
-//	@param cSizes: chrom sizes
-//	@param dim: number (dimension) of data
-//	@param write: if true then data sould be save to output file
-//	@param fields: BED/WIG track fields
-	//OrderedData(const ChromSizes& cSizes, BYTE dim, bool write, const TrackFields& fields, const string* commLine = nullptr)
-	//	: OrderedData(cSizes, dim)
-	//{
-	//	if (write)	_writers.reset(new Writers<WRITER>(dim, fields, commLine));
-	//}
-
 public:
 
 	// Primer constructor
 	//	@param cSizes: chrom sizes
-	//	@param dim: number (dimension) of data
+	//	@param dim: number of data (dimension); should be 1 (total only), 2 (strands only) or 3 (total and strands)
 	//	@param write: if true then data sould be save to output file
 	//	@param fname: name of output file
 	//	@param descr: track decsription in declaration line
@@ -354,23 +344,24 @@ public:
 	OrderedData(const ChromSizes& cSizes, BYTE dim, bool write, const string& fname, const char* descr, const string* commLine = nullptr)
 		: OrderedData(cSizes, dim)
 	{
-		if (write)	_writers.reset(new Writers<WRITER>(dim, TrackFields(fname, descr, commLine)));
+		if (write)	
+			_writers.reset(new Writers<WRITER>(dim, TrackFields(fname, descr, commLine)));
 	}
 
 	// Clone constructor for multithreading
 	//	@param data: primer data
 	OrderedData(const OrderedData& data) : _primer(data) {}
 
-	// Returns chrom's data
+	// Returns chromosome's data
 	DataSet<DATA>& ChromData(chrid cID) { return _chromsData->Data(cID); }
 	const DataSet<DATA>& ChromData(chrid cID) const { return _chromsData->Data(cID); }
 
 	void Clear() { _data->Clear(); }
 
-	// Sets chrom as current (for accumulating only)
+	// Sets chromosome as current (for accumulating only)
 	void SetChrom(chrid cID) { (_data = &(_primer._chromsData->Data(cID)))->Reinit(); }
 
-	// Save chrom's data by defined writers in chromosome order; of no writes are set, does nothing
+	// Save chromosome's data by defined writers in chromosome order; of no writes are set, does nothing
 	//	@param cID: chrom ID
 	//	@param clearData: true if chrom's data should be cleaned after all
 	void WriteChrom(const chrid cID, bool clearData = true)
@@ -395,24 +386,24 @@ public:
 		if (Mutex::isOn())	_primer._mutex.unlock();
 	}
 
-	// For current chrom adds fragment to total coverage
+	// For current chromosome adds fragment to total coverage
 	//	@param frag: added fragment
 	void AddFrag(const Region& frag) { _data->DataByInd().AddRegion(frag); }
 
-	// For current chrom adds SE fragment to total coverage, and to strands coverage if strands are defined
+	// For current chromosome adds SE fragment to total coverage, and to strands coverage if strands are defined
 	//	@param frag: added fragment
 	//	@param reverse: true if read is reversed (neg strand)
 	void AddFrag(const Region& frag, bool reverse) {
-		_data->DataByInd().AddRegion(frag);
+		AddFrag(frag);
 		if (_data->Strands())
 			_data->StrandDataByInd(reverse).AddRegion(frag);
 	}
 
-	// For current chrom adds fragment to total density
+	// For current chromosome adds fragment to total density
 	//	@param frag: added fragment
 	void AddFragDens(const Region& frag) { _data->DataByInd().AddFragPos(frag); }
 
-	// For current chrom adds SE read to total coverage
+	// For current chromosome adds SE read to total coverage
 	//	@param read: added read
 	//	@param reverse: true if read is reversed (neg strand)
 	void AddReadDens(const Region& read, bool reverse) { _data->DataByInd().AddReadPos(read, reverse); }

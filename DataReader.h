@@ -2,7 +2,7 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/07/2024
+Last modified: 05/08/2024
 ***********************************************************/
 #pragma once
 
@@ -41,7 +41,7 @@ public:
 	virtual size_t EstItemCount() const = 0;
 
 	// Sets the next chromosome as the current one if they are different
-	// @cID: returned next chrom ID
+	//	@param cID: returned next chrom ID
 	//	@returns: true, if new chromosome is set as current one
 	virtual bool GetNextChrom(chrid& cID) = 0;
 
@@ -71,11 +71,11 @@ public:
 	virtual const char* ItemName() const = 0;
 
 	// Gets string containing file name and current line number.
-	//	@code: code of error occurs
+	//	@param code: code of error occurs
 	virtual const string LineNumbToStr(Err::eCode code = Err::EMPTY) const = 0;
 
 	// Throws exception with message included current reading line number
-	//	@msg: exception message
+	//	@param msg: exception message
 	virtual void ThrowExceptWithLineNumb(const string& msg) const = 0;
 
 	// Gets conditional file name: name if it's printable, otherwise empty string.
@@ -115,25 +115,26 @@ class BedReader : public DataReader, public TabReader
 
 public:
 	// Creates new instance for reading and open file
-	//	@fName: name of file
-	//	@type: file type
-	//	@scoreNumb: number of 'score' filed (0 by default for ABED and BAM)
-	//	@msgFName: true if file name should be printed in exception's message
-	//	@abortInval: true if invalid instance should be completed by throwing exception
+	//	@param fName: name of file
+	//	@param type: file type
+	//	@param scoreNumb: number of 'score' filed (0 by default for ABED and BAM)
+	//	@param msgFName: true if file name should be printed in exception's message
+	//	@param abortInval: true if invalid instance should be completed by throwing exception
 	BedReader(const char* fName, FT::eType type, BYTE scoreNumb, bool msgFName, bool abortInval);
 
+	// Gets file bioinfo type
+	FT::eType Type() const { return TabReader::Type(); }
+
+protected:
 	// Gets pointer to the chrom mark in current line without check up
 	const char* ChromMark() const { return GetLine() + _chrMarkPos; }
 
 	// Returns estimated number of items
 	size_t EstItemCount() const { return EstLineCount(); }
 
-	// Gets file bioinfo type
-	FT::eType Type() const { return TabReader::Type(); }
-
 	// Sets the next chromosome as the current one if they are different
-	//	@cID: returned next chrom ID
-	//	@str: null-terminated string started with short chrom name
+	//	@param cID: returned next chrom ID
+	//	@param str: null-terminated string started with short chrom name
 	//	@returns: true, if new chromosome is set as current one
 	//	Used in Calc.cpp
 	bool GetNextChrom(chrid& cID, const char* str) {
@@ -141,7 +142,7 @@ public:
 	}
 
 	// Sets the next chromosome as the current one if they are different
-	//	@cID: returned next chrom ID
+	//	@param cID: returned next chrom ID
 	//	@returns: true, if new chromosome is set as current one
 	//	To implement DataReader virtual GetNextChrom(chrid& cID)
 	bool GetNextChrom(chrid& cID) { return SetNextChrom(cID = Chrom::ValidateID(ChromMark())); }
@@ -172,11 +173,11 @@ public:
 	const char* ItemName() const { return StrFieldValid(NameFieldInd); }
 
 	// Gets string containing file name and current line number.
-	//	@code: code of error occurs
+	//	@param code: code of error occurs
 	const string LineNumbToStr(Err::eCode code) const { return TxtReader::LineNumbToStr(code); }
 
 	// Throws exception with message included current reading line number
-	//	@msg: exception message
+	//	@param msg: exception message
 	void ThrowExceptWithLineNumb(const string& msg) const { return TxtReader::ThrowExceptWithLineNumb(msg); }
 
 	// Gets conditional file name: name if it's printable, otherwise empty string.
@@ -207,11 +208,12 @@ class BamReader : public DataReader
 
 public:
 	// Creates new instance for reading and open file
-	//	@fName: name of file
-	//	@cSizes: chrom sizes to be initialized or NULL
-	//	@prName: true if file name should be printed in exception's message
+	//	@param fName: name of file
+	//	@param cSizes: chrom sizes to be initialized or NULL
+	//	@param prName: true if file name should be printed in exception's message
 	BamReader(const char* fName, ChromSizes* cSizes, bool prName);
 
+protected:
 	// Returns estimated number of items
 	size_t EstItemCount() const { return _estItemCnt; }
 
@@ -219,7 +221,7 @@ public:
 	chrid ChromCount() const { return _reader.GetReferenceCount(); }
 
 	// Sets the next chromosome as the current one if they are different
-	// @param cID: returned next chrom ID
+	//	@param cID: returned next chrom ID
 	//	@returns: true, if new chromosome is set as current one
 	bool GetNextChrom(chrid& cID) { return SetNextChrom(cID = _read.RefID); }
 
@@ -307,21 +309,22 @@ private:
 	BYTE	_duplCnt = 0;		// current number of duplicates
 	bool	_strand = true;		// current item's strand
 	bool	_strand0 = true;	// previous item's strand; first sorted read is always negative
-	bool	_checkSorted = true;// checking for unsorted items 
+	bool	_checkSorted;		// checking for unsorted items 
+	bool	_readItem = true;	// if true then read next item, otherwise pre-read first item or nothing if _preItem is TRUE
+	bool	_preItem = false;	// if true then pre-read first item and set to FALSE after that
 	DataReader* _file = nullptr;// data file; unique_ptr is useless because of different type in constructor/destructor
-	//variant<BedReader, BamReader> file;
 	const ChromSizes* _cSizes;
 
 	// Resets the current accounting of items
 	void ResetChrom();
 
 	// Validate item
-	//	@cLen: current chrom length or 0 if _cSizes is undefined
-	//	return: true if item is valid
+	//	@param cLen: current chrom length or 0 if _cSizes is undefined
+	//	@returns: true if item is valid
 	bool CheckItem(chrlen cLen);
 
 	// Validate item by final class
-	//	return: true if item is valid
+	//	@returns: true if item is valid
 	virtual bool ChildCheckItem() { return true; }
 
 	// Returns overlapping action
@@ -350,7 +353,7 @@ protected:
 		"starting outside the chromosome",
 		"ending outside the chromosome"
 	};
-	map<readlen, ULONG>	_lenFreq;		// item length frequency
+	map<readlen, ULONG>	_lenFreq;	// item length frequency
 
 	// Returns true if adjacent items overlap
 	bool IsOverlap() const { return _rgn.Start <= _rgn0.End; }
@@ -380,9 +383,19 @@ public:
 	//	@param prName: true if file name should be printed unconditionally
 	//	@param checkSorted: true if items should be sorted within chrom
 	//	@param abortInval: true if invalid instance should be completed by throwing exception
-	UniBedReader(const char* fName, const FT::eType type, ChromSizes* cSizes,
-		BYTE scoreNumb, BYTE dupLevel, eOInfo oinfo, 
-		bool prName, bool checkSorted, bool abortInval);
+	//	@param preReading: true if the first line will be pre-read
+	UniBedReader(
+		const char* fName,
+		const FT::eType type,
+		ChromSizes* cSizes,
+		BYTE scoreNumb,
+		BYTE dupLevel,
+		eOInfo oinfo, 
+		bool prName,
+		bool checkSorted,
+		bool abortInval,
+		bool preReading
+	);
 
 	// explicit destructor
 	~UniBedReader();
@@ -400,7 +413,7 @@ public:
 		bool userChromInProc = false;
 		Timer timer(IsTimer);
 
-		while (_file->GetNextItem()) {
+		while (GetNextItem()) {
 			if (_file->GetNextChrom(nextcID)) {			// the next chrom
 				//printf("chrom %d %s\n", int(nextcID), Chrom::Mark(nextcID));	// for debug
 				if (setCustom) {
@@ -429,6 +442,9 @@ public:
 		if (_oinfo >= eOInfo::STD)	PrintStats(tItemCnt);
 		timer.Stop(1, true);	if (_oinfo > eOInfo::NM)	dout << LF;
 	}
+
+	// Reads next item's record, considering possible first record pre-read
+	bool GetNextItem();
 
 	DataReader& BaseFile() const { return *_file; }
 
@@ -470,11 +486,11 @@ public:
 	//bool IsItemHoldStrand() const { return _file->IsItemHoldStrand(); }
 
 	// Gets string containing file name and current line number.
-	//	@code: code of error occurs
+	//	@param code: code of error occurs
 	const string LineNumbToStr(Err::eCode code) const { return _file->LineNumbToStr(code); }
 
 	// Throws exception with message included current reading line number
-	//	@msg: exception message
+	//	@param msg: exception message
 	void ThrowExceptWithLineNumb(const string& msg) const { return _file->ThrowExceptWithLineNumb(msg); }
 
 	// Gets conditional file name: name if it's printable, otherwise empty string.
@@ -517,6 +533,7 @@ public:
 	//	@param prName: true if file name should be printed unconditionally
 	//	@param checkSorted: true if reads should be sorted within chrom
 	//	@param abortInval: true if invalid instance should be completed by throwing exception
+	//	@param preReading: true if the first line will be pre-read
 	RBedReader(
 		const char* fName,
 		ChromSizes* cSizes,
@@ -524,8 +541,9 @@ public:
 		eOInfo oinfo,
 		bool prName,
 		bool checkSorted = true,
-		bool abortInval = true
-	) : UniBedReader(fName, FT::GetType(fName, true), cSizes, 0, dupLevel, oinfo, prName, checkSorted, abortInval)
+		bool abortInval = true,
+		bool preReading = false
+	) : UniBedReader(fName, FT::GetType(fName, true), cSizes, 0, dupLevel, oinfo, prName, checkSorted, abortInval, preReading)
 	{}
 
 	// Returns the most frequent Read length
@@ -573,12 +591,12 @@ private:
 
 public:
 	// Creates new instance for reading and open file
-	//	@fName: file name
-	//	@cSizes: chrom sizes
-	//	@scoreNmb: number of 'score' filed
-	//	@action: action for overlapping features
-	//	@prName: true if file name should be printed unconditionally
-	//	@abortInval: true if invalid instance should be completed by throwing exception
+	//	@param fName: file name
+	//	@param cSizes: chrom sizes
+	//	@param scoreNmb: number of 'score' filed
+	//	@param action: action for overlapping features
+	//	@param prName: true if file name should be printed unconditionally
+	//	@param abortInval: true if invalid instance should be completed by throwing exception
 	FBedReader(const char* fName, ChromSizes* cSizes,
 		BYTE scoreNmb, eAction action, eOInfo oinfo, bool prName, bool abortInval);
 
@@ -652,7 +670,7 @@ public:
 	void Copy(char* dst, bool reverse) const { (this->*CopyRead[reverse])(dst); }
 
 	// Checks Read for number of 'N'
-	//	return:	1: NULL Read; 0: success; -1: N limit is exceeded
+	//	@returns:	1: NULL Read; 0: success; -1: N limit is exceeded
 	int CheckNLimit() const;
 
 	// Prints quality values for the sequence
