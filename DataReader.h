@@ -125,12 +125,8 @@ public:
 	// Gets file bioinfo type
 	FT::eType Type() const { return TabReader::Type(); }
 
-protected:
 	// Gets pointer to the chrom mark in current line without check up
 	const char* ChromMark() const { return GetLine() + _chrMarkPos; }
-
-	// Returns estimated number of items
-	size_t EstItemCount() const { return EstLineCount(); }
 
 	// Sets the next chromosome as the current one if they are different
 	//	@param cID: returned next chrom ID
@@ -140,6 +136,10 @@ protected:
 	bool GetNextChrom(chrid& cID, const char* str) {
 		return SetNextChrom(cID = Chrom::ValidateID(str, strlen(Chrom::Chrom::Abbr)));
 	}
+
+protected:
+	// Returns estimated number of items
+	size_t EstItemCount() const { return EstLineCount(); }
 
 	// Sets the next chromosome as the current one if they are different
 	//	@param cID: returned next chrom ID
@@ -394,7 +394,7 @@ public:
 		bool prName,
 		bool checkSorted,
 		bool abortInval,
-		bool preReading
+		bool preReading = false
 	);
 
 	// explicit destructor
