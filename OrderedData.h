@@ -2,7 +2,7 @@
 OrderedData.h
 Provides chromosomally sorted data functionality
 2022 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/08/2024
+Last modified: 05/09/2024
 ***********************************************************/
 #pragma once
 
@@ -15,7 +15,7 @@ using coval = chrlen;				// coverage value
 using covmap = map<chrlen, coval>;	// coverage map
 
 static const string	sStrandEXT[] = { strEmpty, ".pos", ".neg" };
-static const char*	sStrandTITLES[] = { "positive", "negative" };
+static const char*	sStrandTITLES[] = { "total", "positive", "negative" };
 
 static const BYTE	ColorLEN = 11;
 

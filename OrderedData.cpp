@@ -1,6 +1,6 @@
 /**********************************************************
 OrderedData.cpp
-Last modified: 05/02/2024
+Last modified: 05/09/2024
 ***********************************************************/
 
 #include "OrderedData.h"
@@ -112,7 +112,7 @@ RegionWriter::RegionWriter(FT::eType ftype, eStrand strand, const TrackFields& f
 	if (fields.Descr || strand != TOTAL) {
 		oss << "description=\"";
 		if (fields.Descr)		oss << fields.Descr;
-		if (strand != TOTAL)	oss << SepCl << sStrandTITLES[strand - 1] << " strand";
+		if (strand != TOTAL)	oss << SepCl << sStrandTITLES[strand] << " strand";
 		oss << "\"";
 	}
 	const char* color = NULL;
