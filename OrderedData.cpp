@@ -83,6 +83,7 @@ void AccumCover::AddRegion(const Region& frag)
 		it2->second = --val;					// set new 'end' entry value
 }
 
+#ifdef _WIG
 void AccumCover::AddNextRegion(const Region& rgn, coval val)
 {
 	//if(empty())
@@ -100,7 +101,7 @@ void AccumCover::AddNextRegion(const Region& rgn, coval val)
 		emplace_hint(end(), rgn.Start, val);
 	emplace_hint(end(), rgn.End, 0);
 }
-
+#endif
 /************************ AccumCover: end ************************/
 
 /************************ RegionWriter ************************/

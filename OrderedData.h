@@ -53,10 +53,10 @@ public:
 	// Adds fragment to accumulate the coverage
 	void AddRegion0(const Region& frag);
 	void AddRegion(const Region& frag);
-
+#ifdef _WIG
 	// Adds next sequential region with value
 	void AddNextRegion(const Region& rgn, coval val);
-
+#endif
 #ifdef _DEBUG
 	void WigPrint() const
 	{
@@ -402,10 +402,12 @@ public:
 			_data->StrandDataByInd(reverse).AddRegion(frag);
 	}
 
+#ifdef _WIG
 	// Adds next sequential region with value
 	void AddNextRegion(eStrand strand, const Region& rgn, coval val) {
 		_data->StrandData(strand).AddNextRegion(rgn, val);
 	}
+#endif
 
 	// For current chromosome adds fragment to total density
 	//	@param frag: added fragment
