@@ -586,7 +586,7 @@ public:
 
 	// Returns true if file has a specified  extension. Case insensitive search
 	//	@param ext: extension includes dot symbol
-	//	@param composite: true if extension is (strictly last)
+	//	@param composite: true if the extension is real (i.e. strictly last)
 	static bool HasExt	(const string& fname, const string& ext, bool composite = true) {
 		return HasCaseInsExt(fname, ext, HasGzipExt(fname), composite);
 	}

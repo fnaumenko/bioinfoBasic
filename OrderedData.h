@@ -2,7 +2,7 @@
 OrderedData.h
 Provides chromosomally sorted data functionality
 2022 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/09/2024
+Last modified: 05/21/2024
 ***********************************************************/
 #pragma once
 
@@ -53,6 +53,9 @@ public:
 	// Adds fragment to accumulate the coverage
 	void AddRegion0(const Region& frag);
 	void AddRegion(const Region& frag);
+
+	// Adds next sequential region with value
+	void AddNextRegion(const Region& rgn, coval val);
 
 #ifdef _DEBUG
 	void WigPrint() const
@@ -397,6 +400,11 @@ public:
 		AddFrag(frag);
 		if (_data->Strands())
 			_data->StrandDataByInd(reverse).AddRegion(frag);
+	}
+
+	// Adds next sequential region with value
+	void AddNextRegion(eStrand strand, const Region& rgn, coval val) {
+		_data->StrandData(strand).AddNextRegion(rgn, val);
 	}
 
 	// For current chromosome adds fragment to total density
