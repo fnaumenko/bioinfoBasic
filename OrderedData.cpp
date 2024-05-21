@@ -102,6 +102,28 @@ void AccumCover::AddNextRegion(const Region& rgn, coval val)
 	emplace_hint(end(), rgn.End, 0);
 }
 #endif
+#ifdef MY_DEBUG
+void AccumCover::Print(chrlen maxPos) const
+{
+	cout << "pos\tval\n";
+	DoWithItem([maxPos](const auto& item) {
+		if (maxPos && item.first > maxPos)	return;
+		cout << item.first << TAB << item.second << LF;
+		}
+	);
+}
+
+void AccumCover::BgPrint(chrlen maxPos) const
+{
+	cout << "start\tend\tval\n";
+	DoWith2Items([maxPos](const auto& it0, const auto& it1) {
+		if (maxPos && it0->first > maxPos)	return;
+		cout << it0->first << TAB << it1->first << TAB << it0->second << LF;
+		}
+	);
+}
+#endif
+
 /************************ AccumCover: end ************************/
 
 /************************ RegionWriter ************************/

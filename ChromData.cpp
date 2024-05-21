@@ -1,6 +1,6 @@
 /**********************************************************
 ChromData.cpp
-Last modified: 04/28/2024
+Last modified: 05/21/2024
 ***********************************************************/
 
 #include "ChromData.h"
@@ -76,7 +76,7 @@ void ChromSizes::SetPath(const string& gPath, const char* sPath, bool prMsg)
 		}
 }
 
-void  ChromSizes::SetTreatedChrom(chrid cID)
+void  ChromSizes::SetSingleTreatedChrom(chrid cID)
 {
 	if (cID != Chrom::UnID)
 		for (auto& c : Chroms::Container())
@@ -120,7 +120,7 @@ ChromSizes::ChromSizes(const char* gName, bool prMsg, const char* sPath, bool ch
 		}
 		Chrom::SetUserCID();
 
-		SetTreatedChrom(Chrom::UserCID());
+		SetSingleTreatedChrom(Chrom::UserCID());
 	}
 	else if (sPath)
 		_gPath = _sPath = FS::MakePath(sPath);	// initialized be service dir; _ext is empty!
@@ -140,8 +140,15 @@ void ChromSizes::Init(const string& headerSAM)
 genlen ChromSizes::GenSize() const
 {
 	if (!_gsize)
-		for (const auto& c : *this)	_gsize += c.second.Data.Real;
+		for (const auto& c : *this)
+			_gsize += c.second.Data.Real;
 	return _gsize;
+}
+
+void ChromSizes::SetAllTreatedOff()
+{
+	for (auto it = Begin(); it != End(); it++)
+		it->second.Treated = false;
 }
 
 #ifdef MY_DEBUG

@@ -2,7 +2,7 @@
 ChromData.h
 Provides chromosomes data functionality
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 04/20/2024
+Last modified: 05/21/2024
 ***********************************************************/
 #pragma once
 
@@ -127,6 +127,7 @@ public:
 	chrid TreatedCount() const
 	{
 		chrid res = 0;
+		//for (const auto& c : *this) res += c.Treated;
 		for (auto it = this->cBegin(); it != this->cEnd(); res += IsTreated(it++));
 		return res;
 	}
@@ -380,7 +381,8 @@ class ChromSizes : public Chroms<ChromSize>
 	//	@param prMsg: true if print message about service fodler and chrom.sizes generation
 	void SetPath(const string& gPath, const char* sPath, bool prMsg);
 
-	void SetTreatedChrom(chrid cID);
+	// Set only one treated chromosome
+	void SetSingleTreatedChrom(chrid cID);
 
 	// returns true if service path is defined
 	bool IsServAvail() const { return _sPath.size(); }
@@ -432,8 +434,13 @@ public:
 
 	chrlen operator[] (chrid cID) const { return At(cID).Data.Real; }
 
+	// Marks chromosome as treated or untreated
+	void SetTreatedChrom(chrid cID, bool treated = true) { At(cID).Treated = treated; }
+
 	// Gets total size of genome
 	genlen GenSize() const;
+
+	void SetAllTreatedOff();
 
 #ifdef MY_DEBUG
 	void Print() const;

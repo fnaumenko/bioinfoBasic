@@ -34,7 +34,8 @@ protected:
 		auto it0 = cbegin(), it = it0;		// previous, current entry
 
 		for (++it; it != end(); it0 = it++)
-			if (it0->second)	f(it0, it);
+			if (it0->second)
+				f(it0, it);
 	}
 
 public:
@@ -57,22 +58,14 @@ public:
 	// Adds next sequential region with value
 	void AddNextRegion(const Region& rgn, coval val);
 #endif
-#ifdef _DEBUG
-	void WigPrint() const
-	{
-		cout << "pos\tval\n";
-		DoWithItem([](const auto& item) { cout << item.first << TAB << item.second << LF; });
-	}
+#ifdef MY_DEBUG
+	// Prints map
+	//	@param maxPos: maximum position to print, or all by default
+	void Print(chrlen maxPos = 0) const;
 
 	// Prints output in BedGraph format
-	void BgPrint() const
-	{
-		cout << "start\tend\tval\n";
-		DoWith2Items([](const auto& it0, const auto& it1)
-			{ cout << it0->first << TAB << it1->first << TAB << it0->second << LF; }
-		);
-	}
-#endif	// _DEBUG
+	void BgPrint(chrlen maxPos = 0) const;
+#endif
 };
 
 // 'Freq' represents cumulative position frequency
@@ -263,8 +256,14 @@ public:
 	const DATA& DataByInd(BYTE ind = 0) const { return _data[ind]; }
 
 	// Returnes strand data by strand
-	DATA& StrandData(eStrand strand) { return _data[strand - !_strandShift]; }
-	const DATA& StrandData(eStrand strand) const { return _data[strand - !_strandShift]; }
+	DATA& StrandData(eStrand strand) {
+		assert(_data.size() > strand - !_strandShift);
+		return _data[strand - !_strandShift]; 
+	}
+	const DATA& StrandData(eStrand strand) const { 
+		assert(_data.size() > strand - !_strandShift);
+		return _data[strand - !_strandShift];
+	}
 
 	// Returnes strand data by index: 0 - POS, 1 - NEG
 	DATA& StrandDataByInd(BYTE ind) { return _data[ind + _strandShift]; }
@@ -408,6 +407,11 @@ public:
 		_data->StrandData(strand).AddNextRegion(rgn, val);
 	}
 #endif
+//#ifdef MY_DEBUG
+//	void BgPrint_(eStrand strand, chrlen maxPos = 0) const {
+//		_data->StrandData(strand).BgPrint(maxPos);
+//	}
+//#endif
 
 	// For current chromosome adds fragment to total density
 	//	@param frag: added fragment
