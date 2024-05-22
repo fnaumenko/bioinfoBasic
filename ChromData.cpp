@@ -1,6 +1,6 @@
 /**********************************************************
 ChromData.cpp
-Last modified: 05/21/2024
+Last modified: 05/22/2024
 ***********************************************************/
 
 #include "ChromData.h"
@@ -76,13 +76,6 @@ void ChromSizes::SetPath(const string& gPath, const char* sPath, bool prMsg)
 		}
 }
 
-void  ChromSizes::SetSingleTreatedChrom(chrid cID)
-{
-	if (cID != Chrom::UnID)
-		for (auto& c : Chroms::Container())
-			c.second.Treated = c.first == cID;
-}
-
 ChromSizes::ChromSizes(const char* gName, bool prMsg, const char* sPath, bool checkGRef)
 {
 	_ext = _gPath = _sPath = strEmpty;
@@ -119,8 +112,8 @@ ChromSizes::ChromSizes(const char* gName, bool prMsg, const char* sPath, bool ch
 			_sPath = FS::DirName(gName, true);
 		}
 		Chrom::SetUserCID();
-
-		SetSingleTreatedChrom(Chrom::UserCID());
+		TreateAll(false);
+		TreateChrom(Chrom::UserCID());
 	}
 	else if (sPath)
 		_gPath = _sPath = FS::MakePath(sPath);	// initialized be service dir; _ext is empty!
@@ -137,18 +130,20 @@ void ChromSizes::Init(const string& headerSAM)
 		);
 }
 
+void ChromSizes::TreateAll(bool treate)
+{
+	//for (auto it = Begin(); it != End(); it++)
+	//	it->second.Treated = treate;
+	for (auto& c : Chroms::Container())
+		c.second.Treated = treate;
+}
+
 genlen ChromSizes::GenSize() const
 {
 	if (!_gsize)
 		for (const auto& c : *this)
 			_gsize += c.second.Data.Real;
 	return _gsize;
-}
-
-void ChromSizes::SetAllTreatedOff()
-{
-	for (auto it = Begin(); it != End(); it++)
-		it->second.Treated = false;
 }
 
 #ifdef MY_DEBUG
