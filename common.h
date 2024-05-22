@@ -245,7 +245,7 @@ inline float LinearDens(size_t cnt, chrlen len) { return len ? 1000.f * cnt / le
 
 // Prints horizontal line
 //	@param lw: width of line
-void PrintHorLine(int lw);
+void PrintSolidLine(int lw);
 
 #ifdef _BIOCC
 

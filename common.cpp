@@ -161,7 +161,7 @@ string	PercentToStr(float val, BYTE precision, BYTE fieldWith, bool parentheses)
 	return ss.str();
 }
 
-void PrintHorLine(int lw)
+void PrintSolidLine(int lw)
 {
 #ifdef OS_Windows
 	wcout << setw(++lw) << setfill(L'\304') << L'\n';
