@@ -243,7 +243,7 @@ inline string sPercent(size_t part, size_t total, BYTE precision=0, BYTE fieldWi
 //	Used in isChIP (Imitator.cpp) and readDens (readDens.h).
 inline float LinearDens(size_t cnt, chrlen len) { return len ? 1000.f * cnt / len : 0; }
 
-// Prints horizontal line
+// Prints solid horizontal line
 //	@param lw: width of line
 void PrintSolidLine(USHORT lw);
 
