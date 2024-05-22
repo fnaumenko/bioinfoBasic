@@ -407,11 +407,6 @@ public:
 		_data->StrandData(strand).AddNextRegion(rgn, val);
 	}
 #endif
-//#ifdef MY_DEBUG
-//	void BgPrint_(eStrand strand, chrlen maxPos = 0) const {
-//		_data->StrandData(strand).BgPrint(maxPos);
-//	}
-//#endif
 
 	// For current chromosome adds fragment to total density
 	//	@param frag: added fragment
