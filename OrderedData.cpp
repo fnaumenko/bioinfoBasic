@@ -83,22 +83,18 @@ void AccumCover::AddRegion(const Region& frag)
 		it2->second = --val;					// set new 'end' entry value
 }
 
-#ifdef _WIG
+#ifdef _WIG_READER
 void AccumCover::AddNextRegion(const Region& rgn, coval val)
 {
-	//if(empty())
-	//	emplace_hint(end(), rgn.Start, val);
-	//else {
-	//	auto it = prev(end());
-	//	if (it->first == rgn.Start)
-	//		it->second = val;
-	//	else
-	//		emplace_hint(end(), rgn.Start, val);
-	//}
-	if (!empty() && prev(end())->first == rgn.Start)
-		prev(end())->second = val;
-	else
+	if(empty())
 		emplace_hint(end(), rgn.Start, val);
+	else {
+		auto it = prev(end());
+		if (it->first == rgn.Start)
+			it->second = val;
+		else
+			emplace_hint(end(), rgn.Start, val);
+	}
 	emplace_hint(end(), rgn.End, 0);
 }
 #endif

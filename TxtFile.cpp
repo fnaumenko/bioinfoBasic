@@ -404,7 +404,7 @@ const string TxtReader::LineNumbToStr(Err::eCode code, BYTE lineInd) const
 
 /************************ TxtReader: end ************************/
 
-#ifdef _FILE_WRITE
+#ifdef _TXT_WRITER
 
 /************************ TxtWriter ************************/
 
@@ -605,7 +605,7 @@ void TxtWriter::Write() const
 
 /************************ class TxtWriter: end ************************/
 
-#endif	// _FILE_WRITE
+#endif	// _TXT_WRITER
 
 #ifndef _FQSTATN
 
@@ -722,9 +722,9 @@ const char* TabReader::GetNextLine(bool checkTab)
 			return GetNextLine(checkTab);
 
 		_fieldPos[0] = currPos;		// set start position of first field
-#ifdef _WIG
+#ifdef _WIG_READER
 		if (checkTab || isdigit(line[0]))
-#endif // _WIG
+#endif // _WIG_READER
 			for (BYTE i = 1; i < par.MaxFieldCnt; line[_fieldPos[i++] - 1] = cNULL)	// replace TABs by 0
 				if (_fieldPos[i] == vUNDEF)		// numbers of TABs is less than number of fields
 					if (i >= par.MinFieldCnt)				// less than number of optional fields

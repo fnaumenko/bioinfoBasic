@@ -54,7 +54,7 @@ public:
 	// Adds fragment to accumulate the coverage
 	void AddRegion0(const Region& frag);
 	void AddRegion(const Region& frag);
-#ifdef _WIG
+#ifdef _WIG_READER
 	// Adds next sequential region with value
 	void AddNextRegion(const Region& rgn, coval val);
 #endif
@@ -401,7 +401,7 @@ public:
 			_data->StrandDataByInd(reverse).AddRegion(frag);
 	}
 
-#ifdef _WIG
+#ifdef _WIG_READER
 	// Adds next sequential region with value
 	void AddNextRegion(eStrand strand, const Region& rgn, coval val) {
 		_data->StrandData(strand).AddNextRegion(rgn, val);

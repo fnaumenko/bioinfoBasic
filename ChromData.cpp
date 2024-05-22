@@ -5,7 +5,7 @@ Last modified: 05/22/2024
 
 #include "ChromData.h"
 #include <algorithm>    // std::sort
-#include <fstream>		// to write ChromSizes without defined _FILE_WRITE
+#include <fstream>		// to write ChromSizes without defined _TXT_WRITER
 
 
 inline int ChromSizes::CommonPrefixLength(const string& fName, BYTE extLen)

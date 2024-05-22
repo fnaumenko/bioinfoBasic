@@ -375,7 +375,7 @@ public:
 	reclen LineLength()	const { return RecordLength() - LFSize(); }
 };
 
-#ifdef _FILE_WRITE
+#ifdef _TXT_WRITER
 // 'TxtWriter' represents TxtFile for writing
 class TxtWriter : public TxtFile
 {
@@ -571,7 +571,7 @@ public:
 	//	@param digitsCnt: number of digits in the fractional part
 	void SetFloatFractDigits(BYTE digitsCnt);
 };
-#endif	// _FILE_WRITE
+#endif	// _TXT_WRITER
 
 #ifndef _FQSTATN
 
