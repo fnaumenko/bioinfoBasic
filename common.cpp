@@ -161,7 +161,7 @@ string	PercentToStr(float val, BYTE precision, BYTE fieldWith, bool parentheses)
 	return ss.str();
 }
 
-void PrintSolidLine(int lw)
+void PrintSolidLine(USHORT lw)
 {
 #ifdef OS_Windows
 	wcout << setw(++lw) << setfill(L'\304') << L'\n';
@@ -169,7 +169,7 @@ void PrintSolidLine(int lw)
 	dout.File() << string(lw, HPH) << LF;
 #endif
 #else
-	for (int i = 0; i < lw; dout << "─", i++);	dout << LF;
+	for (USHORT i = 0; i < lw; dout << "─", i++);	dout << LF;
 	//dout << setw(++lw) << setfill('─') << LF;
 #endif
 }
