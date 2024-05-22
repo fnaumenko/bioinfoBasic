@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/07/2024
+Last modified: 05/22/2024
 ***********************************************************/
 #pragma once
 
@@ -912,10 +912,11 @@ public:
 	//	@param cid: chrom id specified by user, or any chrom specified by user by default
 	//static bool IsSetByUser(chrid cid = UnID) { return cid == UnID ? userCID != UnID : cid == userCID; }
 
-	// Sets custom chrom ID with control
+	// Sets custom chromosome with control of its presence in the genome
 	//	@param prColon: if true then print ": " before exception message
+	//	@returns: true if custom chromosome is set successfully
 	//	@throws: wrong chrom
-	static void SetUserCID(bool prColon = false);
+	static bool SetUserCID(bool prColon = false);
 
 	// Sets user-defined chromosome by mark (case-insensitive)
 	static void SetUserChrom(const char* cMark);

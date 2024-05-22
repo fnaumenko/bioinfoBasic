@@ -111,9 +111,10 @@ ChromSizes::ChromSizes(const char* gName, bool prMsg, const char* sPath, bool ch
 			Read(gName);		// gName is a chrom.sizes file
 			_sPath = FS::DirName(gName, true);
 		}
-		Chrom::SetUserCID();
-		TreateAll(false);
-		TreateChrom(Chrom::UserCID());
+		if (Chrom::SetUserCID()) {
+			TreateAll(false);
+			TreateChrom(Chrom::UserCID());
+		}
 	}
 	else if (sPath)
 		_gPath = _sPath = FS::MakePath(sPath);	// initialized be service dir; _ext is empty!

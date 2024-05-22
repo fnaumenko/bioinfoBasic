@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 05/08/2024
+Last modified: 05/22/2024
 ***********************************************************/
 
 #include "common.h"
@@ -780,10 +780,12 @@ void Chrom::ValidateIDs(const string& samHeader, function<void(chrid cID, const 
 	SetUserCID(true);
 }
 
-void Chrom::SetUserCID(bool prColon)
+bool Chrom::SetUserCID(bool prColon)
 {
-	if (userChrom && (userCID = GetRelativeID(userChrom)) == UnID)
+	if (!userChrom)		return false;
+	if ((userCID = GetRelativeID(userChrom)) == UnID)
 		Err((prColon ? SepCl : strEmpty) + NoChromMsg() + " in this genome").Throw();
+	return true;
 }
 
 void Chrom::SetUserChrom(const char* cMark)
