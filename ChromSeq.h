@@ -1,6 +1,6 @@
 /**********************************************************
 ChromSeq.h  2023 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/24/2023
+Last modified: 05/22/2024
 ***********************************************************/
 #pragma once
 
@@ -77,7 +77,7 @@ public:
 
 #endif
 
-//#if defined _FILE_WRITE && defined DEBUG 
+//#if defined _TXT_WRITER && defined DEBUG 
 //	// Saves instance to file by fname
 //	void Write(const string & fname, const char *chrName) const;
 //#endif

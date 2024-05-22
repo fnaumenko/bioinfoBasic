@@ -1,6 +1,6 @@
 /**********************************************************
 ChromSeq.cpp  2023 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/21/2023
+Last modified: 05/22/2024
 ***********************************************************/
 #include "ChromSeq.h"
 
@@ -52,7 +52,7 @@ ChromSeq::ChromSeq(const string& fName, ChromDefRegions& rgns, short minGapLen)
 
 #endif
 
-//#if defined _FILE_WRITE && defined DEBUG
+//#if defined _TXT_WRITER && defined DEBUG
 //#define FA_LINE_LEN	50	// length of wrtied lines
 //
 //void ChromSeq::Write(const string & fName, const char *chrName) const
