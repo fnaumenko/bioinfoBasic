@@ -2,7 +2,7 @@
 ChromData.h
 Provides chromosomes data functionality
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/22/2024
+Last modified: 05/23/2024
 ***********************************************************/
 #pragma once
 
@@ -249,44 +249,44 @@ public:
 
 	// === iterator
 
-	// Returns a constant iterator referring to the first item of specified chrom
+	// Returns a constant iterator referring to the first item of specified item indices
 	//	@param data: item indices
 	cItemsIter ItemsBegin(const ItemIndices& data) const { return _items.begin() + data.FirstInd; }
 
-	// Returns a constant iterator referring to the past-the-end item of specified chrom
+	// Returns a constant iterator referring to the past-the-end item of specified item indices
 	//	@param data: item indices
 	cItemsIter ItemsEnd(const ItemIndices& data) const { return _items.begin() + data.LastInd + 1; }
 
-	// Returns a constant iterator referring to the first item of specified chrom
+	// Returns a constant iterator referring to the first item of specified chromosome's iterator
 	//	@param cit: chromosome's iterator
 	cItemsIter ItemsBegin(cIter cit) const { return ItemsBegin(Data(cit)); }
 
-	// Returns a constant iterator referring to the past-the-end item of specified chrom
+	// Returns a constant iterator referring to the past-the-end item of specified chromosome's iterator
 	//	@param cit: chromosome's iterator
 	cItemsIter ItemsEnd(cIter cit) const { return ItemsEnd(Data(cit)); }
 
-	// Returns a constant iterator referring to the first item of specified chrom
+	// Returns a constant iterator referring to the first item of specified chromosome's ID
 	//	@param cID: chromosome's ID
-	//cItemsIter ItemsBegin(chrid cID) const { return ItemsBegin(GetIter(cID)); }
+	//cItemsIter ItemsBegin(chrid cID) const { return ItemsBegin(GetIter(cID)); }	// ineffective
 
-	// Returns a constant iterator referring to the past-the-end item of specified chrom
+	// Returns a constant iterator referring to the past-the-end item of specified chromosome's ID
 	//	@param cID: chromosome's ID
-	//cItemsIter ItemsEnd(chrid cID) const { return ItemsEnd(GetIter(cID)); }
+	//cItemsIter ItemsEnd(chrid cID) const { return ItemsEnd(GetIter(cID)); }		// ineffective
 
 
-	// Returns a constant iterator referring to the first item of specified chrom
+	// Returns an iterator referring to the first item of specified item indices
 	//	@data: item indices
 	ItemsIter ItemsBegin(ItemIndices& data) { return _items.begin() + data.FirstInd; }
 
-	// Returns a constant iterator referring to the past-the-end item of specified chrom
+	// Returns an iterator referring to the past-the-end item of specified item indices
 	//	@param data: item indices
 	ItemsIter ItemsEnd(ItemIndices& data) { return _items.begin() + data.LastInd + 1; }
 
-	// Returns an iterator referring to the first item of specified chrom
+	// Returns an iterator referring to the first item of specified chromosome's iterator
 	//	@param cit: chromosome's iterator
 	//ItemsIter ItemsBegin(Iter cit) { return ItemsBegin(Data(cit)); }
 
-	// Returns an iterator referring to the past-the-end item of specified chrom
+	// Returns an iterator referring to the past-the-end item of specified chromosome's iterator
 	//	@param cit: chromosome's iterator
 	//ItemsIter ItemsEnd(Iter cit) { return ItemsEnd(Data(cit)); }
 
