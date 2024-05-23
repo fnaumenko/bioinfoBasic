@@ -123,6 +123,7 @@ public:
 	// Returns count of chromosomes
 	chrid ChromCount() const { return chrid(this->Count()); }
 
+#ifdef MY_DEBUG
 	 // Gets count of treated chroms
 	chrid TreatedCount() const
 	{
@@ -131,6 +132,7 @@ public:
 		for (auto it = this->cBegin(); it != this->cEnd(); res += IsTreated(it++));
 		return res;
 	}
+#endif
 
 	// Returns true if chromosome cID exists in the container, and false otherwise.
 	bool FindChrom(chrid cID) const { return this->FindItem(cID); }
