@@ -1,6 +1,6 @@
 /**********************************************************
 Distrib.cpp
-Last modified: 04/29/2024
+Last modified: 05/24/2024
 ***********************************************************/
 
 #include "Distrib.h"
@@ -17,14 +17,14 @@ const char* Distrib::sDistrib = "distribution";
 const char* Distrib::sTitle[] = { "Norm", "Lognorm", "Gamma" };
 const float Distrib::DParams::UndefPCC = -1;
 const string Distrib::sParams = "parameters";
-const string Distrib::sInaccurate = " may be inaccurate";
+const string Distrib::sInaccurate = " may be biased";
 const string Distrib::sSpec[] = {
 	"is degenerate",
 	"is smooth",
 	"is modulated",
 	"is even",
-	"is cropped to the left",
-	"is heavily cropped to the left",
+	"is trimmed from the left",
+	"is heavily trimmed from the left",
 	"looks slightly defective on the left",
 	"looks defective on the left"
 };
@@ -416,18 +416,21 @@ void Distrib::CallParams(dtype type, fraglen base, dpoint& summit)
 
 void Distrib::PrintSpecs(dostream& s, fraglen base, const Distrib::dpoint& summit)
 {
-	if (base == smoothBase)		s << Spec(eSpec::SMOOTH) << LF;
-	if (summit.first - begin()->first < SSpliner<dVal_t>::SilentLength(eCurveType::SMOOTH, base)
+	if (base == smoothBase)
+		s << Spec(eSpec::SMOOTH) << LF;
+	if (summit.first - begin()->first<SSpliner<dVal_t>::SilentLength(eCurveType::SMOOTH, base)
 	|| begin()->second / summit.second > 0.95)
-		Err(Spec(eSpec::HCROP) + SepSCl + sParams + sInaccurate).Warning();
+		Err(Spec(eSpec::HTRIM) + SepSCl + sParams + sInaccurate).Warning();
 	else if (_spec == eSpec::MODUL)
 		s << Spec(_spec) << LF;
 	else if (begin()->second / summit.second > 0.5)
-		Err(Spec(eSpec::CROP)).Warning();
+		Err(Spec(eSpec::TRIM)).Warning();
 	else {
 		DParams dParams, dParams0;
+
 		CalcPCC(_allParams.GetBestParams(dParams), dParams0, summit.first, false);	// sorts params
 		float diffPCC = dParams0.PCC - dParams.PCC;
+
 #ifdef MY_DEBUG
 		s << "summit: " << summit.first << "\tPCCsummit: " << dParams.PCC << "\tdiff PCC: " << diffPCC << LF;
 #endif
@@ -438,7 +441,7 @@ void Distrib::PrintSpecs(dostream& s, fraglen base, const Distrib::dpoint& summi
 	}
 }
 
-void Distrib::PrintSeq(dostream& dos) const
+void Distrib::PrintOriginal(dostream& dos) const
 {
 #ifdef _DUP_OUTPUT
 	ofstream& s = dos.File();
@@ -472,14 +475,12 @@ Distrib::Distrib(const char* fName, dostream& s)
 using namespace std::chrono;
 #endif
 
-void Distrib::Print(dostream& s, eCType ctype, bool prDistr)
+void Distrib::Print(dostream& s, eCType ctype, bool prWarning, bool prDistr)
 {
 	if (empty())		s << "\nempty " << sDistrib << LF;
 	else {
 		fraglen base = GetBase();	// initialized returned value
-		if (!base)
-			s << "\nDegenerate " << sDistrib << " (only " << size() << " points)\n";
-		else {
+		if (base) {
 #ifdef _TIME
 			auto start = high_resolution_clock::now();
 			const int	tmCycleCnt = 1000;
@@ -510,10 +511,12 @@ void Distrib::Print(dostream& s, eCType ctype, bool prDistr)
 				_allParams.ClearNormDistBelowThreshold(1.02F);	// threshold 2%
 			}
 #endif
-			PrintSpecs(s, base, summit);
+			if (prWarning)	PrintSpecs(s, base, summit);
 			_allParams.Print(s);
-			if (prDistr)	PrintSeq(s);
+			if (prDistr)	PrintOriginal(s);
 		}
+		else
+			s << "\nDegenerate " << sDistrib << " (only " << size() << " points)\n";
 	}
-	fflush(stdout);		// when called from a package
+	std::fflush(stdout);		// when called from a package
 }

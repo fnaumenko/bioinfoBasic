@@ -2,7 +2,7 @@
 Distrib.h
 2023 Fedor Naumenko (fedor.naumenko@gmail.com)
 -------------------------
-Last modified: 04/29/2024
+Last modified: 05/24/2024
 -------------------------
 Provides value (typically frequency) distribution functionality
 ***********************************************************/
@@ -53,8 +53,8 @@ private:
 		SMOOTH,		// complementary
 		MODUL,		// modulated;	complementary
 		EVEN,		// flat;	exclusive
-		CROP,		// cropped;	exclusive
-		HCROP,		// heavily cropped;		exclusive
+		TRIM,		// trimmed;	exclusive
+		HTRIM,		// heavily trimmed;		exclusive
 		SDEFECT,	// slightly defective;	exclusive
 		DEFECT		// defective; exclusive
 	};
@@ -193,7 +193,7 @@ private:
 
 	// Prints original distribution as a set of <value>-<size> pairs
 	//	@param s: print stream
-	void PrintSeq(dostream& s) const;
+	void PrintOriginal(dostream& s) const;
 
 public:
 	// Default constructor
@@ -210,8 +210,9 @@ public:
 	void AddVal(fraglen val) { (*this)[val]++; }
 
 	// Calculate and print distribution on a new line
-	//	@param s: print stream
-	//	@param type: combined type of distribution
-	//	@param prDistr: if true then print distribution additionally
-	void Print(dostream& s, eCType type, bool prDistr = true);
+	//	@param s[out]: print stream
+	//	@param type[in]: combined type of distribution
+	//	@param prWarning[in]: if true then print possible warning message
+	//	@param prDistr[in]: if true then print original distribution additionally
+	void Print(dostream& s, eCType type, bool prWarning, bool prDistr);
 };
