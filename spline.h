@@ -12,8 +12,8 @@ Two-modes spline (smoothing curve) based in moving window
 #include <memory>		// unique_ptr
 
 enum eCurveType {
-	SMOOTH = 0,		// sequential averaging by moving median and average
-	SPIKED			// averaging by moving average only
+	ROUGH = 0,		// averaging by moving average only
+	SMOOTH,			// sequential averaging by moving median and average
 };
 
 // sliding spliner

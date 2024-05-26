@@ -2,7 +2,7 @@
 OrderedData.h
 Provides chromosomally sorted data functionality
 2022 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/21/2024
+Last modified: 05/26/2024
 ***********************************************************/
 #pragma once
 
@@ -142,8 +142,12 @@ public:
 	//	@param ftype: BGRAP or WIG_VAR
 	//	@param strand: strand
 	//	@param fields: BED/WIG track fields
-	WigWriter(FT::eType ftype, eStrand strand, const TrackFields& fields)
-		: RegionWriter(ftype, strand, fields) {}
+	//	@param fractDigitsCnt: number of digits in the fractional part
+	WigWriter(FT::eType ftype, eStrand strand, const TrackFields& fields, BYTE fractDigitsCnt = 2)
+		: RegionWriter(ftype, strand, fields)
+	{
+		SetFloatFractDigits(fractDigitsCnt);
+	}
 
 	// Fill IO buffer by <position>-<value> lines
 	void WriteChromVarStepData(chrid cID, const covmap& cover);

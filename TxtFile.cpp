@@ -1,6 +1,6 @@
 /**********************************************************
 TxtFile.cpp
-Last modified: 05/07/2024
+Last modified: 05/26/2024
 ***********************************************************/
 
 #include "TxtFile.h"
@@ -497,11 +497,11 @@ void TxtWriter::LineAddUInts(chrlen v1, chrlen v2, chrlen v3, bool addDelim)
 //	LineAddDelim(addDelim);
 //}
 
-void TxtWriter::SetFloatFractDigits(BYTE digitsCnt)
+void TxtWriter::SetFloatFractDigits(BYTE fractDigitsCnt)
 {
-	assert(digitsCnt < 10);
-	_formatFloat[0][3] = std::to_string(digitsCnt)[0];	// "%4.2f"
-	_floatBuffLen = 4 + digitsCnt;
+	assert(fractDigitsCnt < 10);
+	_formatFloat[0][3] = std::to_string(fractDigitsCnt)[0];	// "%4.2f"
+	_floatBuffLen = 4 + fractDigitsCnt;
 }
 
 void TxtWriter::LineAddFloat(float val, bool addDelim)

@@ -2,7 +2,7 @@
 TxtFile.h
 Provides read|write basic bioinfo text files functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/07/2024
+Last modified: 05/26/2024
 ***********************************************************/
 #pragma once
 
@@ -568,8 +568,8 @@ protected:
 
 public:
 	// Sets the number of digits in the fractional part when converting float to a string in buffer
-	//	@param digitsCnt: number of digits in the fractional part
-	void SetFloatFractDigits(BYTE digitsCnt);
+	//	@param fractDigitsCnt: number of digits in the fractional part
+	void SetFloatFractDigits(BYTE fractDigitsCnt);
 };
 #endif	// _TXT_WRITER
 
