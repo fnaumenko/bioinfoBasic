@@ -2,7 +2,7 @@
 OrderedData.h
 Provides chromosomally sorted data functionality
 2022 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/26/2024
+Last modified: 05/30/2024
 ***********************************************************/
 #pragma once
 
@@ -261,12 +261,12 @@ public:
 
 	// Returnes strand data by strand
 	DATA& StrandData(eStrand strand) {
-		assert(_data.size() > strand - !_strandShift);
-		return _data[strand - !_strandShift]; 
+		assert(!strand || _data.size() > strand - !_strandShift);
+		return _data[strand ? strand - !_strandShift : 0];
 	}
 	const DATA& StrandData(eStrand strand) const { 
-		assert(_data.size() > strand - !_strandShift);
-		return _data[strand - !_strandShift];
+		assert(!strand || _data.size() > strand - !_strandShift);
+		return _data[strand ? strand - !_strandShift : 0];
 	}
 
 	// Returnes strand data by index: 0 - POS, 1 - NEG

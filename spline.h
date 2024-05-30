@@ -1,7 +1,7 @@
 /**********************************************************
 spline 2023 Fedor Naumenko (fedor.naumenko@gmail.com)
 -------------------------
-Last modified: 11/18/2023
+Last modified: 5/30/2024
 -------------------------
 Two-modes spline (smoothing curve) based in moving window
 ***********************************************************/
@@ -12,8 +12,8 @@ Two-modes spline (smoothing curve) based in moving window
 #include <memory>		// unique_ptr
 
 enum eCurveType {
-	ROUGH = 0,		// averaging by moving average only
-	SMOOTH,			// sequential averaging by moving median and average
+	SMOOTH = 0,		// sequential averaging by moving median and average
+	ROUGH			// averaging by moving average only
 };
 
 // sliding spliner
@@ -55,6 +55,13 @@ public:
 	// Returns 'silent zone length' - number of values pushed in after which the output is non-zero
 	slen_t SilentLength() const { return _silentLen; }
 
+	void Clear()
+	{
+		_filledLen = 0;
+		_ma.Clear();
+		_mm->Clear();
+	}
+
 private:
 	// Moving window (Sliding subset)
 	template<typename T>
@@ -77,6 +84,8 @@ private:
 		// Initializes the instance to zeros
 		//	@param base: half-length of moving window
 		void Init(slen_t base) { this->insert(this->begin(), size_t(base) * 2 + 1, 0); }
+
+		void Clear() { fill(this->begin(), this->end(), 0); }
 	};
 
 	// Simple Moving Average spliner
@@ -96,6 +105,8 @@ private:
 			this->PushVal(val);
 			return zeroOutput ? 0 : float(_sum) / this->size();
 		}
+
+		void Clear() { MW<T>::Clear();	_sum = 0; }
 	};
 
 	// Simple Moving Median spliner
@@ -123,6 +134,8 @@ private:
 
 		// Empty (stub) 'Push' method
 		T PushStub(T val, bool) { return val; }
+
+		void Clear() { MW<T>::Clear(); fill(_ss.begin(), _ss.end(), 0); }
 	};
 
 	const eCurveType  _curveType;
