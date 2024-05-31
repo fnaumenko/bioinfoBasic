@@ -159,10 +159,10 @@ public:
 	//	@param closure: if true then adds zero value to 'close' the curve for the IGV view
 	void WriteFixStepRange(chrid cID, chrlen pos, const vector<float>& vals, bool closure = true);
 
-	// Writes oblique line
+	// Writes inclined line
 	//	@param cID: chrom's ID
 	//	@param pos: start (left) position
-	//	@param ptCnt: number of points in oblique line
+	//	@param ptCnt: number of points in incline
 	//	@param shift: shift of value at each point of the oblique line: if < 0 then direct (positive) line, otherwise reversed (negative) one
 	void WriteFixStepLine(chrid cID, chrlen pos, chrlen ptCnt, float shift);
 };
