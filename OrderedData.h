@@ -2,7 +2,7 @@
 OrderedData.h
 Provides chromosomally sorted data functionality
 2022 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/30/2024
+Last modified: 05/31/2024
 ***********************************************************/
 #pragma once
 
@@ -259,6 +259,10 @@ public:
 	DATA& DataByInd(BYTE ind = 0) { return _data[ind]; }
 	const DATA& DataByInd(BYTE ind = 0) const { return _data[ind]; }
 
+	// Returnes common data from dataset
+	DATA& TotalData() { return _data[0]; }
+	const DATA& TotalData() const { return _data[0]; }
+
 	// Returnes strand data by strand
 	DATA& StrandData(eStrand strand) {
 		assert(!strand || _data.size() > strand - !_strandShift);
@@ -394,7 +398,7 @@ public:
 
 	// For current chromosome adds fragment to total coverage
 	//	@param frag: added fragment
-	void AddFrag(const Region& frag) { _data->DataByInd().AddRegion(frag); }
+	void AddFrag(const Region& frag) { _data->TotalData().AddRegion(frag); }
 
 	// For current chromosome adds SE fragment to total coverage, and to strands coverage if strands are defined
 	//	@param frag: added fragment
