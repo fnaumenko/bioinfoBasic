@@ -1,6 +1,6 @@
 /**********************************************************
 OrderedData.cpp
-Last modified: 05/21/2024
+Last modified: 05/31/2024
 ***********************************************************/
 
 #include "OrderedData.h"
@@ -8,46 +8,8 @@ Last modified: 05/21/2024
 
 /************************ AccumCover ************************/
 
-void AccumCover::AddRegion0(const Region& frag)
-{
-	// version using 'find'
-	covmap::iterator it1 = find(frag.Start), it2;	// 'start', 'end' entries iterator
-
-	// *** set up 'start' entry
-	if (it1 == end()) {							// 'start' entry doesn't exist
-		it2 = it1 = emplace(frag.Start, 1).first;
-		if (it1 != begin())						// 'start' entry is not the first one
-			it1->second += (--it2)->second;		// correct val by prev point; keep it1 unchanged
-	}
-	else {
-		it1->second++;							// incr val at existed 'start' entry
-		if (--(it2 = it1) != end()				// decr it2; previous entry exists
-			&& it2->second == it1->second)		// previous and current entries have the same value
-			erase(it1), it1 = it2;				// remove current entry as duplicated
-	}
-
-	// *** set up 'end' entry
-	it2 = find(frag.End);
-	fraglen val = 0;							// 'end' entry value
-	const bool newEnd = it2 == end();
-
-	if (newEnd) {								// 'end' entry doesn't exist
-		it2 = emplace(frag.End, 0).first;
-		val = next(it2) == end() ? 1 :			// 'end' entry is the last one
-			prev(it2)->second;					// grab val by prev entry
-	}
-
-	// *** correct range between 'start' and 'end', set 'end' entry value
-	for (it1++; it1 != it2; it1++)				// correct values within range
-		val = ++it1->second;					// increase value
-	if ((--it1)->second == it2->second)			// is the last added entry a duplicate?
-		erase(it2);								// remove duplicated entry
-	else if (newEnd)
-		it2->second = --val;					// set new 'end' entry value
-}
 void AccumCover::AddRegion(const Region& frag)
 {
-	// version using 'lower_bound'
 	covmap::iterator it1 = lower_bound(frag.Start), it2;	// 'start', 'end' entries iterator
 
 	// *** set up 'start' entry
@@ -64,7 +26,8 @@ void AccumCover::AddRegion(const Region& frag)
 	}
 
 	// *** set up 'end' entry
-	it2 = lower_bound(frag.End);
+	it2 = it1;
+	for (it2++; it2 != end() && it2->first < frag.End; it2++);
 	const bool newEnd = it2 == end() || it2->first != frag.End;
 	fraglen val = 0;							// 'end' entry value
 

@@ -52,7 +52,6 @@ public:
 	//~AccumCover() = default;
 
 	// Adds fragment to accumulate the coverage
-	void AddRegion0(const Region& frag);
 	void AddRegion(const Region& frag);
 #ifdef _WIG_READER
 	// Adds next sequential region with value
