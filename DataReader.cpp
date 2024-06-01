@@ -1,6 +1,6 @@
 /**********************************************************
 DataReader.cpp
-Last modified: 05/08/2024
+Last modified: 06/01/2024
 ***********************************************************/
 
 #include "DataReader.h"
@@ -278,15 +278,15 @@ UniBedReader::UniBedReader(
 {
 	if (preReading)  _readItem = false, _preItem = true;
 
-	if (prName) { dout << fName; fflush(stdout); }
+	if (prName) { dout << fName; fflush(stdout); }	// print here because of possible Err message
 
 #ifdef _BAM
 	if (type == FT::BAM)
-		_file = new BamReader(fName, cSizes, prName);
+		_file = new BamReader(fName, cSizes, false);
 	else
 #endif	//_BAM
 		if (type <= FT::ABED || type == FT::BGRAPH) {
-			_file = new BedReader(fName, type, scoreNumb, !prName, abortInval);
+			_file = new BedReader(fName, type, scoreNumb, false, abortInval);
 			_type = ((BedReader*)_file)->Type();	// possible change of BGRAPH with WIG_FIX or WIG_VAR
 		}
 		else
