@@ -1,6 +1,6 @@
 /**********************************************************
 OrderedData.cpp
-Last modified: 05/31/2024
+Last modified: 06/05/2024
 ***********************************************************/
 
 #include "OrderedData.h"
@@ -87,14 +87,16 @@ void AccumCover::BgPrint(chrlen maxPos) const
 
 /************************ RegionWriter ************************/
 
-//const char* RegionWriter::sTRACK = "track";
 const char* RegionWriter::sGRAY = "Silver";	// "175,175,175";
 
 RegionWriter::RegionWriter(FT::eType ftype, eStrand strand, const TrackFields& fields)
 	: TxtWriter(ftype, fields.Name, TAB)
 {
-	static const char* wigFormats[] = { FT::BedGraphTYPE, FT::WigTYPE, FT::WigTYPE };
-	static const char* StrandCOLORS[] = { "128,128,128", "197,74,74", "0,118,188" };	// grey, red, blue; 50,130,190 - foggy blue
+	static const char* wigFormats[] { FT::BedGraphTYPE, FT::WigTYPE, FT::WigTYPE };
+	static const char* StrandCOLORS[2][3] {
+		{ "128,128,128", "197,74,74", "0,118,188" },	// grey, red, blue (50,130,190 - foggy blue)
+		{ "51,51,51", "102,0,51", "0,0,102" }			// dark grey, dark red, dark blue
+	};
 	const reclen bufLen = ftype == FT::BED ?
 		1000 :		// to save BS bed with extended feilds
 		ftype == FT::WIG_FIX ? 300 : 500;
@@ -118,13 +120,13 @@ RegionWriter::RegionWriter(FT::eType ftype, eStrand strand, const TrackFields& f
 
 	if (ftype != FT::BED) {
 		oss << " autoScale=on";
-		color = fields.Color ? fields.Color : StrandCOLORS[strand];
+		color = fields.Color ? fields.Color : StrandCOLORS[fields.Shade][strand];
 	}
 	else {
 		if (fields.UseScore)	oss << " useScore=1";
 		if (fields.ItemRgb)		oss << " itemRgb=\"On\"";
 		if (fields.Color)		color = fields.Color;
-		else if(strand!=TOTAL)	color = StrandCOLORS[strand];
+		else if(strand!=TOTAL)	color = StrandCOLORS[LIGHT][strand];
 	}
 	if(color)	oss << " color=" << color;
 	StrToIOBuff(oss.str());

@@ -2,7 +2,7 @@
 OrderedData.h
 Provides chromosomally sorted data functionality
 2022 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/31/2024
+Last modified: 06/05/2024
 ***********************************************************/
 #pragma once
 
@@ -86,22 +86,27 @@ public:
 
 //=====  WRITERS
 
+// 'eShade' usedis used for shading/lightening colors in WIG files
+enum eShade { LIGHT, DARK };
+
 // BED and WIGGLE track fileds
 struct TrackFields
 {
-	const string Name;
+	string Name;
 	const char* Descr;
 	const string* CommLine = nullptr;
 	bool ItemRgb = false;
 	bool UseScore = false;
 	const char* Color = NULL;
+	eShade	Shade = LIGHT;
 
 	// Basic constructor
 	//	@param name: track name
 	//	@param descr: track descriptor
 	//	@param commLine: command line saved as a comment
-	TrackFields(const string& name, const char* descr, const string* commLine)
-		: Name(name), Descr(descr), CommLine(commLine) {}
+	//	@param shade: color shade
+	TrackFields(const string& name, const char* descr, const string* commLine, eShade shade)
+		: Name(name), Descr(descr), CommLine(commLine), Shade(shade) {}
 
 	// Copy constructor width overridden fields
 	TrackFields(const TrackFields& params, bool itemRgb, bool useScore, const char* color = NULL)
@@ -208,15 +213,19 @@ public:
 	// Ñreates writers according to dimension
 	//	@param dim: number of data (dimension); should be 1 (total only), 2 (strands only) or 3 (total and strands)
 	//	@param fields: BED/WIG track fields
-	Writers(BYTE dim, const TrackFields& fields)
+	Writers(BYTE dim, TrackFields& fields)
 	{
 		assert(dim);
 		_files.resize(dim, nullptr);
 		BYTE shift = StrandShift(dim);
 		if (shift) _files[TOTAL] = new WRITER(TOTAL, fields);
-		if (dim > 1)
-			_files[shift] = new WRITER(POS, TrackFields(fields, sStrandEXT[POS], fields.Descr, false, false)),
-			_files[++shift] = new WRITER(NEG, TrackFields(fields, sStrandEXT[NEG], fields.Descr, false, false));
+		if (dim > 1) {
+			const string name = fields.Name;
+			fields.Name = name + sStrandEXT[POS];
+			_files[shift] = new WRITER(POS, fields);
+			fields.Name = name + sStrandEXT[NEG];
+			_files[++shift] = new WRITER(NEG, fields);
+		}
 	}
 
 	~Writers() { Do([](WRITER* f) { delete f; }); }
@@ -350,11 +359,13 @@ public:
 	//	@param fname: name of output file
 	//	@param descr: track decsription in declaration line
 	//	@param commLine: command line saved as a comment
-	OrderedData(const ChromSizes& cSizes, BYTE dim, bool write, const string& fname, const char* descr, const string* commLine = nullptr)
+	OrderedData(const ChromSizes& cSizes, BYTE dim, bool write, const string& fname, const char* descr, const string* commLine = nullptr, eShade shade = LIGHT)
 		: OrderedData(cSizes, dim)
 	{
-		if (write)	
-			_writers.reset(new Writers<WRITER>(dim, TrackFields(fname, descr, commLine)));
+		if (write) {
+			TrackFields fields(fname, descr, commLine, shade);
+			_writers.reset(new Writers<WRITER>(dim, fields));
+		}
 	}
 
 	// Clone constructor for multithreading
