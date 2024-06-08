@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/22/2024
+Last modified: 06/06/2024
 ***********************************************************/
 #pragma once
 
@@ -987,6 +987,8 @@ struct Region
 
 	bool operator==(const Region& r) const { return !(*this != r); }
 	bool operator!=(const Region& r) const { return memcmp(this, &r, sizeof(Region)); }
+
+	void operator-=(chrlen val) { Start -= val; End -= val; }
 
 	// Returns true if this instance is invalid
 	bool Invalid() const { return Start >= End; }
