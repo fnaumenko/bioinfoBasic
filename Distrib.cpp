@@ -205,7 +205,7 @@ fraglen Distrib::GetBase()
 	spoint p0(*it), p;			// previous, current point
 	spoint pMin(0, 0), pMax(pMin), pMMax(pMin);	// current, previous, maximum point
 	vector<spoint> extr;		// local extremums
-	SSpliner<dVal_t> spliner(eCurveType::SPIKED, 1);
+	SSpliner<dVal_t> spliner(eCurveType::ROUGH, 1);
 
 	//== define pMMax and halfX
 	extr.reserve(20);
@@ -296,7 +296,7 @@ fpair Distrib::GetKeyPoints(fraglen base, dpoint& summit) const
 		eCurveType::SPIKED, 
 		//eCurveType::SMOOTH,
 #else
-		base <= smoothBase ? eCurveType::SPIKED : eCurveType::SMOOTH,
+		base <= smoothBase ? eCurveType::ROUGH : eCurveType::SMOOTH,
 #endif
 		base);
 
