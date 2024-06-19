@@ -2,20 +2,20 @@
 OrderedData.h
 Provides chromosomally sorted data functionality
 2022 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 06/05/2024
+Last modified: 06/19/2024
 ***********************************************************/
 #pragma once
 
 #include "ChromData.h"
 #include <assert.h>
 
-enum eStrand { TOTAL = 0, POS, NEG, CNT };
+enum eStrand { TOTAL = 0, FWD, RVS, CNT };
 
 using coval = chrlen;				// coverage value
 using covmap = map<chrlen, coval>;	// coverage map
 
-static const string	sStrandEXT[] = { strEmpty, ".pos", ".neg" };
-static const char*	sStrandTITLES[] = { "total", "positive", "negative" };
+static const string	sStrandEXT[] = { strEmpty, ".fwd", ".rvs" };
+static const char*	sStrandTITLES[] = { "total", "forward", "reverse" };
 
 static const BYTE	ColorLEN = 11;
 
@@ -221,10 +221,10 @@ public:
 		if (shift) _files[TOTAL] = new WRITER(TOTAL, fields);
 		if (dim > 1) {
 			const string name = fields.Name;
-			fields.Name = name + sStrandEXT[POS];
-			_files[shift] = new WRITER(POS, fields);
-			fields.Name = name + sStrandEXT[NEG];
-			_files[++shift] = new WRITER(NEG, fields);
+			fields.Name = name + sStrandEXT[FWD];
+			_files[shift] = new WRITER(FWD, fields);
+			fields.Name = name + sStrandEXT[RVS];
+			_files[++shift] = new WRITER(RVS, fields);
 		}
 	}
 
@@ -281,7 +281,7 @@ public:
 		return _data[strand ? strand - !_strandShift : 0];
 	}
 
-	// Returnes strand data by index: 0 - POS, 1 - NEG
+	// Returnes strand data by index: 0 - FWD, 1 - RVS
 	DATA& StrandDataByInd(BYTE ind) { return _data[ind + _strandShift]; }
 	const DATA& StrandDataByInd(BYTE ind) const { return _data[ind + _strandShift]; }
 
