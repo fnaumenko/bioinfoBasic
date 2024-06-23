@@ -2,7 +2,7 @@
 TxtFile.h
 Provides read|write basic bioinfo text files functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/26/2024
+Last modified: 06/23/2024
 ***********************************************************/
 #pragma once
 
@@ -155,7 +155,7 @@ protected:
 	using bufflen = uint32_t;
 
 private:
-	constexpr static bufflen BlockSize = bufflen(1024 * 1024);	// 1 Mb
+	constexpr static bufflen BlockSize = bufflen(8 * 1024 * 1024);	// 8 Mb
 	const int CRLF = eFlag::ISCR + eFlag::LFCHECKED;	// combined 'flag'
 
 	size_t	_fSize;			// the length of uncompressed file; for zipped file more than
@@ -186,12 +186,11 @@ protected:
 	BYTE LFSize() const { return static_cast<BYTE>(2) - (_flag & ISCR); }
 
 	// Returns true if LF size is not defined
-	bool IsLFundef() const { return !(_flag & LFCHECKED); }
+	//bool IsLFundef() const { return !(_flag & LFCHECKED); }
 
 	// Establishes the presence of CR symbol at the end of line.
 	//	@c: if c is CR then the second bit is raised to 1, the first turn down to 0,
 	//	so the value return by LFSZ mask is 2, otherwise remains in state 1
-	//void SetLF(char c)	{ if(c==CR)	 RaiseFlag(ISCR); RaiseFlag(LFCHECKED); }
 	void SetLF(char c) { if (c == CR)	_flag |= CRLF; }
 
 private:
@@ -288,6 +287,9 @@ class TxtReader : public TxtFile
 	//	@returns true if block is complete
 	bool CompleteBlock(bufflen currLinePos, bufflen blankLineCnt);
 
+	// Establishes the presence of CR symbol at the end of line.
+	void DefineLF();
+
 	// Fills I/O buffer with 0, beginning from @offset position
 	//void ClearBuff(size_t offset = 0) { memset(_buff + offset, 0, _buffLen - offset); }
 
@@ -315,19 +317,19 @@ protected:
 	// Gets current record.
 	const char* Record() const { return IsFlag(ENDREAD) ? NULL : RealRecord(); }
 
-	// Reads record
-	//	return: pointer to line or NULL if no more lines
+	// Reads multiline record
+	//	@returns: pointer to line or NULL if no more lines
 	const char* GetNextRecord();
 
-	// Reads N-controlled record
-	//	@counterN: counter of 'N'
-	//	return: pointer to line or NULL if no more lines
+	// Reads one-line N-controlled record
+	//	@param counterN: counter of 'N'
+	//	@returns: pointer to line or NULL if no more lines
 	const char* GetNextRecord(chrlen& counterN);
 
-	// Reads tab-controlled record
-	//	@tabPos: TAB's positions array that should be filled
-	//	@cntTabs: maximum number of TABS in TAB's positions array
-	//	return: pointer to line or NULL if no more lines
+	// Reads one-line tab-controlled record
+	//	@param tabPos: TAB's positions array that should be filled
+	//	@param cntTabs: maximum number of TABS in TAB's positions array
+	//	@returns: pointer to line or NULL if no more lines
 	char* GetNextRecord(short* const tabPos, const BYTE tabCnt);
 
 	// Returns line length in a multiline record
@@ -371,7 +373,7 @@ public:
 	//	@param msg: exception message
 	void ThrowExceptWithLineNumb(const string& msg) const { Err(msg, LineNumbToStr().c_str()).Throw(); }
 
-	// Gets length of current line without LF marker: only for single-line record!
+	// Gets length of current line without LF marker: only for single-line record! Used in Fa only??
 	reclen LineLength()	const { return RecordLength() - LFSize(); }
 };
 

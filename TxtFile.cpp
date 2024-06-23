@@ -1,6 +1,6 @@
 /**********************************************************
 TxtFile.cpp
-Last modified: 05/26/2024
+Last modified: 06/23/2024
 ***********************************************************/
 
 #include "TxtFile.h"
@@ -207,8 +207,10 @@ TxtReader::TxtReader(const string& fName, eAction mode,
 	_recLineCnt(cntRecLines),
 	TxtFile(fName, mode, msgFName, abortInvalid)
 {
-	if (Length() && ReadBlock(0) >= 0)			// read first block
+	if (Length() && ReadBlock(0) >= 0) {		// read first block
 		_linesLen = new reclen[cntRecLines];	// nonempty file: set lines buffer
+		DefineLF();
+	}
 	else
 		RaiseFlag(ENDREAD);						// empty file
 }
@@ -258,8 +260,13 @@ bool TxtReader::CompleteBlock(bufflen currLinePos, bufflen blankLineCnt)
 	return false;
 }
 
-// Reads record
-//	return: pointer to line or NULL if no more lines
+void TxtReader::DefineLF()
+{
+	char* buf = _buff;
+	for (; *buf != LF; buf++);
+	SetLF(*(buf - 1));
+}
+
 const char* TxtReader::GetNextRecord()
 {
 	// Sets _currLinePos to the beginning of next non-empty line inread/write buffer
@@ -269,23 +276,20 @@ const char* TxtReader::GetNextRecord()
 
 	bufflen i, blanklCnt = 0;			// counter of empty lines
 	bufflen currPos = _currRecPos;		// start position of current readed record
-	char* buf;
 
 	_recLen = 0;
 	for (BYTE rec = 0; rec < _recLineCnt; rec++)
-		for (buf = _buff + (i = currPos);; buf++, i++) {
+		for (char* buf = _buff + (i = currPos);; buf++, i++) {
 			if (*buf == LF) {
 				if (i == currPos) {				// LF marker is first in line
 					++currPos; ++blanklCnt;		// skip empty line
 					continue;
 				}
-				if (IsLFundef())	SetLF(*(buf - 1));		// define LF size
-			lf:				_recLen += (_linesLen[rec] = ++i - currPos);
+			lf:	_recLen += (_linesLen[rec] = ++i - currPos);
 				currPos = i;
 				break;							// mext line in a record
 			}
 			if (i >= _readedLen) {	// check for oversize buffer
-				//cout << ">>> " << i << TAB << currPos << TAB << _readedLen << TAB << _buffLen << LF;
 				if (_readedLen != _buffLen && i > currPos)	// last record does not end with LF
 					goto lf;
 				if (CompleteBlock(currPos, blanklCnt))	return NULL;
@@ -298,85 +302,74 @@ const char* TxtReader::GetNextRecord()
 	return RealRecord();
 }
 
-// Reads N-controlled record
-//	@counterN: counter of 'N'
-//	return: pointer to line or NULL if no more lines
 const char* TxtReader::GetNextRecord(chrlen& counterN)
 {
 	if (IsFlag(ENDREAD))	return NULL;
+	assert(_recLineCnt == 1);
 
-	bufflen i, blanklCnt = 0,			// counter of empty lines
-			currPos = _currRecPos;		// start position of current readed record
-	chrlen cntN = 0;				// local counter of 'N'
-	char* buf;
+	bufflen i, blanklCnt = 0;		// counter of empty lines
+	bufflen	currPos = _currRecPos;	// start position of current readed record
+	chrlen cntN = 0;				// local counter of 'N'; needs when buffer is oversized
 
 	_recLen = 0;
-	for (BYTE rec = 0; rec < _recLineCnt; rec++)
-		for (buf = _buff + (i = currPos);; buf++, i++) {
-			if (*buf == cN)		cntN++;
-			else if (*buf == LF) {
-				if (i == currPos) {				// LF marker is first in line
-					currPos++; blanklCnt++;		// skip empty line
-					continue;
-				}
-				if (IsLFundef())	SetLF(*(buf - 1));		// define LF size
-			lf:				_recLen += (_linesLen[rec] = ++i - currPos);
-				currPos = i;
-				break;
+	for (char* buf = _buff + (i = currPos);; buf++, i++) {
+		if (*buf == cN)		cntN++;
+		else if (*buf == LF) {
+			if (i == currPos) {				// LF marker is first in line
+				currPos++; blanklCnt++;		// skip empty line
+				continue;
 			}
-			if (i >= _readedLen) {	// check for oversize buffer
-				if (_readedLen != _buffLen && i > currPos)	// last record does not end with LF
-					goto lf;
-				if (CompleteBlock(currPos, blanklCnt))	return NULL;
-				currPos = blanklCnt = i = cntN = rec = 0;
-				buf = _buff;
-			}
+		lf:	_recLen += (*_linesLen = ++i - currPos);
+			currPos = i;
+			break;
 		}
+		if (i >= _readedLen) {	// check for oversize buffer
+			if (_readedLen != _buffLen && i > currPos)	// last record does not end with LF
+				goto lf;
+			if (CompleteBlock(currPos, blanklCnt))	return NULL;
+			currPos = blanklCnt = i = cntN = 0;
+			buf = _buff;
+		}
+	}
 	_currRecPos = currPos;			// next record position
 	_recCnt++;
 	counterN += cntN;
 	return RealRecord();
 }
 
-// Reads tab-controlled record
-//	@tabPos: TAB's positions array that should be filled
-//	@cntTabs: maximum number of TABS in TAB's positions array
-//	return: pointer to line or NULL if no more lines
 char* TxtReader::GetNextRecord(short* const tabPos, const BYTE tabCnt)
 {
 	if (IsFlag(ENDREAD))	return NULL;
+	assert(_recLineCnt == 1);
 
-	bufflen i, blanklCnt = 0,			// counter of empty lines
-			currPos = _currRecPos;		// start position of current readed record
+	bufflen i, blanklCnt = 0;		// counter of empty lines
+	bufflen	currPos = _currRecPos;	// start position of current readed record
 	BYTE tabInd = 1;				// index of TAB position in tabPos
-	char* buf;
 
 	_recLen = 0;
-	for (BYTE rec = 0; rec < _recLineCnt; rec++)
-		for (buf = _buff + (i = currPos);; buf++, i++) {
-			if (*buf == TAB) {
-				if (tabInd < tabCnt)
-					tabPos[tabInd++] = short(i + 1 - currPos);
-			}
-			else if (*buf == LF) {
-				if (i == currPos) {				// LF marker is first in line
-					currPos++; blanklCnt++;		// skip empty line
-					continue;
-				}
-				if (IsLFundef())	SetLF(*(buf - 1));		// define LF size
-			lf:				_recLen += (_linesLen[rec] = ++i - currPos);
-				currPos = i;
-				break;
-			}
-			if (i >= _readedLen) {	// check for oversize block
-				if (_readedLen != _buffLen && i > currPos)	// last record does not end with LF
-					goto lf;
-				if (CompleteBlock(currPos, blanklCnt))	return NULL;
-				currPos = blanklCnt = i = rec = 0;
-				buf = _buff;
-				tabInd = 1;
-			}
+	for (char* buf = _buff + (i = currPos);; buf++, i++) {
+		if (*buf == TAB) {
+			if (tabInd < tabCnt)
+				tabPos[tabInd++] = short(i + 1 - currPos);
 		}
+		else if (*buf == LF) {
+			if (i == currPos) {				// LF marker is first in line
+				currPos++; blanklCnt++;		// skip empty line
+				continue;
+			}
+		lf:	_recLen += (*_linesLen = ++i - currPos);
+			currPos = i;
+			break;
+		}
+		if (i >= _readedLen) {	// check for oversize block
+			if (_readedLen != _buffLen && i > currPos)	// last record does not end with LF
+				goto lf;
+			if (CompleteBlock(currPos, blanklCnt))	return NULL;
+			currPos = blanklCnt = i = 0;
+			buf = _buff;
+			tabInd = 1;
+		}
+	}
 	_currRecPos = currPos;			// next record position
 	_recCnt++;
 	return RealRecord();
