@@ -2,7 +2,7 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/08/2024
+Last modified: 06/23/2024
 ***********************************************************/
 #pragma once
 
@@ -95,9 +95,10 @@ class BedReader : public DataReader, public TabReader
 	const BYTE	NameFieldInd = 3;	// inner index of name field
 	const BYTE	StrandFieldInd = 5;	// inner index of strand field
 
-	BYTE _scoreInd;		// 0-based index of 'score' filed (used for FBED and all WIGs)
-	BYTE _chrMarkPos;	// chrom's mark position in line (BED, BedGraph) or definition line (wiggle_0)
-	function<bool()> _getStrand;	// returns current item strand; different for BED and ABED
+	BYTE _scoreInd;				// 0-based index of 'score' filed (used for FBED and all WIGs)
+	BYTE _chrMarkPos;			// chrom's mark position in line (BED, BedGraph) or definition line (wiggle_0)
+	char _chrMark[2]{ 0,0 };	// first 2 chars of chrom's mark; used for reading optimization
+	function<bool()> _getStrand;// returns current item strand; different for BED and ABED
 
 	// Reset WIG type, score index, chrom mark position offset and estimated number of lines
 	//	@param type: WIG type
@@ -130,11 +131,11 @@ public:
 
 	// Sets the next chromosome as the current one if they are different
 	//	@param cID: returned next chrom ID
-	//	@param str: null-terminated string started with short chrom name
+	//	@param str: C-string started with abbreviation chrom's name
 	//	@returns: true, if new chromosome is set as current one
 	//	Used in Calc.cpp
 	bool GetNextChrom(chrid& cID, const char* str) {
-		return SetNextChrom(cID = Chrom::ValidateID(str, strlen(Chrom::Chrom::Abbr)));
+		return SetNextChrom(cID = Chrom::ValidateID(str, strlen(Chrom::Abbr)));
 	}
 
 protected:
@@ -145,7 +146,7 @@ protected:
 	//	@param cID: returned next chrom ID
 	//	@returns: true, if new chromosome is set as current one
 	//	To implement DataReader virtual GetNextChrom(chrid& cID)
-	bool GetNextChrom(chrid& cID) { return SetNextChrom(cID = Chrom::ValidateID(ChromMark())); }
+	bool GetNextChrom(chrid& cID);
 
 	// Retrieves next item's record
 	bool GetNextItem() { return TabReader::GetNextLine(); }
@@ -423,7 +424,7 @@ public:
 				}
 				if (cID != Chrom::UnID && nextcID < cID)
 					_file->ThrowExceptWithLineNumb("unsorted " + Chrom::ShortName(nextcID));
-				func(cID, cLen, cItemCnt, nextcID);			// close current chrom, open next one
+				func(cID, cLen, cItemCnt, nextcID);		// close current chrom, open next one
 				ResetChrom();
 				cID = nextcID;
 				cItemCnt = 0;
@@ -432,12 +433,12 @@ public:
 			else if (skipChrom)		continue;
 			_file->InitRegion(_rgn);
 			if (CheckItem(cLen)) {
-				cItemCnt += func(); 						// treat entry
+				cItemCnt += func(); 					// treat entry
 				_rgn0 = _rgn;
 			}
 			tItemCnt++;
 		}
-		func(cID, cLen, cItemCnt, tItemCnt);				// close last chrom
+		func(cID, cLen, cItemCnt, tItemCnt);			// close last chrom
 
 		if (_oinfo >= eOInfo::STD)	PrintStats(tItemCnt);
 		timer.Stop(1, true);	if (_oinfo > eOInfo::NM)	dout << LF;

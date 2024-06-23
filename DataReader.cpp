@@ -1,6 +1,6 @@
 /**********************************************************
 DataReader.cpp
-Last modified: 06/01/2024
+Last modified: 06/23/2024
 ***********************************************************/
 
 #include "DataReader.h"
@@ -108,6 +108,15 @@ BedReader::BedReader(const char* fName, FT::eType type, BYTE scoreNumb, bool msg
 			}
 		}
 		else SetEstLineCount();			// ordinary bed
+}
+
+bool BedReader::GetNextChrom(chrid& cID)
+{
+	if (!memcmp(_chrMark, ChromMark(), 2))
+		return false;
+	// next chrom
+	memcpy(_chrMark, ChromMark(), 2);
+	return SetNextChrom(cID = Chrom::ValidateID(ChromMark()));
 }
 
 /************************ end of BedReader ************************/
