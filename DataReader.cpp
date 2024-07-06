@@ -543,13 +543,13 @@ bool FragIdent::operator()(const Read& read, Region& frag)
 		_waits.emplace(read.Number, read);		// add read to the waiting list
 	else {										// mate case
 		const Read& mate = itMate->second;
-		if (mate.Start != _pos[mate.Strand] || read.Start != _pos[read.Strand])	// not a duplicate
-			res = getFrag(mate, read, frag);	// uniq fragment
-		else {
-			if (_dupl)
-				res = getFrag(mate, read, frag);// dupl fragment
+		if (mate.Start == _pos[mate.Strand] && read.Start == _pos[read.Strand]) {	// duplicate of the previous one
+			if (_duplAccept)
+				res = getFrag(mate, read, frag);	// dupl fragment
 			_duplCnt++;
 		}
+		else 
+			res = getFrag(mate, read, frag);		// uniq or first duplicate fragment
 		_pos[mate.Strand] = mate.Start;
 		_pos[read.Strand] = read.Start;
 #ifdef MY_DEBUG

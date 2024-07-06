@@ -2,7 +2,7 @@
 Options.h
 Provides managing executable options
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/07/2024
+Last modified: 07/06/2024
 ***********************************************************/
 #pragma once
 
@@ -273,8 +273,9 @@ public:
 	static UINT GetUIVal(int opt) { return UINT(List[opt].NVal); }
 	// Get int value by index
 	static int GetIVal(int opt) { return int(List[opt].NVal); }
-	// Get read duplicates level
-	static char GetRDuplLevel(int opt) { return GetBVal(opt) ? vUNDEF : 0; }
+	// Get read duplicates permission
+	static BYTE GetRDuplPermit(int opt) { return !GetBVal(opt); }
+	//static char GetRDuplLevel(int opt) { return GetBVal(opt) ? vUNDEF : 0; }
 
 	// Returns true if the option value is assigned by user
 	static bool Assigned(int opt) { return List[opt].Sign.Is(tOpt::TRIMMED); }

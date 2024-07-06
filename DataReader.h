@@ -2,7 +2,7 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 06/23/2024
+Last modified: 07/06/2024
 ***********************************************************/
 #pragma once
 
@@ -726,14 +726,14 @@ class FragIdent
 {
 	unordered_map<ULONG, Read> _waits;	// 'waiting list' - pair mate candidate's collection
 	chrlen	_pos[2] = { 0,0 };			// mates start positions ([0] - neg read, [1] - pos read)
-	const bool	_dupl;					// if TRUE if duplicate frags are allowed
+	const bool	_duplAccept;			// if TRUE then duplicate frags are allowed
 	size_t _cnt = 0, _duplCnt = 0;		// total, duplicate count
 #ifdef MY_DEBUG
 	size_t	_maxSize = 0;				// maximum waiting _waits size
 #endif
 
 public:
-	FragIdent(bool allowDupl) : _dupl(allowDupl) {}
+	FragIdent(bool allowDupl) : _duplAccept(allowDupl) {}
 
 	// Returns number of total fragments
 	size_t Count() const { return _cnt; }
