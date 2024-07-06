@@ -186,7 +186,6 @@ bool UniBedReader::CheckItem(chrlen cLen)
 	_strand = _file->ItemStrand();				// single reading strand from file
 	if (_rgn0 == _rgn && _strand0 == _strand)	// duplicates control
 		_cDuplCnt++,
-		//res = _MaxDuplLevel == BYTE_UNDEF || ++_duplLevel < _MaxDuplLevel;
 		res = !_MaxDuplLevel || ++_duplLevel < _MaxDuplLevel;
 	else {
 		_duplLevel = 0;
@@ -216,12 +215,6 @@ void UniBedReader::PrintStats(size_t cnt)
 		size_t issCnt = 0;
 		for (const Issue& iss : _issues)	issCnt += iss.Cnt;
 		if (issCnt) {
-			//if (_MaxDuplLevel == BYTE_UNDEF)	_issues[DUPL].Action = ACCEPT;
-			//else if (_MaxDuplLevel) {
-			//	stringstream ss(" except for the first ");
-			//	ss << int(_MaxDuplLevel);
-			//	_issues[DUPL].Extra = ss.str();
-			//}
 			if (_MaxDuplLevel)
 				_issues[DUPL].Extra = " except for the first " + to_string(_MaxDuplLevel);
 			else
