@@ -1,6 +1,6 @@
 /**********************************************************
 DataReader.cpp
-Last modified: 06/23/2024
+Last modified: 07/06/2024
 ***********************************************************/
 
 #include "DataReader.h"
@@ -171,7 +171,7 @@ bool UniBedReader::CheckItem(chrlen cLen)
 {
 	bool res = true;
 	if (_checkSorted && _rgn.Start < _rgn0.Start)
-		_file->ThrowExceptWithLineNumb("unsorted " + FT::ItemTitle(_type, false));
+		_file->ThrowExceptWithLineNumb("unsorted " + FT::ItemTitle(_type) + " are not allowed while checking for duplicates");
 	if (_rgn.Invalid())
 		_file->ThrowExceptWithLineNumb("'start' position is equal or more than 'end' one");
 	if (cLen)				// check for not exceeding the chrom length
@@ -184,9 +184,10 @@ bool UniBedReader::CheckItem(chrlen cLen)
 		}
 
 	_strand = _file->ItemStrand();				// single reading strand from file
-	if (_rgn0 == _rgn && _strand0 == _strand)	// duplicates
+	if (_rgn0 == _rgn && _strand0 == _strand)	// duplicates control
 		_cDuplCnt++,
-		res = _MaxDuplLevel == BYTE_UNDEF || ++_duplLevel < _MaxDuplLevel;
+		//res = _MaxDuplLevel == BYTE_UNDEF || ++_duplLevel < _MaxDuplLevel;
+		res = !_MaxDuplLevel || ++_duplLevel < _MaxDuplLevel;
 	else {
 		_duplLevel = 0;
 		_lenFreq[_rgn.Length()]++;
@@ -215,12 +216,17 @@ void UniBedReader::PrintStats(size_t cnt)
 		size_t issCnt = 0;
 		for (const Issue& iss : _issues)	issCnt += iss.Cnt;
 		if (issCnt) {
-			if (_MaxDuplLevel == BYTE_UNDEF)	_issues[DUPL].Action = ACCEPT;
-			else if (_MaxDuplLevel) {
-				stringstream ss(" except for the first ");
-				ss << int(_MaxDuplLevel);
-				_issues[DUPL].Extra = ss.str();
-			}
+			//if (_MaxDuplLevel == BYTE_UNDEF)	_issues[DUPL].Action = ACCEPT;
+			//else if (_MaxDuplLevel) {
+			//	stringstream ss(" except for the first ");
+			//	ss << int(_MaxDuplLevel);
+			//	_issues[DUPL].Extra = ss.str();
+			//}
+			if (_MaxDuplLevel)
+				_issues[DUPL].Extra = " except for the first " + to_string(_MaxDuplLevel);
+			else
+				_issues[DUPL].Action = ACCEPT;
+			
 			_issues[OVERL].Action = GetOverlAction();
 			if (_type == FT::BED)	_issues[ENDOUT].Action = TRUNC;
 
@@ -279,7 +285,7 @@ UniBedReader::UniBedReader(
 ) :
 	_type(type),
 	_MaxDuplLevel(dupLevel), 
-	_checkSorted(checkSorted), 
+	_checkSorted(checkSorted ? true : dupLevel > 0),
 	_abortInv(abortInval), 
 	_oinfo(oinfo), 
 	_cSizes(cSizes),
