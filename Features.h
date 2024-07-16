@@ -2,7 +2,7 @@
 Feature.h
 BED feature and features collection
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/26/2023
+Last modified: 7/16/2024
 ***********************************************************/
 #pragma once
 
@@ -72,12 +72,13 @@ public:
 	//	@param fName: name of bed-file
 	//	@param cSizes: chrom sizes to control the chrom length exceedeng, or NULL if no control
 	//	@param joinOvrl: if true then join overlapping features, otherwise omit
+	//	@param oinfo: outputted info
 	//	@param prfName: true if file name should be printed unconditionally
 	//	@param abortInvalid: true if invalid instance should abort excecution
-	Features(const char* fName, ChromSizes & cSizes, bool joinOvrl,
+	Features(const char* fName, ChromSizes* cSizes, bool joinOvrl,
 		eOInfo oinfo, bool prfName, bool abortInvalid = true)
 	{
-		FBedReader file(fName, &cSizes, 5,
+		FBedReader file(fName, cSizes, 5,
 			joinOvrl ? UniBedReader::eAction::JOIN : UniBedReader::eAction::OMIT,
 			oinfo, prfName, abortInvalid);
 #endif

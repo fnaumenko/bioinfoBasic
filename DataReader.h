@@ -16,7 +16,7 @@ Last modified: 07/06/2024
 
 static const char* sTotal = "total";
 
-// 'eOInfo' defines types of outputted oinfo
+// 'eOInfo' defines types of outputted info
 enum class eOInfo {
 	NONE,	// nothing printed: it is never pointed in command line
 	LAC,	// laconic:		print file name if needs
