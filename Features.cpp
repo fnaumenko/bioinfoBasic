@@ -1,6 +1,6 @@
 /**********************************************************
 Feature.cpp
-Last modified: 11/24/2023
+Last modified: 07/17/2024
 ***********************************************************/
 #include "Features.h"
 
@@ -17,7 +17,7 @@ bool Features::operator()()
 		_items.back().End = _file->ItemEnd();
 		return false;
 	}
-#ifdef _ISCHIP
+#ifdef _FEATR_SCORE
 	float score;
 	if (_uniScore) _maxScore = score = 1;
 	else {

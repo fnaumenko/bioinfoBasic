@@ -2,7 +2,7 @@
 Feature.h
 BED feature and features collection
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 7/16/2024
+Last modified: 07/17/2024
 ***********************************************************/
 #pragma once
 
@@ -26,10 +26,12 @@ struct Featr : public Region
 class Features : public Items<Featr>
 {
 	FBedReader* _file = nullptr;		// valid only in constructor!
-#ifdef _ISCHIP
-	readlen	_minFtrLen;			// minimal length of feature
+#ifdef _FEATR_SCORE
 	float	_maxScore = 0;		// maximal feature score after reading
 	bool	_uniScore = false;	// true if score is undefined in input data and set as 1
+#endif
+#ifdef _ISCHIP
+	readlen	_minFtrLen;			// minimal length of feature
 #elif defined _BIOCC
 	// this is needed to get warning by calling Reads instead of Features (without -a option)
 	bool	_narrowLenDistr = false;	// true if features length distribution is degenerate

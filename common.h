@@ -249,13 +249,11 @@ void PrintSolidLine(USHORT lw);
 
 #ifdef _BIOCC
 
-// Align position to the up or down resoluation level
+// Align position to the up or down resolution level
 // f.e. by resoluation==5 pos 102 -> 100+relative, pos 104 -> 105++relative
 //	@param pos: chromosome's position
-//	@param res: resoluation
-//	@param relative: 0 or 1
-//	1 used for 1-relative position (the first base is 1, WIG)
-//	0 used for 0-relative position (BED)
+//	@param res: resolution
+//	@param relative: 0 (0-relative position, BED) or 1 (1-relative position: the first base is 1, WIG)
 //	@returns: aligned position
 chrlen AlignPos(chrlen pos, BYTE res, BYTE relative);
 
