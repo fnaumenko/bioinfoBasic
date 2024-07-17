@@ -2,7 +2,7 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 07/06/2024
+Last modified: 07/17/2024
 ***********************************************************/
 #pragma once
 
@@ -596,10 +596,18 @@ public:
 	//	@param cSizes: chrom sizes
 	//	@param scoreNmb: number of 'score' filed
 	//	@param action: action for overlapping features
+	//	@param oinfo: outputted info
 	//	@param prName: true if file name should be printed unconditionally
 	//	@param abortInval: true if invalid instance should be completed by throwing exception
-	FBedReader(const char* fName, ChromSizes* cSizes,
-		BYTE scoreNmb, eAction action, eOInfo oinfo, bool prName, bool abortInval);
+	FBedReader(
+		const char* fName,
+		ChromSizes* cSizes,
+		BYTE scoreNmb,
+		eAction action,
+		eOInfo oinfo,
+		bool prName,
+		bool abortInval
+	);
 
 	// If true then join overlapping feature
 	bool IsJoined() const { return _isJoin && _isOverlap; }

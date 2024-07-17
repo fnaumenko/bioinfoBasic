@@ -1,6 +1,6 @@
 /**********************************************************
 DataReader.cpp
-Last modified: 07/06/2024
+Last modified: 07/17/2024
 ***********************************************************/
 
 #include "DataReader.h"
@@ -377,22 +377,21 @@ size_t RBedReader::ReadNumber() const
 #ifdef _FEATURES
 /************************ FBedReader ************************/
 
-// Returns: true if feature is valid
 bool FBedReader::ChildCheckItem()
 {
 	_issues[UniBedReader::eIssue::OVERL].Cnt += (_isOverlap = IsOverlap());
 	return _action();
 }
 
-// Creates new instance for reading and open file
-//	@fName: file name
-//	@cSizes: chrom sizes
-//	@scoreNmb: number of 'score' filed
-//	@action: action for overlapping features
-//	@prName: true if file name should be printed unconditionally
-//	@abortInval: true if invalid instance should be completed by throwing exception
-FBedReader::FBedReader(const char* fName, ChromSizes* cSizes,
-	BYTE scoreNmb, eAction action, eOInfo oinfo, bool prName, bool abortInval) :
+FBedReader::FBedReader(
+	const char* fName,
+	ChromSizes* cSizes,
+	BYTE scoreNmb,
+	eAction action,
+	eOInfo oinfo,
+	bool prName,
+	bool abortInval
+) :
 	_isJoin(action == eAction::JOIN),
 	_overlAction(action),
 	UniBedReader(fName, FT::BED, cSizes, scoreNmb, 0, oinfo, prName, true, abortInval)
@@ -408,7 +407,6 @@ FBedReader::FBedReader(const char* fName, ChromSizes* cSizes,
 	}
 }
 
-// Returns true if features length distribution is degenerate
 bool FBedReader::NarrowLenDistr() const
 {
 	if (!_lenFreq.size())		return false;		// no readed features

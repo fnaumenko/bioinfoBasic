@@ -2,7 +2,7 @@
 ChromData.h
 Provides chromosomes data functionality
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/23/2024
+Last modified: 07/17/2024
 ***********************************************************/
 #pragma once
 
@@ -322,7 +322,7 @@ public:
 			const string& chr = Chrom::AbbrName(inds.first);
 			const auto& data = inds.second.Data;
 			const size_t lim = prICnt ? prICnt + data.FirstInd : UINT_MAX;
-			for (chrlen i = data.FirstInd; i <= data.LastInd; i++) {
+			for (chrlen i = chrlen(data.FirstInd); i <= chrlen(data.LastInd); i++) {
 				if (i >= lim)	break;
 				cout << chr << TAB;
 				PrintItem(i);
