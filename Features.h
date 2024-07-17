@@ -45,6 +45,24 @@ class Features : public Items<Featr>
 	//	@param it: item's iterator
 	Region const Regn(cItemsIter it) const { return Region(*it); }
 
+	// Initializes new instance by bed-file name
+	//	@param fName: name of bed-file
+	//	@param cSizes: chrom sizes to control the chrom length exceedeng, or NULL if no control
+	//	@param scoreInd: index of 'score' field
+	//	@param joinOvrl: if true then join overlapping features, otherwise omit
+	//	@param oinfo: outputted info
+	//	@param prfName: true if file name should be printed unconditionally
+	//	@param abortInvalid: true if invalid instance should abort excecution
+	void Init(
+		const char* fName,
+		ChromSizes* cSizes,
+		BYTE scoreInd,
+		bool joinOvrl,
+		eOInfo oinfo,
+		bool prfName,
+		bool abortInvalid
+	);
+
 	// Adds chromosome to the instance
 	//	@param cID: chromosome's ID
 	//	@param cnt: count of chrom items
@@ -58,17 +76,16 @@ public:
 	// Creates new instance by bed-file name
 	//	@param fName: file name
 	//	@param cSizes: chrom sizes to control the chrom length exceedeng, or NULL if no control
-	//	@param joinOvrl: if true then join overlapping features, otherwise omit
 	//	@param scoreInd: index of 'score' field
+	//	@param joinOvrl: if true then join overlapping features, otherwise omit
 	//	@param bsLen: length of binding site: shorter features would be omitted
 	//	@param prfName: true if file name should be printed unconditionally
-	Features(const char* fName, ChromSizes& cSizes, bool joinOvrl,
-		BYTE scoreInd, readlen bsLen, bool prfName)
+	Features(const char* fName, ChromSizes& cSizes, BYTE scoreInd, bool joinOvrl,
+		readlen bsLen, bool prfName = false)
 		: _minFtrLen(bsLen), _uniScore(!scoreInd)
 	{
-		FBedReader file(fName, &cSizes, scoreInd,
-			joinOvrl ? UniBedReader::eAction::JOIN : UniBedReader::eAction::OMIT,
-			eOInfo::LAC, prfName, true);
+		Init(fName, &cSizes, scoreInd, joinOvrl, eOInfo::LAC, prfName, true);
+	}
 #else
 	// Creates new instance by bed-file name
 	//	@param fName: name of bed-file
@@ -80,22 +97,9 @@ public:
 	Features(const char* fName, ChromSizes* cSizes, bool joinOvrl,
 		eOInfo oinfo, bool prfName, bool abortInvalid = true)
 	{
-		FBedReader file(fName, cSizes, 5,
-			joinOvrl ? UniBedReader::eAction::JOIN : UniBedReader::eAction::OMIT,
-			oinfo, prfName, abortInvalid);
-#endif
-		size_t estItemCnt = file.EstItemCount();
-		if (estItemCnt) {
-			ReserveItems(estItemCnt);
-			_file = &file;
-			file.Pass(*this);
-			_file = nullptr;
-		}
-#ifdef _BIOCC
-		_narrowLenDistr = file.NarrowLenDistr();
-#endif
-		//PrintEst(estItemCnt);
+		Init(fName, cSizes, 5, joinOvrl, oinfo, prfName, abortInvalid);
 	}
+#endif
 
 	// Treats current item
 	//	@returns: true if item is accepted

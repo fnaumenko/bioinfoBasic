@@ -4,6 +4,39 @@ Last modified: 07/17/2024
 ***********************************************************/
 #include "Features.h"
 
+void Features::Init(
+	const char* fName,
+	ChromSizes* cSizes,
+	BYTE scoreInd,
+	bool joinOvrl,
+	eOInfo oinfo,
+	bool prfName,
+	bool abortInvalid
+)
+{
+	FBedReader file(
+		fName,
+		cSizes,
+		scoreInd,
+		joinOvrl ? UniBedReader::eAction::JOIN : UniBedReader::eAction::OMIT,
+		oinfo,
+		prfName,
+		abortInvalid
+	);
+	size_t estItemCnt = file.EstItemCount();
+
+	if (estItemCnt) {
+		ReserveItems(estItemCnt);
+		_file = &file;
+		file.Pass(*this);
+		_file = nullptr;
+	}
+#ifdef _BIOCC
+	_narrowLenDistr = file.NarrowLenDistr();
+#endif
+	//PrintEst(estItemCnt);
+}
+
 void Features::AddChrom(chrid cID, size_t cnt)
 {
 	if (!cnt)	return;
