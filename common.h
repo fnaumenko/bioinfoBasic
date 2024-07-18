@@ -936,7 +936,7 @@ public:
 
 	// Returns abbreviation name 'chrX'
 	//	@param cid: chromosome's ID
-	//	@param numbSep: if true then separate chrom's number
+	//	@param numbSep: if true then separate chromosome's number from the abbreviation
 	static string AbbrName(chrid cid, bool numbSep = false);
 
 	// Returns short name 'chrom X'
