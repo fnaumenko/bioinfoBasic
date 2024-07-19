@@ -1,6 +1,6 @@
 /**********************************************************
 TxtFile.cpp
-Last modified: 06/23/2024
+Last modified: 07/19/2024
 ***********************************************************/
 
 #include "TxtFile.h"
@@ -724,7 +724,7 @@ const char* TabReader::GetNextLine(bool checkTab)
 						break;
 					else {									// less than number of required fields
 						SetError(Err::TF_FIELD, LineNumbToStr(),
-							": " + to_string(i) + " against " + to_string(par.MinFieldCnt) + "; wrong format?");
+							SepCl + to_string(i) + " against " + to_string(par.MinFieldCnt) + "; wrong format?");
 						return _currLine = NULL;
 					}
 		line[RecordLength() - 1] = cNULL;	// replace '\n' by 0

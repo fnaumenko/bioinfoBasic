@@ -1,6 +1,6 @@
 /**********************************************************
 Options.cpp
-Last modified: 05/01/2024
+Last modified: 07/19/2024
 ***********************************************************/
 #include "Options.h"
 
@@ -389,7 +389,7 @@ void Options::Usage::Print(Option* opts) const
 		if (IsParOblig)	cout << SPACE << Par;
 		else			PRINT_IN_PRTHS(Par);
 		if (ParDescr)	// output parameter description
-			cout << "\n  " << Par << ": " << ParDescr;
+			cout << "\n  " << Par << SepCl << ParDescr;
 	}
 	cout << endl;
 }
@@ -453,7 +453,7 @@ int	Options::PrintVersion()
 
 int Options::PrintSummary(bool prTitle)
 {
-	if (prTitle)	cout << Product::Title << ": ";
+	if (prTitle)	cout << Product::Title << SepCl;
 	cout << Product::Descr << LF;
 	return 1;
 }

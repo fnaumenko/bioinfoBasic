@@ -2,7 +2,7 @@
 Feature.h
 BED feature and features collection
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 07/18/2024
+Last modified: 07/19/2024
 ***********************************************************/
 #pragma once
 
@@ -152,7 +152,7 @@ public:
 	//	@param prICnt: number of printed items per each chrom, or 0 if all
 	void Print(const char* title, size_t prICnt = 0) const
 	{
-		cout << LF << title << ": ";
+		cout << LF << title << SepCl;
 		if (prICnt)	cout << "first " << prICnt << " per each chrom\n";
 		else		cout << ItemsCount() << LF;
 		for (const auto& inds : Container()) {
