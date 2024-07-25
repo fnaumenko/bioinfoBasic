@@ -133,15 +133,6 @@ static const char* SepDCl = ":: ";		// double colon separator
 static const std::string ZipFileExt = ".gz";
 static const string strEmpty = "";
 
-// common help string
-//static const char* sTime = "time";
-//static const char* sVers = "version";
-//static const char* sHelp = "help";
-//static const char* sGen = "gen";
-//static const char* sOutput = "out";
-//static const char* sSumm = "summ";		// to invoke app from bioStat
-static const char* sTemplate = "template";
-
 /*** COMMON MACROS & FUNCTION ***/
 
 #define vUNDEF	-1	// undefined value
