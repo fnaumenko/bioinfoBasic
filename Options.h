@@ -2,7 +2,7 @@
 Options.h
 Provides managing executable options
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 07/06/2024
+Last modified: 07/25/2024
 ***********************************************************/
 #pragma once
 
@@ -236,6 +236,12 @@ private:
 
 	static int PrintSummary(bool prTitle);
 
+#ifdef _DUP_OUTPUT
+	// Returns duplicate output file extention, or default extention if not set
+	//	@param ext: extern file extention
+	static const string DoutFileExt(const string& ext);
+#endif
+
 public:
 	// Prints 'usage' information
 	//	@param title: if true prints title before information
@@ -286,7 +292,21 @@ public:
 	// Returns C-string 'ON' or 'OFF'
 	static const char* BoolToStr(int opt) { return Booleans[GetBVal(opt)]; }
 
-#ifdef DEBUG
+#ifdef _DUP_OUTPUT
+	// Returns duplicate standard output help line
+	//	@param progParam: help name of programme parameter
+	//	@param doutFileExt: duplicate output file extention, or default extention if not set
+	static const char* DoutHelp(const char* progParam, const string& doutFileExt = strEmpty);
+
+	// Sets duplicate output file
+	//	@param opt: option
+	//	@param name: default output file name
+	//	@param altCondition: alternative output file set condition, false by default
+	//	@param doutFileExt: duplicate output file extention, or default extention if not set
+	static void SetDoutFile(int opt, const char* name, bool altCondition = false, const string& doutFileExt = strEmpty);
+#endif
+
+#ifdef MY_DEBUG
 	static void Print();
 #endif
 } options;

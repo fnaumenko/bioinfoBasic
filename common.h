@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 06/06/2024
+Last modified: 07/25/2024
 ***********************************************************/
 #pragma once
 
@@ -140,11 +140,7 @@ static const char* sHelp = "help";
 static const char* sGen = "gen";
 static const char* sOutput = "out";
 
-//#ifdef _DUP_OUTPUT
 static const char* sSumm = "summ";		// to invoke app from bioStat
-static const string sFileDuplBegin = "duplicate standard output to specified file\nor to ";
-static const string sFileDuplEnd = " if <name> is not specified";
-
 static const char* sTemplate = "template";
 
 /*** COMMON MACROS & FUNCTION ***/

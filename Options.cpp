@@ -1,6 +1,6 @@
 /**********************************************************
 Options.cpp
-Last modified: 07/19/2024
+Last modified: 07/25/2024
 ***********************************************************/
 #include "Options.h"
 
@@ -10,7 +10,6 @@ Last modified: 07/19/2024
 #define OPT_TO_STREAM(opt)	HPH<<(opt)
 
 const char* optTitle = "option ";
-//const char* Spotteruous = "Spotteruous";
 const char* Default = " Default: ";
 const char* Missing = "missing ";
 const char* Warning = "WARNING: ";
@@ -528,7 +527,29 @@ int Options::Parse(int argc, char* argv[], const char* obligPar)
 	return i * res;
 }
 
-#ifdef DEBUG
+#ifdef _DUP_OUTPUT
+const string Options::DoutFileExt(const string& ext)
+{
+	return ext == strEmpty ? ".output.txt" : ext;
+}
+
+const char* Options::DoutHelp(const char* progParam, const string& doutFileExt)
+{
+	static string ret = "duplicate standard output to specified file\nor to " +
+		string(progParam) + DoutFileExt(doutFileExt) + " if <name> is not specified";
+	return ret.c_str();
+}
+
+
+void Options::SetDoutFile(int opt, const char* name, bool altCondition, const string& doutFileExt)
+{
+	if (altCondition || Options::Assigned(opt))
+		if (!dout.OpenFile(FS::ComposeFileName(Options::GetSVal(opt), name,	DoutFileExt(doutFileExt))))
+			Err(Err::FailOpenOFile).Throw();
+}
+#endif
+
+#ifdef MY_DEBUG
 void Options::Print()
 {
 	for (int i = 0; i < OptCount; i++)
