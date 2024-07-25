@@ -555,7 +555,7 @@ void Options::Print()
 	for (int i = 0; i < OptCount; i++)
 	{
 		cout << setw(2) << i << "  ";
-		List[i].Print();
+		List[i].Print(true);
 	}
 }
 #endif
