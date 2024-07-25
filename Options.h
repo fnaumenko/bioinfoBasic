@@ -176,7 +176,7 @@ private:
 		//	or -2 if the wrong delimiter is encountered
 		int GetEnumInd(const char* val);
 
-		// Ouptuts option with error message to cerr
+		// Prints option with error message to cerr
 		//	@param val: value or NULL
 		//	@param msg: error message about value
 		//	@returns: always 1
@@ -194,16 +194,24 @@ private:
 		void Print(Option* opts) const;
 	};
 
-	static const char* sHelpSummary;		// summary string printed in help
-	static const char* sHelpTime;			// run time string printed in help
-	static const char* sHelpUsage;		// usage string printed in help
-	static const char* sHelpVersion;		// version string printed in help
-	static const char* TypeNames[];	// names of option value types in help
-	static const char* OptGroups[];	// names of option groups in help
-	static const Usage	Usages[];	// content of 'Usage' variants in help
+	// common options tip and help line
+	static const char*	sTime;
+	static const char*	sVers;
+	static const char*	sHelp;
+	static const char*	sGen;
+	static const char*	sOutput;
+	static const char*	sSumm;		// to invoke app from bioStat
+
+	static const char*	sHelpSummary;	// summary string printed in help
+	static const char*	sHelpTime;		// run time string printed in help
+	static const char*	sHelpUsage;		// usage string printed in help
+	static const char*	sHelpVersion;	// version string printed in help
+	static const char*	TypeNames[];	// names of option value types in help
+	static const char*	OptGroups[];	// names of option groups in help
+	static const Usage	Usages[];		// content of 'Usage' variants in help
 	static const BYTE	OptCount,		// count of options
-		GroupCount,		// count of option groups in help
-		UsageCount;		// count of 'Usage' variants in help
+						GroupCount,		// count of option groups in help
+						UsageCount;		// count of 'Usage' variants in help
 	static 	Option		List[];			// list of options. Option 'help' always shuld be
 										// the last one, option 'version' - before last.
 
