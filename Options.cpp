@@ -15,10 +15,10 @@ const char* Missing = "missing ";
 const char* Warning = "WARNING: ";
 const string sValue = "value";
 
-const char* Options::sPrSummary = "print program's summary";
-const char* Options::sPrTime = "print run time";
-const char* Options::sPrUsage = "print usage information";
-const char* Options::sPrVersion = "print program's version";
+const char* Options::sHelpSummary = "print program's summary";
+const char* Options::sHelpTime = "print run time";
+const char* Options::sHelpUsage = "print usage information";
+const char* Options::sHelpVersion = "print program's version";
 //const char* Options::Booleans[] = { "OFF","ON" };
 const char* Options::TypeNames[] = {
 	NULL, "<name>", "<char>", "<int>", "<float>", "<long>", NULL, NULL,

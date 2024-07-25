@@ -194,10 +194,10 @@ private:
 		void Print(Option* opts) const;
 	};
 
-	static const char* sPrSummary;		// summary string printed in help
-	static const char* sPrTime;			// run time string printed in help
-	static const char* sPrUsage;		// usage string printed in help
-	static const char* sPrVersion;		// version string printed in help
+	static const char* sHelpSummary;		// summary string printed in help
+	static const char* sHelpTime;			// run time string printed in help
+	static const char* sHelpUsage;		// usage string printed in help
+	static const char* sHelpVersion;		// version string printed in help
 	static const char* TypeNames[];	// names of option value types in help
 	static const char* OptGroups[];	// names of option groups in help
 	static const Usage	Usages[];	// content of 'Usage' variants in help
