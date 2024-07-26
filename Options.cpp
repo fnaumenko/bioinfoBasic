@@ -15,13 +15,15 @@ const char* Missing = "missing ";
 const char* Warning = "WARNING: ";
 const string sValue = "value";
 
+const char* Options::sGen = "gen";
+const char* Options::sChrom = Chrom::Abbr;
+const char* Options::sOutput = "out";
+const char* Options::sSumm = "summ";		// to invoke app from bioStat
 const char* Options::sTime = "time";
 const char* Options::sVers = "version";
 const char* Options::sHelp = "help";
-const char* Options::sGen = "gen";
-const char* Options::sOutput = "out";
-const char* Options::sSumm = "summ";		// to invoke app from bioStat
 
+const char* Options::sHelpChrom = "treat specified chromosome only";
 const char* Options::sHelpSummary = "print program's summary";
 const char* Options::sHelpTime = "print run time";
 const char* Options::sHelpUsage = "print usage information";
