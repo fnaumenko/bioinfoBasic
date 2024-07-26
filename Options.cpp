@@ -553,7 +553,7 @@ void Options::SetDoutFile(int opt, const char* name, bool altCondition, const st
 	if (altCondition || Options::Assigned(opt)) {
 		auto compName = FS::ComposeFileName(Options::GetSVal(opt), name, DoutFileExt(doutFileExt));
 		if (dout.OpenFile(compName))
-			Err("could not open output file", compName.c_str()).Throw();
+			Err(Err::F_OPEN, compName.c_str()).Throw();
 	}
 }
 #endif
