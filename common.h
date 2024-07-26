@@ -363,8 +363,6 @@ private:
 	//}
 
 public:
-	static const char* FailOpenOFile;
-
 	// Returns string containing file name and issue number.
 	//	@issName: name of issue
 	//	@issNumb: number of issue

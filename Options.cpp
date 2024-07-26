@@ -550,9 +550,11 @@ const char* Options::DoutHelp(const char* progParam, const string& doutFileExt)
 
 void Options::SetDoutFile(int opt, const char* name, bool altCondition, const string& doutFileExt)
 {
-	if (altCondition || Options::Assigned(opt))
-		if (dout.OpenFile(FS::ComposeFileName(Options::GetSVal(opt), name, DoutFileExt(doutFileExt))))
-			Err(Err::FailOpenOFile).Throw();
+	if (altCondition || Options::Assigned(opt)) {
+		auto compName = FS::ComposeFileName(Options::GetSVal(opt), name, DoutFileExt(doutFileExt));
+		if (dout.OpenFile(compName))
+			Err("could not open output file", compName.c_str()).Throw();
+	}
 }
 #endif
 

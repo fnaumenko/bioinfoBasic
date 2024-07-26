@@ -258,8 +258,6 @@ const char* Err::_msgs[] = {
 	/* EMPTY */		""
 };
 
-const char* Err::FailOpenOFile = "could not open output file";
-
 void StrCat(char* dst, const char* src) { memcpy(dst + strlen(dst), src, strlen(src) + 1); }
 
 void Err::set_message(const char* sender, const char* txt, const char* specTxt)
