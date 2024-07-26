@@ -2,7 +2,7 @@
 Options.h
 Provides managing executable options
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 07/25/2024
+Last modified: 07/26/2024
 ***********************************************************/
 #pragma once
 
@@ -309,8 +309,9 @@ public:
 	// Sets duplicate output file
 	//	@param opt: option
 	//	@param name: default output file name
-	//	@param altCondition: alternative output file set condition, false by default
+	//	@param altCondition: alternative check condition, false by default
 	//	@param doutFileExt: duplicate output file extention, or default extention if not set
+	//	@throws Err::D_NONE if directory in name doesn't exist or Err::FailOpenOFile if file could not open
 	static void SetDoutFile(int opt, const char* name, bool altCondition = false, const string& doutFileExt = strEmpty);
 #endif
 

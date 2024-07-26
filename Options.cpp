@@ -1,6 +1,6 @@
 /**********************************************************
 Options.cpp
-Last modified: 07/25/2024
+Last modified: 07/26/2024
 ***********************************************************/
 #include "Options.h"
 
@@ -551,7 +551,7 @@ const char* Options::DoutHelp(const char* progParam, const string& doutFileExt)
 void Options::SetDoutFile(int opt, const char* name, bool altCondition, const string& doutFileExt)
 {
 	if (altCondition || Options::Assigned(opt))
-		if (!dout.OpenFile(FS::ComposeFileName(Options::GetSVal(opt), name,	DoutFileExt(doutFileExt))))
+		if (dout.OpenFile(FS::ComposeFileName(Options::GetSVal(opt), name, DoutFileExt(doutFileExt))))
 			Err(Err::FailOpenOFile).Throw();
 }
 #endif

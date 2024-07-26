@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 07/25/2024
+Last modified: 07/26/2024
 ***********************************************************/
 #pragma once
 
@@ -268,7 +268,7 @@ public:
 	std::ofstream& File() { return file; }
 
 	// Open output file with given name
-	//	@returns: true if file is open
+	//	@returns: true if the attempt was unsuccessful, false otherwise
 	bool OpenFile(const string& fname);
 
 	// Associates 'loc' to the dostream as the new locale object to be used with locale-sensitive operations
@@ -621,6 +621,7 @@ public:
 	//	@param iName: input short or long file name
 	//	@param suffix: output file suffix (can be extention, started with DOT), empty by default. 
 	//	If output file extention matches the extension of the input file, the suffix '_out' is added to the resulting file name
+	//	@throws Err::D_NONE if directory in name doesn't exist
 	static string const ComposeFileName(const char* oName, const char* iName, const string& suffix = strEmpty);
 
 	// === files in dir

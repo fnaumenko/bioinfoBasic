@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 05/22/2024
+Last modified: 07/26/2024
 ***********************************************************/
 
 #include "common.h"
@@ -211,9 +211,8 @@ chrlen AlignPos(chrlen pos, BYTE res, BYTE relative)
 
 bool dostream::OpenFile(const string& fname)
 {
-	if (!fname.length())	return false;
 	file.open(fname.c_str());
-	return true;
+	return file.fail();
 }
 
 void dostream::Imbue(const locale& loc)
@@ -518,8 +517,13 @@ string const FS::ComposeFileName(const char* oName, const char* iName, const str
 	if (oName)
 		if (IsDirExist(oName))
 			res = MakePath(oName) + ShortFileName(baseName);
-		else
-			nameMatches = (res = oName) == baseName;
+		else {
+			auto dir = DirName(oName);
+			if(dir != oName)		// dir is the same as oName in case of simple oName
+				CheckDirExist(dir.c_str());
+			res = oName;
+			nameMatches = res == baseName;
+		}
 	else
 		res = getShortName();
 
