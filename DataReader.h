@@ -2,7 +2,7 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 07/17/2024
+Last modified: 07/28/2024
 ***********************************************************/
 #pragma once
 
@@ -313,6 +313,7 @@ private:
 	bool	_checkSorted;		// checking for unsorted items 
 	bool	_readItem = true;	// if true then read next item, otherwise pre-read first item or nothing if _preItem is TRUE
 	bool	_preItem = false;	// if true then pre-read first item and set to FALSE after that
+	bool	_prLFafterName;
 	DataReader* _file = nullptr;// data file; unique_ptr is useless because of different type in constructor/destructor
 	const ChromSizes* _cSizes;
 
@@ -381,7 +382,6 @@ public:
 	//	@param scoreNumb: number of 'score' filed (0 by default for ABED and BAM)
 	//	@param dupLevel: number of additional duplicates allowed; BYTE_UNDEF - keep all additional duplicates
 	//	@param oinfo: output stat info level
-	//	@param prName: true if file name should be printed unconditionally
 	//	@param checkSorted: true if items should be sorted within chrom
 	//	@param abortInval: true if invalid instance should be completed by throwing exception
 	//	@param preReading: true if the first line will be pre-read
@@ -392,7 +392,6 @@ public:
 		BYTE scoreNumb,
 		BYTE dupLevel,
 		eOInfo oinfo, 
-		bool prName,
 		bool checkSorted,
 		bool abortInval,
 		bool preReading = false
@@ -441,7 +440,19 @@ public:
 		func(cID, cLen, cItemCnt, tItemCnt);			// close last chrom
 
 		if (_oinfo >= eOInfo::STD)	PrintStats(tItemCnt);
-		timer.Stop(1, true);	if (_oinfo > eOInfo::NM)	dout << LF;
+		timer.Stop(1, true);
+		//if (_oinfo >= eOInfo::NM)	dout << "_LF" << LF;
+	}
+
+	// Prints LF once, if the instance constractor printed file name (i.e. called with parameter eOInfo >= eOInfo::NM).
+	//	Typically called during intermediate printing in the Pass() method, 
+	//	before the entire file is read and statistics are printed.
+	void PrintFirstLF() {
+		if (_prLFafterName) {
+			dout << LF;
+			//fflush(stdout);
+			_prLFafterName = false;
+		}
 	}
 
 	// Reads next item's record, considering possible first record pre-read
@@ -531,7 +542,6 @@ public:
 	//	@param cSizes: chrom sizes
 	//	@param dupLevel: number of additional duplicates allowed; BYTE_UNDEF - keep all additional duplicates
 	//	@param oinfo: verbose level
-	//	@param prName: true if file name should be printed unconditionally
 	//	@param checkSorted: true if reads should be sorted within chrom
 	//	@param abortInval: true if invalid instance should be completed by throwing exception
 	//	@param preReading: true if the first line will be pre-read
@@ -540,11 +550,10 @@ public:
 		ChromSizes* cSizes,
 		BYTE dupLevel,
 		eOInfo oinfo,
-		bool prName,
 		bool checkSorted = true,
 		bool abortInval = true,
 		bool preReading = false
-	) : UniBedReader(fName, FT::GetType(fName, true), cSizes, 0, dupLevel, oinfo, prName, checkSorted, abortInval, preReading)
+	) : UniBedReader(fName, FT::GetType(fName, true), cSizes, 0, dupLevel, oinfo, checkSorted, abortInval, preReading)
 	{}
 
 	// Returns the most frequent Read length
@@ -597,7 +606,6 @@ public:
 	//	@param scoreNmb: number of 'score' filed
 	//	@param action: action for overlapping features
 	//	@param oinfo: outputted info
-	//	@param prName: true if file name should be printed unconditionally
 	//	@param abortInval: true if invalid instance should be completed by throwing exception
 	FBedReader(
 		const char* fName,
@@ -605,7 +613,6 @@ public:
 		BYTE scoreNmb,
 		eAction action,
 		eOInfo oinfo,
-		bool prName,
 		bool abortInval
 	);
 

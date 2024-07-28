@@ -1,6 +1,6 @@
 /**********************************************************
 Feature.cpp
-Last modified: 07/17/2024
+Last modified: 07/28/2024
 ***********************************************************/
 #include "Features.h"
 
@@ -20,7 +20,6 @@ void Features::Init(
 		scoreInd,
 		joinOvrl ? UniBedReader::eAction::JOIN : UniBedReader::eAction::OMIT,
 		oinfo,
-		prfName,
 		abortInvalid
 	);
 	size_t estItemCnt = file.EstItemCount();

@@ -1,6 +1,6 @@
 /**********************************************************
 DataReader.cpp
-Last modified: 07/17/2024
+Last modified: 07/28/2024
 ***********************************************************/
 
 #include "DataReader.h"
@@ -271,7 +271,6 @@ UniBedReader::UniBedReader(
 	BYTE scoreNumb,
 	BYTE dupLevel,
 	eOInfo oinfo,
-	bool prName,
 	bool checkSorted,
 	bool abortInval,
 	bool preReading
@@ -282,17 +281,18 @@ UniBedReader::UniBedReader(
 	_abortInv(abortInval), 
 	_oinfo(oinfo), 
 	_cSizes(cSizes),
-	_readItem(!preReading)
+	_readItem(!preReading),
+	_prLFafterName(oinfo >= eOInfo::NM)
 {
 	if (preReading)  _readItem = false, _preItem = true;
 
-	if (prName) { dout << fName; fflush(stdout); }	// print here because of possible Err message
+	if (oinfo >= eOInfo::NM) { dout << fName; fflush(stdout); }	// print here because of possible Err message
 
 #ifdef _BAM
 	if (type == FT::BAM)
 		_file = new BamReader(fName, cSizes, false);
 	else
-#endif	//_BAM
+#endif
 		if (type <= FT::ABED || type == FT::BGRAPH) {
 			_file = new BedReader(fName, type, scoreNumb, false, abortInval);
 			_type = ((BedReader*)_file)->Type();	// possible change of BGRAPH with WIG_FIX or WIG_VAR
@@ -303,7 +303,7 @@ UniBedReader::UniBedReader(
 				type == FT::BAM ? "this build does not support bam files" :
 #endif
 				"wrong extension",
-				prName ? nullptr : fName
+				oinfo >= eOInfo::NM ? nullptr : fName
 			).Throw(abortInval);
 }
 
@@ -389,12 +389,11 @@ FBedReader::FBedReader(
 	BYTE scoreNmb,
 	eAction action,
 	eOInfo oinfo,
-	bool prName,
 	bool abortInval
 ) :
 	_isJoin(action == eAction::JOIN),
 	_overlAction(action),
-	UniBedReader(fName, FT::BED, cSizes, scoreNmb, 0, oinfo, prName, true, abortInval)
+	UniBedReader(fName, FT::BED, cSizes, scoreNmb, 0, oinfo, true, abortInval)
 {
 	switch (action) {
 	case eAction::ACCEPT:

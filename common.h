@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 07/26/2024
+Last modified: 07/28/2024
 ***********************************************************/
 #pragma once
 
@@ -117,8 +117,8 @@ typedef chrlen		genlen;		// type length of genome
 #define PLUS	'+'
 #define HASH	'#'
 #define TAB		'\t'
-#define LF		'\n'	// 10
-#define CR		'\r'	// 13
+#define LF		'\n'	// Line Feed, 10
+#define CR		'\r'	// Carriage Return, 13
 //#define sBACK	"\b"
 
 using namespace std;
