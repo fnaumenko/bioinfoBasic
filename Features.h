@@ -212,7 +212,6 @@ class Features : public Items<Featr>
 	//	@param scoreInd: index of 'score' field
 	//	@param joinOvrl: if true then join overlapping features, otherwise omit
 	//	@param oinfo: outputted info
-	//	@param prfName: true if file name should be printed unconditionally
 	//	@param abortInvalid: true if invalid instance should abort excecution
 	void Init(
 		const char* fName,
@@ -220,7 +219,6 @@ class Features : public Items<Featr>
 		BYTE scoreInd,
 		bool joinOvrl,
 		eOInfo oinfo,
-		bool prfName,
 		bool abortInvalid
 	);
 
@@ -245,7 +243,7 @@ public:
 		readlen bsLen, bool prfName = false)
 		: _minFtrLen(bsLen), _uniScore(!scoreInd)
 	{
-		Init(fName, &cSizes, scoreInd, joinOvrl, eOInfo::LAC, prfName, true);
+		Init(fName, &cSizes, scoreInd, joinOvrl, eOInfo::LAC, true);
 	}
 #else
 	// Creates new instance by bed-file name
@@ -253,12 +251,11 @@ public:
 	//	@param cSizes: chrom sizes to control the chrom length exceedeng, or NULL if no control
 	//	@param joinOvrl: if true then join overlapping features, otherwise omit
 	//	@param oinfo: outputted info
-	//	@param prfName: true if file name should be printed unconditionally
 	//	@param abortInvalid: true if invalid instance should abort excecution
 	Features(const char* fName, ChromSizes* cSizes, bool joinOvrl,
-		eOInfo oinfo, bool prfName, bool abortInvalid = true)
+		eOInfo oinfo, bool abortInvalid = true)
 	{
-		Init(fName, cSizes, 5, joinOvrl, oinfo, prfName, abortInvalid);
+		Init(fName, cSizes, 5, joinOvrl, oinfo, abortInvalid);
 	}
 #endif
 

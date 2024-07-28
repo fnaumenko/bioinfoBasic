@@ -10,7 +10,6 @@ void Features::Init(
 	BYTE scoreInd,
 	bool joinOvrl,
 	eOInfo oinfo,
-	bool prfName,
 	bool abortInvalid
 )
 {
