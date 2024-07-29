@@ -2,7 +2,7 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 07/28/2024
+Last modified: 07/29/2024
 ***********************************************************/
 #pragma once
 
@@ -447,13 +447,7 @@ public:
 	// Prints LF once, if the instance constractor printed file name (i.e. called with parameter eOInfo >= eOInfo::NM).
 	//	Typically called during intermediate printing in the Pass() method, 
 	//	before the entire file is read and statistics are printed.
-	void PrintFirstLF() {
-		if (_prLFafterName) {
-			dout << LF;
-			//fflush(stdout);
-			_prLFafterName = false;
-		}
-	}
+	void PrintFirstLF();
 
 	// Reads next item's record, considering possible first record pre-read
 	bool GetNextItem();

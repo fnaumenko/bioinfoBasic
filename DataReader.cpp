@@ -1,6 +1,6 @@
 /**********************************************************
 DataReader.cpp
-Last modified: 07/28/2024
+Last modified: 07/29/2024
 ***********************************************************/
 
 #include "DataReader.h"
@@ -315,6 +315,14 @@ UniBedReader::~UniBedReader()
 	else
 #endif
 		delete (BedReader*)_file;
+}
+
+void UniBedReader::PrintFirstLF()
+{
+	if (_prLFafterName) {
+		dout << LF;
+		_prLFafterName = false;
+	}
 }
 
 bool UniBedReader::GetNextItem()

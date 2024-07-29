@@ -2,7 +2,7 @@
 Feature.h
 BED feature and features collection
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 07/19/2024
+Last modified: 07/29/2024
 ***********************************************************/
 #pragma once
 
@@ -186,13 +186,13 @@ struct Featr : public Region
 // 'Features' represents a collection of crhoms features
 class Features : public Items<Featr>
 {
-	FBedReader* _file = nullptr;		// valid only in constructor!
+	FBedReader* _file = nullptr;	// valid only in constructor
 #ifdef _FEATR_SCORE
-	float	_maxScore = 0;		// maximal feature score after reading
-	bool	_uniScore = false;	// true if score is undefined in input data and set as 1
+	float	_maxScore = 0;			// maximal feature score after reading
+	bool	_uniScore = false;		// true if score is undefined in input data and set as 1
 #endif
 #ifdef _ISCHIP
-	readlen	_minFtrLen;			// minimal length of feature
+	readlen	_minFtrLen;				// minimal length of feature
 #elif defined _BIOCC
 	// this is needed to get warning by calling Reads instead of Features (without -a option)
 	bool	_narrowLenDistr = false;	// true if features length distribution is degenerate
@@ -238,9 +238,7 @@ public:
 	//	@param scoreInd: index of 'score' field
 	//	@param joinOvrl: if true then join overlapping features, otherwise omit
 	//	@param bsLen: length of binding site: shorter features would be omitted
-	//	@param prfName: true if file name should be printed unconditionally
-	Features(const char* fName, ChromSizes& cSizes, BYTE scoreInd, bool joinOvrl,
-		readlen bsLen, bool prfName = false)
+	Features(const char* fName, ChromSizes& cSizes, BYTE scoreInd, bool joinOvrl, readlen bsLen)
 		: _minFtrLen(bsLen), _uniScore(!scoreInd)
 	{
 		Init(fName, &cSizes, scoreInd, joinOvrl, eOInfo::LAC, true);
@@ -316,7 +314,7 @@ public:
 #ifdef _ISCHIP
 	bool IsUniScore() const { return _uniScore; }
 
-	// Return min feature length
+	// Return minimal feature length
 	chrlen GetMinFeatureLength() const;
 #endif	// _ISCHIP
 
