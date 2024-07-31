@@ -116,13 +116,13 @@ chrlen Features::GetMinDistance() const
 //const chrlen UNDEFINED  = std::numeric_limits<int>::max();
 #define UNDEFINED	vUNDEF
 
-bool Features::Expand(chrlen expLen, const ChromSizes& cSizes, UniBedReader::eAction action)
+bool Features::Expand(chrlen expLen, const ChromSizes* cSizes, UniBedReader::eAction action)
 {
 	if (!expLen)	return false;
 	chrlen	cRmvCnt = 0, tRmvCnt = 0;	// counters of removed items in current chrom and total removed items
 
 	for (auto& c : Container()) {							// loop through chroms
-		const chrlen cLen = cSizes.IsFilled() ? cSizes[c.first] : 0;	// chrom length
+		const chrlen cLen = (cSizes && cSizes->IsFilled()) ? (*cSizes)[c.first] : 0;	// chrom length
 		const auto itEnd = ItemsEnd(c.second.Data);
 		auto it = ItemsBegin(c.second.Data);
 

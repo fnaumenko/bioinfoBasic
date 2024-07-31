@@ -2,7 +2,7 @@
 ChromData.h
 Provides chromosomes data functionality
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 07/18/2024
+Last modified: 07/31/2024
 ***********************************************************/
 #pragma once
 
@@ -38,7 +38,7 @@ public:
 	const T& At(chrid cID) const { return _cMap.at(cID); }
 	T& At(chrid cID) { return _cMap.at(cID); }
 
-	const T& operator[] (chrid cID) const { return _cMap(cID); }
+	const T& operator[] (chrid cID) const { return _cMap[cID]; }
 	T& operator[] (chrid cID) { return _cMap[cID]; }
 
 	// Searches the container for a cID and returns an iterator to the element if found,

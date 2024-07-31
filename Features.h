@@ -331,10 +331,10 @@ public:
 	// Increases the size of each feature in both directions.
 	// If expanded feature starts from negative, or ends after chrom length, it is fitted.
 	//	@param expLen: value on which Start should be decreased, End should be increased
-	//	@param cSizes: chrom sizes for control
+	//	@param cSizes: chromosome sizes for chromosome's length control or NULL if no control
 	//	@param action: action for overlapping features
 	//	@returns: true if the expansion was completed successfully
-	bool Expand(chrlen expLen, const ChromSizes & cSizes, UniBedReader::eAction action);
+	bool Expand(chrlen expLen, const ChromSizes* cSizes, UniBedReader::eAction action);
 
 	// Checks whether all features length exceed given length, throws exception otherwise.
 	//	@param len: given control length
