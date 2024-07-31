@@ -22,8 +22,8 @@ void DiscardNonOverlapRegions(T rgns[2], fraglen minOverlapLen)
 
 	// unconditional discarde the region
 	auto discardeRgn = [&](BYTE s) {
-		rgns[s].Discard(it[s]);
-		suspended &= ~(1 << s);	// reset suspended s
+		rgns[s].Discard(it[s]);		// call from object only in FGStest
+		suspended &= ~(1 << s);		// reset suspended s
 		it[s]++;
 	};
 	// unconditional discarde the regions; always applied to the left region
@@ -45,7 +45,7 @@ void DiscardNonOverlapRegions(T rgns[2], fraglen minOverlapLen)
 			if (T::IsWeak(it[s]))	discardeRgn(s), valid = false;
 			if (T::IsWeak(it[!s]))	discardeRgn(!s), valid = false;
 			if (valid) {
-				rgns[0].Accept(it);
+				rgns[0].Accept(it);		// the index doesn't matter because when calling from an object (in FGStest) it uses common classes
 				s ^= end(s) < end(!s);	// flip by condition
 				it[!s]++;
 				suspended |= 1 << s;	// set suspended s

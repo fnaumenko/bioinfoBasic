@@ -949,23 +949,22 @@ struct Region
 
 	Region(chrlen start = 0, chrlen end = 0) : Start(start), End(end) {}
 
-	Region(const Region& r) { memcpy(this, &r, sizeof(Region)); }
+	Region(const Region& rgn) { memcpy(this, &rgn, sizeof(Region)); }
 
-	// Constructs expanded Read (fragment)
-	//	@param r: original read
-	//	@param extLen: extended length
-	//	@param expLen: the size by which the Read will be increased on the right or left
-	//	@param reverse: Read if read is reversed (neg strand)
-	Region(const Region& r, fraglen expLen, bool reverse);
+	// Constructs region expanded to the right or left (i.e. fragment)
+	//	@param rgn: original read
+	//	@param len: length of instance after expansion
+	//	@param reverse: if true then expand to the left, otherwise to the right
+	Region(const Region& rgn, fraglen len, bool reverse);
 
 	// Initializes instance
 	void Set(chrlen start = 0, chrlen end = 0) { Start = start; End = end; }
 
 	chrlen Length()	const { return End - Start; } // The End is not included in the bases https://genome.ucsc.edu/FAQ/FAQformat.html#format1
 
-	bool Empty()	const { return !End; }
-
 	chrlen Centre()	const { return Start + (Length() >> 1); }
+
+	bool Empty()	const { return !End; }
 
 	bool operator==(const Region& r) const { return !(*this != r); }
 	bool operator!=(const Region& r) const { return memcmp(this, &r, sizeof(Region)); }
@@ -975,17 +974,17 @@ struct Region
 	// Returns true if this instance is invalid
 	bool Invalid() const { return Start >= End; }
 
-	// Returns true if Region r is covered by this instance.
-	//	@param r: tested Region; should be sorted by start position
-	bool PlainCover(const Region& r) const { return r.End <= End && r.Start >= Start; }
+	// Returns true if rgn is covered by this instance.
+	//	@param rgn: tested Region; should be sorted by start position
+	bool PlainCover(const Region& rgn) const { return rgn.End <= End && rgn.Start >= Start; }
 
-	// Returns true if Region r is adjoined with this instance.
-	//	@param r: tested Region; should be sorted by start position
-	bool Adjoin(const Region& r) const { return r.Start == End; }
+	// Returns true if rgn is adjoined with this instance.
+	//	@param rgn: tested Region; should be sorted by start position
+	bool Adjoin(const Region& rgn) const { return rgn.Start == End; }
 
-	// Returns true if Region r is crossed with this instance.
-	//	@param r: tested Region; should be sorted by start position
-	bool Cross(const Region& r) const { return r.Start < End && r.End > Start; }
+	// Returns true if rgn is crossed with this instance.
+	//	@param rgn: tested Region; should be sorted by start position
+	bool Cross(const Region& rgn) const { return rgn.Start < End && rgn.End > Start; }
 
 	// Compares two Regions by start position. For sorting a container.
 	static bool CompareByStartPos(const Region& r1, const Region& r2) {	return r1.Start < r2.Start;	}
@@ -997,13 +996,6 @@ struct Region
 	void Expand(chrlen expLen, chrlen cLen);
 
 	void Print() const { cout << Start << TAB << End << LF; }
-
-private:
-	void ExtStart(fraglen expLen) { Start = End - expLen; }
-	void ExtEnd	 (fraglen expLen) { End = Start + expLen; }
-
-	typedef void (Region::* tExpSide)(fraglen);
-	static tExpSide fExpSide[2];
 };
 
 // 'Regions' represents a container of defined regions within chromosome

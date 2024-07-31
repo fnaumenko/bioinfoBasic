@@ -849,12 +849,15 @@ const string Chrom::NoChromMsg()
 
 /************************ struct Region ************************/
 
-Region::tExpSide Region::fExpSide[2] = { &Region::ExtEnd, &Region::ExtStart };
-
-Region::Region(const Region& r, fraglen expLen, bool reverse)
+Region::Region(const Region& rgn, fraglen len, bool reverse)
 {
-	memcpy(this, &r, sizeof(Region));
-	(this->*fExpSide[reverse])(expLen);
+	static void (*expand[])(Region* r, fraglen l) = {
+		[](Region* r, fraglen l) { r->End = r->Start + l; },
+		[](Region* r, fraglen l) { r->Start = r->End - l; }
+	};
+
+	memcpy(this, &rgn, sizeof(Region));
+	expand[reverse](this, len);
 }
 
 void Region::Expand(chrlen expLen, chrlen cLen)
