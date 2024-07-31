@@ -1,6 +1,6 @@
 /**********************************************************
 Feature.cpp
-Last modified: 07/28/2024
+Last modified: 07/31/2024
 ***********************************************************/
 #include "Features.h"
 
@@ -116,9 +116,9 @@ chrlen Features::GetMinDistance() const
 //const chrlen UNDEFINED  = std::numeric_limits<int>::max();
 #define UNDEFINED	vUNDEF
 
-bool Features::Extend(chrlen extLen, const ChromSizes& cSizes, UniBedReader::eAction action)
+bool Features::Expand(chrlen expLen, const ChromSizes& cSizes, UniBedReader::eAction action)
 {
-	if (!extLen)	return false;
+	if (!expLen)	return false;
 	chrlen	cRmvCnt = 0, tRmvCnt = 0;	// counters of removed items in current chrom and total removed items
 
 	for (auto& c : Container()) {							// loop through chroms
@@ -126,10 +126,9 @@ bool Features::Extend(chrlen extLen, const ChromSizes& cSizes, UniBedReader::eAc
 		const auto itEnd = ItemsEnd(c.second.Data);
 		auto it = ItemsBegin(c.second.Data);
 
-		it->Extend(extLen, cLen);			// first item
 		cRmvCnt = 0;
 		for (it++; it != itEnd; it++) {
-			it->Extend(extLen, cLen);						// next item: compare to previous
+			it->Expand(expLen, cLen);						// next item: compare to previous
 			if (it->Start <= prev(it)->End)				// overlapping feature
 				if (action == UniBedReader::eAction::JOIN) {
 					cRmvCnt++;
@@ -140,8 +139,8 @@ bool Features::Extend(chrlen extLen, const ChromSizes& cSizes, UniBedReader::eAc
 					tRmvCnt += cRmvCnt,
 					cRmvCnt = 0;
 				else if (action == UniBedReader::eAction::ABORT) {
-					//Err("overlapping feature with an additional extension of " + to_string(extLen)).Throw(false, true);
-					dout << "overlapping feature with an additional extension of " << extLen << LF;
+					//Err("overlapping feature with an additional extension of " + to_string(expLen)).Throw(false, true);
+					dout << "overlapping feature with an additional extension of " << expLen << LF;
 					return false;
 				}
 				else if (prev(it)->Start != UNDEFINED)		// OMIT: unmarked item

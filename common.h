@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 07/28/2024
+Last modified: 07/31/2024
 ***********************************************************/
 #pragma once
 
@@ -949,15 +949,14 @@ struct Region
 
 	Region(chrlen start = 0, chrlen end = 0) : Start(start), End(end) {}
 
-	// Constructs Read
-	//	@param r: original read
 	Region(const Region& r) { memcpy(this, &r, sizeof(Region)); }
 
-	// Constructs extended Read (fragment)
+	// Constructs expanded Read (fragment)
 	//	@param r: original read
 	//	@param extLen: extended length
-	//	@param reverse: true if read is reversed (neg strand)
-	Region(const Region& r, fraglen extLen, bool reverse);
+	//	@param expLen: the size by which the Read will be increased on the right or left
+	//	@param reverse: Read if read is reversed (neg strand)
+	Region(const Region& r, fraglen expLen, bool reverse);
 
 	// Initializes instance
 	void Set(chrlen start = 0, chrlen end = 0) { Start = start; End = end; }
@@ -991,20 +990,20 @@ struct Region
 	// Compares two Regions by start position. For sorting a container.
 	static bool CompareByStartPos(const Region& r1, const Region& r2) {	return r1.Start < r2.Start;	}
 
-	// Extends Region with chrom length control.
-	// If extended Region starts from negative, or ends after chrom length, it is fitted.
-	//	@param extLen: extension length in both directions
+	// Increases the size of region in both directions by controlling length.
+	// If expanded Region starts from negative, or ends after chrom length, it is fitted.
+	//	@param expLen: the size by which the interval will be increased on both sides
 	//	@param cLen: chrom length; if 0 then no check
-	void Extend(chrlen extLen, chrlen cLen);
+	void Expand(chrlen expLen, chrlen cLen);
 
 	void Print() const { cout << Start << TAB << End << LF; }
 
 private:
-	void ExtStart(fraglen extLen) { Start = End - extLen; }
-	void ExtEnd	 (fraglen extLen) { End = Start + extLen; }
+	void ExtStart(fraglen expLen) { Start = End - expLen; }
+	void ExtEnd	 (fraglen expLen) { End = Start + expLen; }
 
-	typedef void (Region::* tExtStartEnd)(fraglen);
-	static tExtStartEnd fExtStartEnd[2];
+	typedef void (Region::* tExpSide)(fraglen);
+	static tExpSide fExpSide[2];
 };
 
 // 'Regions' represents a container of defined regions within chromosome

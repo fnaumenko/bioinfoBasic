@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 07/26/2024
+Last modified: 07/31/2024
 ***********************************************************/
 
 #include "common.h"
@@ -849,18 +849,18 @@ const string Chrom::NoChromMsg()
 
 /************************ struct Region ************************/
 
-Region::tExtStartEnd Region::fExtStartEnd[2] = { &Region::ExtEnd, &Region::ExtStart };
+Region::tExpSide Region::fExpSide[2] = { &Region::ExtEnd, &Region::ExtStart };
 
-Region::Region(const Region& r, fraglen extLen, bool reverse)
+Region::Region(const Region& r, fraglen expLen, bool reverse)
 {
 	memcpy(this, &r, sizeof(Region));
-	(this->*fExtStartEnd[reverse])(extLen);
+	(this->*fExpSide[reverse])(expLen);
 }
 
-void Region::Extend(chrlen extLen, chrlen cLen)
+void Region::Expand(chrlen expLen, chrlen cLen)
 {
-	Start -= extLen > Start ? Start : extLen;
-	End += extLen;
+	Start -= expLen > Start ? Start : expLen;
+	End += expLen;
 	if (cLen && End > cLen)	End = cLen;
 }
 

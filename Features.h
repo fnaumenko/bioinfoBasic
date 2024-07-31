@@ -2,7 +2,7 @@
 Feature.h
 BED feature and features collection
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 07/29/2024
+Last modified: 07/31/2024
 ***********************************************************/
 #pragma once
 
@@ -328,13 +328,13 @@ public:
 	friend class JointedBeds;	// to access GetIter(chrid)
 #endif
 
-	// Expands all features positions on the fixed length in both directions.
-	// If extended feature starts from negative, or ends after chrom length, it is fitted.
-	//	@param extLen: distance on which Start should be decreased, End should be increased, or inside out if it os negative
-	//	@param cSizes: chrom sizes
+	// Increases the size of each feature in both directions.
+	// If expanded feature starts from negative, or ends after chrom length, it is fitted.
+	//	@param expLen: value on which Start should be decreased, End should be increased
+	//	@param cSizes: chrom sizes for control
 	//	@param action: action for overlapping features
-	//	@returns: true if positions have been changed
-	bool Extend(chrlen extLen, const ChromSizes & cSizes, UniBedReader::eAction action);
+	//	@returns: true if the expansion was completed successfully
+	bool Expand(chrlen expLen, const ChromSizes & cSizes, UniBedReader::eAction action);
 
 	// Checks whether all features length exceed given length, throws exception otherwise.
 	//	@param len: given control length
