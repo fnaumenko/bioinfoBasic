@@ -129,7 +129,7 @@ bool Features::Expand(chrlen expLen, const ChromSizes* cSizes, UniBedReader::eAc
 		cRmvCnt = 0;
 		for (it++; it != itEnd; it++) {
 			it->Expand(expLen, cLen);						// next item: compare to previous
-			if (it->Start <= prev(it)->End)				// overlapping feature
+			if (it->Start <= prev(it)->End)					// overlapping feature
 				if (action == UniBedReader::eAction::JOIN) {
 					cRmvCnt++;
 					it->Start = UNDEFINED;					// mark item as removed
@@ -140,7 +140,7 @@ bool Features::Expand(chrlen expLen, const ChromSizes* cSizes, UniBedReader::eAc
 					cRmvCnt = 0;
 				else if (action == UniBedReader::eAction::ABORT) {
 					//Err("overlapping feature with an additional extension of " + to_string(expLen)).Throw(false, true);
-					dout << "overlapping feature with an additional extension of " << expLen << LF;
+					dout << "overlapping feature with an additional expansion of " << expLen << LF;
 					return false;
 				}
 				else if (prev(it)->Start != UNDEFINED)		// OMIT: unmarked item
@@ -152,14 +152,14 @@ bool Features::Expand(chrlen expLen, const ChromSizes* cSizes, UniBedReader::eAc
 		vector<Featr> newItems;
 		newItems.reserve(_items.size() - tRmvCnt);
 		tRmvCnt = 0;
-		for (auto& c : Container()) {							// loop through chroms
+		for (auto& c : Container()) {						// loop through chroms
 			ItemIndices& data = c.second.Data;
 			const auto itEnd = ItemsEnd(data);
 			cRmvCnt = 0;
 			for (auto it = ItemsBegin(data); it != itEnd; it++)
 				if (it->Start == UNDEFINED)		cRmvCnt++;	// skip removed item
 				else			newItems.emplace_back(*it);
-			data.FirstInd -= tRmvCnt;				// correct indexes
+			data.FirstInd -= tRmvCnt;						// correct indexes
 			data.LastInd -= (tRmvCnt += cRmvCnt);
 		}
 		_items.swap(newItems);
