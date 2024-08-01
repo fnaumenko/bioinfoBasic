@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 07/31/2024
+Last modified: 08/01/2024
 ***********************************************************/
 
 #include "common.h"
@@ -166,7 +166,9 @@ void PrintSolidLine(USHORT lw)
 #ifdef OS_Windows
 	wcout << setw(++lw) << setfill(L'\304') << L'\n';
 #ifdef _DUP_OUTPUT
-	dout.File() << string(lw, HPH) << LF;
+	const string stroke{ char(0xE2),char(0x94),char(0x80) };	// long horizontal stroke symbol
+	for (USHORT i = 0; i < lw; dout.File() << stroke, i++);	dout.File() << LF;
+	//dout.File() << string(lw, HPH) << LF;
 #endif
 #else
 	for (USHORT i = 0; i < lw; dout << "─", i++);	dout << LF;
