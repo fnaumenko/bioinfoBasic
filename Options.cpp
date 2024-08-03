@@ -1,6 +1,6 @@
 /**********************************************************
 Options.cpp
-Last modified: 07/26/2024
+Last modified: 08/03/2024
 ***********************************************************/
 #include "Options.h"
 
@@ -536,6 +536,17 @@ int Options::Parse(int argc, char* argv[], const char* obligPar)
 	return i * res;
 }
 
+const string Options::DefaultFileNameHelp(const string& action, const string& defName, const string& ext)
+{
+	return action + " to specified file\nor to " + defName + ext + " if <name> is not specified";
+}
+
+const char* Options::OptFileNameHelp(const char* action, const char* progParam, const string& suffix)
+{
+	static string ret = DefaultFileNameHelp(action, progParam, suffix);
+	return ret.c_str();
+}
+
 #ifdef _DUP_OUTPUT
 const string Options::DoutFileExt(const string& ext)
 {
@@ -544,8 +555,14 @@ const string Options::DoutFileExt(const string& ext)
 
 const char* Options::DoutHelp(const char* progParam, const string& doutFileExt)
 {
-	static string ret = "duplicate standard output to specified file\nor to " +
-		string(progParam) + DoutFileExt(doutFileExt) + " if <name> is not specified";
+	static string ret = DefaultFileNameHelp(
+		"duplicate standard output",
+		progParam,
+		DoutFileExt(doutFileExt)
+	);
+		//string(progParam) + DoutFileExt(doutFileExt) + " if <name> is not specified";
+	//static string ret = "duplicate standard output to specified file\nor to " +
+	//	string(progParam) + DoutFileExt(doutFileExt) + " if <name> is not specified";
 	return ret.c_str();
 }
 
