@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 07/31/2024
+Last modified: 08/04/2024
 ***********************************************************/
 #pragma once
 
@@ -615,12 +615,13 @@ public:
 
 	// Returns composed file name
 	//	@param oName: used as a base output short or long file name, or iutput directory name, or NULL. 
-	//	If NULL then the input file name is used as a base 
-	//	@param iName: input short or long file name
-	//	@param suffix: output file suffix (can be extention, started with DOT), empty by default. 
+	//	@param defName: input short or long default file name. Used if 'oName' is NULL.
+	//	@param suffix: added to the 'defName' only suffix, empty by default. 
 	//	If output file extention matches the extension of the input file, the suffix '_out' is added to the resulting file name
-	//	@throws Err::D_NONE if directory in name doesn't exist
-	static string const ComposeFileName(const char* oName, const char* iName, const string& suffix = strEmpty);
+	//	@param ext: started with DOT output file extention, empty by default. 
+	//	@throws Err::D_NONE if directory within 'oName' doesn't exist
+	static string const ComposeFileName(
+		const char* oName, const char* defName, const string& suffix = strEmpty, const string& ext = strEmpty);
 
 	// === files in dir
 

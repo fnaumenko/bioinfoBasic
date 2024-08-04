@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 08/01/2024
+Last modified: 08/04/2024
 ***********************************************************/
 
 #include "common.h"
@@ -505,40 +505,43 @@ string const FS::MakePath(const string& name)
 	return name[name.length() - 1] == SLASH ? name : name + SLASH;
 }
 
-string const FS::ComposeFileName(const char* oName, const char* iName, const string& suffix)
+string const FS::ComposeFileName(const char* oName, const char* defName, const string& suffix, const string& ext)
 {
-	bool nameMatches = true;		// if true then check for in/out name matches
-	bool addSuffix = suffix.length();
-	const string baseName = FileNameWithoutExt(iName);
-	string res;
+	bool nameMatches = true;	// if true then check for in/out name matches
+	bool addSuffix = false;
+	const string baseName = FileNameWithoutExt(defName);
+	string compName;			// resulting compose name
 	// returns short iName without extention if suffix is set
-	auto getShortName = [&]() { return ShortFileName(addSuffix ? baseName : iName); };
+	auto getShortName = [&]() { return ShortFileName(addSuffix ? baseName : defName); };
 
 	if (oName)
 		if (IsDirExist(oName))
-			res = MakePath(oName) + ShortFileName(baseName);
+			compName = MakePath(oName) + ShortFileName(baseName);
 		else {
 			auto dir = DirName(oName);
 			if(dir != oName)		// dir is the same as oName in case of simple oName
 				CheckDirExist(dir.c_str());
-			res = oName;
-			nameMatches = res == baseName;
+			compName = ext.length() ? FileNameWithoutExt(oName) : oName;
+			nameMatches = compName == baseName;
 		}
-	else
-		res = getShortName();
+	else {
+		compName = FileNameWithoutExt(getShortName());
+		addSuffix = suffix.length();
+	}
 
 	// the condition makes sense and can only be satisfied if the suffix is an extention
 	if (addSuffix) {
 		if (suffix[0] == DOT) {
-			if (nameMatches && !strcmp(GetExt(iName).c_str(), suffix.c_str() + 1))
-				res += "_out";
+			if (nameMatches && !strcmp(GetExt(defName).c_str(), suffix.c_str() + 1))
+				compName += "_out";
 		}
 		else if (!nameMatches)
 			addSuffix = false;
 	}
 
-	if(addSuffix)	res += suffix;
-	return res;
+	if(addSuffix)	compName += suffix;
+	compName += strEmpty;
+	return compName;
 }
 
 

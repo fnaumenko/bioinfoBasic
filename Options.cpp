@@ -1,6 +1,6 @@
 /**********************************************************
 Options.cpp
-Last modified: 08/03/2024
+Last modified: 08/04/2024
 ***********************************************************/
 #include "Options.h"
 
@@ -536,14 +536,14 @@ int Options::Parse(int argc, char* argv[], const char* obligPar)
 	return i * res;
 }
 
-const string Options::DefaultFileNameHelp(const string& action, const string& defName, const string& ext)
+const string Options::DefaultFileNameHelp(const string& action, const string& defName, const string& suffix, const string& ext)
 {
-	return action + " to specified file\nor to " + defName + ext + " if <name> is not specified";
+	return action + " to <name>" + ext + " file\nor to " + defName + suffix + ext + " file if <name> is not specified";
 }
 
-const char* Options::OptFileNameHelp(const char* action, const char* progParam, const string& suffix)
+const char* Options::OptFileNameHelp(const char* action, const char* progParam, const string& suffix, const string& ext)
 {
-	static string ret = DefaultFileNameHelp(action, progParam, suffix);
+	static string ret = DefaultFileNameHelp(action, progParam, suffix, ext);
 	return ret.c_str();
 }
 
@@ -569,8 +569,8 @@ const char* Options::DoutHelp(const char* progParam, const string& doutFileExt)
 
 void Options::SetDoutFile(int opt, const char* name, bool altCondition, const string& doutFileExt)
 {
-	if (altCondition || Options::Assigned(opt)) {
-		auto compName = FS::ComposeFileName(Options::GetSVal(opt), name, DoutFileExt(doutFileExt));
+	if (altCondition || Assigned(opt)) {
+		auto compName = FS::ComposeFileName(GetSVal(opt), name, DoutFileExt(doutFileExt));
 		if (dout.OpenFile(compName))
 			Err(Err::F_OPEN, compName.c_str()).Throw();
 	}

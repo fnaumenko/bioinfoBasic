@@ -2,7 +2,7 @@
 Options.h
 Provides managing executable options
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 08/03/2024
+Last modified: 08/04/2024
 ***********************************************************/
 #pragma once
 
@@ -246,7 +246,13 @@ private:
 
 	static int PrintSummary(bool prTitle);
 
-	static const string DefaultFileNameHelp(const string& action, const string& defName, const string& ext);
+	// Returns help string to output to an optional file
+	//	@param action: action string
+	//	@param progParam: help name of programme parameter
+	//	@param suffix: output file suffix
+	//	@param ext: output file extention, empty by default
+	//	@returns: string containing help to output file
+	static const string DefaultFileNameHelp(const string& action, const string& defName, const string& suffix, const string& ext = strEmpty);
 
 #ifdef _DUP_OUTPUT
 	// Returns duplicate output file extention, or default extention if not set
@@ -307,8 +313,10 @@ public:
 	// Returns help string to output to an optional file
 	//	@param action: action string
 	//	@param progParam: help name of programme parameter
-	//	@param doutFileExt: output file suffix
-	static const char* OptFileNameHelp(const char* action, const char* progParam, const string& suffix);
+	//	@param suffix: output file suffix
+	//	@param ext: output file extention, empty by default
+	//	@returns: static C-string containing help to output file
+	static const char* OptFileNameHelp(const char* action, const char* progParam, const string& suffix, const string& ext = strEmpty);
 
 #ifdef _DUP_OUTPUT
 	// Returns help string to duplicate standard output
