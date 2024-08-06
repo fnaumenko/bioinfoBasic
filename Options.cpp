@@ -1,6 +1,6 @@
 /**********************************************************
 Options.cpp
-Last modified: 08/04/2024
+Last modified: 08/06/2024
 ***********************************************************/
 #include "Options.h"
 
@@ -56,7 +56,7 @@ bool Options::Option::IsValidFloat(const char* str, bool isInt, bool isPair)
 			if (isPair && c == EnumDelims[2])	break;	// don't check the substring after ';'
 			else goto end;				// wrong symbol
 	if (isInt && dotCnt && !eCnt)		// e.g. 1.5e1 is acceptable as int
-		cerr << Warning << ToStr(false) << SepSCl << "float value "
+		cerr << Warning << ToStr() << SepSCl << "float value "
 		<< (isPair ? "in " : strEmpty)
 		<< str0 << " will be treated is integer\n";
 	return true;
@@ -265,7 +265,21 @@ string Options::Option::ToStr(bool prVal) const
 {
 	string res(optTitle);
 	res += NameToStr(true);
-	if (prVal)	res += sSPACE + string(SVal);
+	if (prVal && ValType != valType::tUNDEF) {
+		res += sSPACE;
+		switch (ValType) {
+		case tCHAR:
+		case tNAME:	res += string(SVal);	break;
+		case tFLOAT: {
+			// to print value with actual precision
+			ostringstream os;
+			os << NVal;
+			res += os.str();
+			break;
+		}
+		default:	res += to_string(int(NVal));
+		}
+	}
 	return res;
 }
 
@@ -374,7 +388,7 @@ int Options::Option::GetEnumInd(const char* val)
 
 int Options::Option::PrintWrong(const char* val, const string& msg) const
 {
-	cerr << ToStr(false) << SepSCl << (msg == strEmpty ? "wrong " + sValue : msg);
+	cerr << ToStr() << SepSCl << (msg == strEmpty ? "wrong " + sValue : msg);
 	if (val) cerr << SPACE << val;
 	cerr << LF;
 	return 1;

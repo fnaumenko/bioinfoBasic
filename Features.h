@@ -2,7 +2,7 @@
 Feature.h
 BED feature and features collection
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 07/31/2024
+Last modified: 08/06/2024
 ***********************************************************/
 #pragma once
 
@@ -322,11 +322,11 @@ public:
 	// Returns true if features length distribution is degenerate
 	bool NarrowLenDistr() const { return _narrowLenDistr; }
 
-	// Return min distance between features boundaries
-	chrlen GetMinDistance() const;
-
 	friend class JointedBeds;	// to access GetIter(chrid)
 #endif
+
+	// Return min distance between features boundaries
+	chrlen GetMinDistance() const;
 
 	// Increases the size of each feature in both directions.
 	// If expanded feature starts from negative, or ends after chrom length, it is fitted.
