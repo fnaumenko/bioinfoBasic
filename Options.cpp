@@ -1,6 +1,6 @@
 /**********************************************************
 Options.cpp
-Last modified: 08/06/2024
+Last modified: 08/09/2024
 ***********************************************************/
 #include "Options.h"
 
@@ -85,7 +85,7 @@ void Options::Option::PrintSubLine(char* buff, const char* str, const char* subS
 	if (subStr) {	// is substring ended by LF exist?
 		// form substring
 		size_t strLen = subStr - str;
-		memcpy(buff, str, strLen);	// instead of strncpy(buff, str, strLen);
+		memcpy(buff, str, strLen);				// instead of strncpy(buff, str, strLen);
 		buff[strLen] = 0;
 		PrintTransformDescr(buff, vals, cnt);	// output enum values
 		cout << LF;
@@ -95,7 +95,9 @@ void Options::Option::PrintSubLine(char* buff, const char* str, const char* subS
 		PrintSubLine(buff, str, subStr, vals, cnt);
 	}
 	else {			// output rest of initial string without LF
-		memcpy(buff, str, strlen(str)); // instead of strcpy(buff, str);
+		auto strLen = strlen(str);
+		memcpy(buff, str, strLen);				// instead of strcpy(buff, str);
+		buff[strLen] = 0;
 		PrintTransformDescr(buff, vals, cnt);
 	}
 }
@@ -527,8 +529,8 @@ int Options::Parse(int argc, char* argv[], const char* obligPar)
 		token = argv[i];
 		nextToken = argv[i + 1];
 		if (*token != HPH) {			// token is not an option
-			if (i < argc - 1 				// not a last token
-				&& *nextToken == HPH)		// next token is an option
+			if (i < argc - 1 			// not a last token
+				&& *nextToken == HPH)	// next token is an option
 				cerr << token << ": neither option nor parameter" << LF, res = -1;
 			break;
 		}
