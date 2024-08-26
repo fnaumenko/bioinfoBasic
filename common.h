@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 08/04/2024
+Last modified: 08/26/2024
 ***********************************************************/
 #pragma once
 
@@ -978,6 +978,26 @@ struct Region
 	// Returns true if rgn is covered by this instance.
 	//	@param rgn: tested Region; should be sorted by start position
 	bool PlainCover(const Region& rgn) const { return rgn.End <= End && rgn.Start >= Start; }
+
+	// Returns true if this instance is on the right of tested region 
+	//	@param rgn: tested region
+	bool ToTheRight(const Region& rgn) const { return Start > rgn.End; }
+	// Returns true if this instance is on the left of tested region 
+	//	@param rgn: tested region
+	bool ToTheLeft (const Region& rgn) const { return End < rgn.Start; }
+
+	// Returns true if this instance is on the right of tested region at a distance of not less than the specified one
+	//	@param rgn: tested region
+	//	@param distance: minimal distance
+	bool ToTheRight(const Region& rgn, chrlen distance) const {
+		return Start > rgn.End && Start - rgn.End >= distance;
+	}
+	// Returns true if this instance is on the left of tested region  at a distance of not less than the specified one
+	//	@param rgn: tested region
+	//	@param distance: minimal distance
+	bool ToTheLeft(const Region& rgn, chrlen distance) const {
+		return rgn.Start > End  && rgn.Start - End >= distance;
+	}
 
 	// Returns true if rgn is adjoined with this instance.
 	//	@param rgn: tested Region; should be sorted by start position
