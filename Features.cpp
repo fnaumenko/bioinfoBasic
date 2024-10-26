@@ -1,6 +1,6 @@
 /**********************************************************
 Feature.cpp
-Last modified: 08/06/2024
+Last modified: 10/26/24
 ***********************************************************/
 #include "Features.h"
 
@@ -42,7 +42,7 @@ void Features::AddChrom(chrid cID, size_t cnt)
 	AddVal(cID, ItemIndices(lastInd - cnt, lastInd));
 }
 
-bool Features::operator()()
+bool Features::operator()(bool)
 {
 	if (_file->IsJoined()) {
 		_items.back().End = _file->ItemEnd();

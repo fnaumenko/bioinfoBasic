@@ -2,7 +2,7 @@
 Feature.h
 BED feature and features collection
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 08/06/2024
+Last modified: 10/26/24
 ***********************************************************/
 #pragma once
 
@@ -259,7 +259,7 @@ public:
 
 	// Treats current item
 	//	@returns: true if item is accepted
-	bool operator()();
+	bool operator()(bool);
 
 	// Closes current chrom, open next one
 	//	@param cID: current chromosome's ID
