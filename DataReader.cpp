@@ -271,7 +271,6 @@ UniBedReader::UniBedReader(
 	BYTE scoreNumb,
 	BYTE dupLevel,
 	eOInfo oinfo,
-	bool checkSorted,
 	bool abortInval,
 	bool preReading
 ) :
@@ -400,7 +399,7 @@ FBedReader::FBedReader(
 ) :
 	_isJoin(action == eAction::JOIN),
 	_overlAction(action),
-	UniBedReader(fName, FT::BED, cSizes, scoreNmb, 0, oinfo, true, abortInval)
+	UniBedReader(fName, FT::BED, cSizes, scoreNmb, 0, oinfo, abortInval)
 {
 	switch (action) {
 	case eAction::ACCEPT:

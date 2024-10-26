@@ -382,7 +382,6 @@ public:
 	//	@param scoreNumb: number of 'score' filed (0 by default for ABED and BAM)
 	//	@param dupLevel: number of additional duplicates allowed; BYTE_UNDEF - keep all additional duplicates
 	//	@param oinfo: output stat info level
-	//	@param checkSorted: true if items should be sorted within chrom
 	//	@param abortInval: true if invalid instance should be completed by throwing exception
 	//	@param preReading: true if the first line will be pre-read
 	UniBedReader(
@@ -392,8 +391,7 @@ public:
 		BYTE scoreNumb,
 		BYTE dupLevel,
 		eOInfo oinfo, 
-		bool checkSorted,
-		bool abortInval,
+		bool abortInval = true,
 		bool preReading = false
 	);
 
@@ -537,7 +535,6 @@ public:
 	//	@param cSizes: chrom sizes
 	//	@param dupLevel: number of additional duplicates allowed; BYTE_UNDEF - keep all additional duplicates
 	//	@param oinfo: verbose level
-	//	@param checkSorted: true if reads should be sorted within chrom
 	//	@param abortInval: true if invalid instance should be completed by throwing exception
 	//	@param preReading: true if the first line will be pre-read
 	RBedReader(
@@ -545,10 +542,9 @@ public:
 		ChromSizes* cSizes,
 		BYTE dupLevel,
 		eOInfo oinfo,
-		bool checkSorted = true,
 		bool abortInval = true,
 		bool preReading = false
-	) : UniBedReader(fName, FT::GetType(fName, true), cSizes, 0, dupLevel, oinfo, checkSorted, abortInval, preReading)
+	) : UniBedReader(fName, FT::GetType(fName, true), cSizes, 0, dupLevel, oinfo, abortInval, preReading)
 	{}
 
 	// Returns the most frequent Read length
