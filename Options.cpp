@@ -1,6 +1,6 @@
 /**********************************************************
 Options.cpp
-Last modified: 08/04/2024
+Last modified: 10/26/2024
 ***********************************************************/
 #include "Options.h"
 
@@ -366,8 +366,9 @@ int Options::Option::GetEnumInd(const char* val)
 	for (char c = *val; c; c = *(val + ++i))
 		if (!isalpha(c))	return -2;
 	// detect value
+	auto arrSVals = (const char**)SVal;
 	for (i = 0; i < MaxNVal; i++)
-		if (!_stricmp(val, ((const char**)SVal)[i]))
+		if (!_stricmp(val, arrSVals[i]))
 			return i;
 	return -1;
 }

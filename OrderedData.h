@@ -2,12 +2,14 @@
 OrderedData.h
 Provides chromosomally sorted data functionality
 2022 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 06/19/2024
+Last modified: 10/26/2024
 ***********************************************************/
 #pragma once
 
 #include "ChromData.h"
 #include <assert.h>
+
+//#define MY_DEBUG
 
 enum eStrand { TOTAL = 0, FWD, RVS, CNT };
 
@@ -23,6 +25,11 @@ static const BYTE	ColorLEN = 11;
 //	and implements a single method for gradual filling (incrementing) coverage
 class AccumCover : public covmap
 {
+#ifdef MY_DEBUG
+	// Checks hint for emplace_hint() method
+	void CheckHint(const covmap::iterator& hint, chrlen newPos) const;
+#endif
+
 protected:
 	// Calls functor for each point that put the chrom coverage
 	template<typename Functor>
@@ -39,20 +46,11 @@ protected:
 	}
 
 public:
-	// Default constructor
-	//AccumCover() = default;
+	// Adds region to accumulate the coverage
+	//	@param rng: added region
+	//	@param sorted: true if input alignment is sorted
+	void AddRegion(const Region& rgn, bool sorted = false);
 
-	//// Copy constructor
-	//AccumCover(const covmap& cv) : covmap(cv) {}
-
-	//AccumCover(covmap::const_iterator first, covmap::const_iterator last) : covmap(first, last) {}
-	//AccumCover(const AccumCover&) = default;
-	//AccumCover(AccumCover&) = default;
-	//AccumCover(AccumCover&&) = default;
-	//~AccumCover() = default;
-
-	// Adds fragment to accumulate the coverage
-	void AddRegion(const Region& frag);
 #ifdef _WIG_READER
 	// Adds next sequential region with value
 	void AddNextRegion(const Region& rgn, coval val);

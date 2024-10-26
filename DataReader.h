@@ -2,7 +2,7 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 07/29/2024
+Last modified: 10/26/2024
 ***********************************************************/
 #pragma once
 
@@ -310,7 +310,7 @@ private:
 	BYTE	_duplLevel = 0;		// current allowed number of duplicates
 	bool	_strand = true;		// current item's strand
 	bool	_strand0 = true;	// previous item's strand; first sorted read is always negative
-	bool	_checkSorted;		// checking for unsorted items 
+	//bool	_checkSorted;		// checking for unsorted items 
 	bool	_readItem = true;	// if true then read next item, otherwise pre-read first item or nothing if _preItem is TRUE
 	bool	_preItem = false;	// if true then pre-read first item and set to FALSE after that
 	bool	_prLFafterName;
@@ -321,9 +321,10 @@ private:
 	void ResetChrom();
 
 	// Validate item
-	//	@param cLen: current chrom length or 0 if _cSizes is undefined
+	//	@param cLen[in]: current chrom length or 0 if _cSizes is undefined
+	//	@param unsorted[out]: true if unsorting is detected
 	//	@returns: true if item is valid
-	bool CheckItem(chrlen cLen);
+	bool CheckItem(chrlen cLen, bool& unsorted);
 
 	// Validate item by final class
 	//	@returns: true if item is valid
@@ -431,8 +432,9 @@ public:
 			}
 			else if (skipChrom)		continue;
 			_file->InitRegion(_rgn);
-			if (CheckItem(cLen)) {
-				cItemCnt += func(); 					// treat entry
+			bool unsorted;
+			if (CheckItem(cLen, unsorted)) {
+				cItemCnt += func(unsorted); 			// treat entry
 				_rgn0 = _rgn;
 			}
 			tItemCnt++;

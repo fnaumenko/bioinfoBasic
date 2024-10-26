@@ -1,6 +1,6 @@
 /**********************************************************
 DataReader.cpp
-Last modified: 07/29/2024
+Last modified: 10/26/2024
 ***********************************************************/
 
 #include "DataReader.h"
@@ -167,10 +167,10 @@ void UniBedReader::ResetChrom()
 	_cCnt++;
 }
 
-bool UniBedReader::CheckItem(chrlen cLen)
+bool UniBedReader::CheckItem(chrlen cLen, bool& unsorted)
 {
 	bool res = true;
-	if (_checkSorted && _rgn.Start < _rgn0.Start)
+	if ((unsorted = _rgn.Start < _rgn0.Start) && _MaxDuplLevel > 0)
 		_file->ThrowExceptWithLineNumb("unsorted " + FT::ItemTitle(_type) + " are not allowed while checking for duplicates");
 	if (_rgn.Invalid())
 		_file->ThrowExceptWithLineNumb("'start' position is equal or more than 'end' one");
@@ -277,7 +277,7 @@ UniBedReader::UniBedReader(
 ) :
 	_type(type),
 	_MaxDuplLevel(dupLevel), 
-	_checkSorted(checkSorted ? true : dupLevel > 0),
+	//_checkSorted(checkSorted ? true : dupLevel > 0),
 	_abortInv(abortInval), 
 	_oinfo(oinfo), 
 	_cSizes(cSizes),

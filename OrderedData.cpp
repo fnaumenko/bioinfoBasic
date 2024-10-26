@@ -1,49 +1,76 @@
 /**********************************************************
 OrderedData.cpp
-Last modified: 06/05/2024
+Last modified:10/26/2024
 ***********************************************************/
 
 #include "OrderedData.h"
 #include <fstream>
 
 /************************ AccumCover ************************/
-
-void AccumCover::AddRegion(const Region& frag)
+#ifdef MY_DEBUG
+void AccumCover::CheckHint(const covmap::iterator& hint, chrlen newPos) const
 {
-	covmap::iterator it1 = lower_bound(frag.Start), it2;	// 'start', 'end' entries iterator
+	if (hint != begin() && prev(hint)->first > newPos)
+		printf("check hint: new position %d < prev hint %d\n", newPos, prev(hint)->first);
+	else if(hint != end() && hint->first < newPos)
+		printf("check hint: new position %d > hint %d\n", newPos, hint->first);
+}
+#endif
 
-	// *** set up 'start' entry
-	if (it1 == end() || it1->first != frag.Start) {			// 'start' entry doesn't exist
-		it2 = it1 = emplace_hint(it1, frag.Start, 1);
-		if (it1 != begin())						// 'start' entry is not the first one
-			it1->second += (--it2)->second;		// correct val by prev point; keep it1 unchanged
+void AccumCover::AddRegion(const Region& rgn, bool sorted)
+{
+	if (empty()) {
+		emplace_hint(end(), rgn.Start, 1);
+		emplace_hint(end(), rgn.End, 0);
+		return;
+	}
+
+	covmap::iterator it2;
+	if (sorted) {
+		it2 = prev(end());				// 'end' entry iterator
+		fraglen val = it2->second;		// 'end' entry value
+
+		for (; rgn.End < it2->first; it2--);
+
+		if (it2->first != rgn.End)		// 'end' entry doesn't exist
+			it2 = emplace_hint(next(it2), rgn.End, val);
 	}
 	else {
-		it1->second++;							// incr val at existed 'start' entry
-		if (--(it2 = it1) != end()				// decr it2; previous entry exists
-		&& it2->second == it1->second)			// previous and current entries have the same value
-			erase(it1), it1 = it2;				// remove current entry as duplicated
+		it2 = lower_bound(rgn.End);		// 'end' entry iterator
+
+		if (it2 == begin()) {			// insert the entire fragment at the beginning
+			if (it2->first != rgn.End)
+				it2 = emplace_hint(it2, rgn.End, 0);
+			emplace_hint(it2, rgn.Start, 1);
+			return;
+		}
+
+		if (it2 == end())
+			it2 = emplace_hint(it2, rgn.End, 0);					// new 'end' entry
+		else if (it2->first != rgn.End)
+			it2 = emplace_hint(it2, rgn.End, prev(it2)->second);	// new 'end' entry
 	}
 
-	// *** set up 'end' entry
-	it2 = it1;
-	for (it2++; it2 != end() && it2->first < frag.End; it2++);
-	const bool newEnd = it2 == end() || it2->first != frag.End;
-	fraglen val = 0;							// 'end' entry value
+	// *** set up 'start' entry
+	auto it1 = prev(it2);							// 'start' entries iterator
+	for (; it1 != end() && rgn.Start < it1->first; it1--);
 
-	if (newEnd) {								// 'end' entry doesn't exist
-		it2 = emplace_hint(it2, frag.End, 0);
-		val = next(it2) == end() ? 1 :			// 'end' entry is the last one
-			prev(it2)->second;					// grab val by prev entry
+	if (it1 == end())
+		it1 = emplace_hint(begin(), rgn.Start, 1);	// new first 'start' entry
+	else if (it1->first != rgn.Start)
+		it1 = emplace_hint(next(it1), rgn.Start, it1->second + 1);	// new 'start' entry
+	else {
+		it1->second++;								// incr val at existed 'start' entry
+		auto it = prev(it1);
+		if (it->second == it1->second)			// previous and current entries have the same value
+			erase(it1), it1 = it;				// remove current entry as duplicated
 	}
 
 	// *** correct range between 'start' and 'end', set 'end' entry value
 	for (it1++; it1 != it2; it1++)				// correct values within range
-		val = ++it1->second;					// increase value
+		++it1->second;							// increase value
 	if ((--it1)->second == it2->second)			// is the last added entry a duplicate?
 		erase(it2);								// remove duplicated entry
-	else if (newEnd)
-		it2->second = --val;					// set new 'end' entry value
 }
 
 #ifdef _WIG_READER
