@@ -277,7 +277,6 @@ UniBedReader::UniBedReader(
 ) :
 	_type(type),
 	_MaxDuplLevel(dupLevel), 
-	//_checkSorted(checkSorted ? true : dupLevel > 0),
 	_abortInv(abortInval), 
 	_oinfo(oinfo), 
 	_cSizes(cSizes),

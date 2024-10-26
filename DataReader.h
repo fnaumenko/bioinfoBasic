@@ -310,7 +310,6 @@ private:
 	BYTE	_duplLevel = 0;		// current allowed number of duplicates
 	bool	_strand = true;		// current item's strand
 	bool	_strand0 = true;	// previous item's strand; first sorted read is always negative
-	//bool	_checkSorted;		// checking for unsorted items 
 	bool	_readItem = true;	// if true then read next item, otherwise pre-read first item or nothing if _preItem is TRUE
 	bool	_preItem = false;	// if true then pre-read first item and set to FALSE after that
 	bool	_prLFafterName;
