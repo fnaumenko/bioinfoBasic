@@ -2,7 +2,7 @@
 Region intersection handling and additional classes
 2024 Fedor Naumenko (fedor.naumenko@gmail.com)
 -------------------------
-Last modified: 07/27/2024
+Last modified: 08/06/2024
 -------------------------
 ***********************************************************/
 #pragma once
@@ -17,8 +17,8 @@ void DiscardNonOverlapRegions(T rgns[2], fraglen minOverlapLen)
 	BYTE s;		// index of the left started region: 0 - direct, 1 - reverse
 	BYTE suspended = 0;	// if 1st|2nd bit is set then direct|reverse region is suspended and should be analyzed in the next pass
 
-	auto start = [&it](BYTE s) -> chrlen { return T::Start(it[s]); };
-	auto end = [&it](BYTE s) -> chrlen { return T::End(it[s]); };
+	auto start	= [&rgns, &it](BYTE s) -> chrlen { return rgns[s].Start(it[s]); };
+	auto end	= [&rgns, &it](BYTE s) -> chrlen { return rgns[s].End(it[s]); };
 
 	// unconditional discarde the region
 	auto discardeRgn = [&](BYTE s) {

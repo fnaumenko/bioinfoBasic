@@ -56,7 +56,7 @@ bool Options::Option::IsValidFloat(const char* str, bool isInt, bool isPair)
 			if (isPair && c == EnumDelims[2])	break;	// don't check the substring after ';'
 			else goto end;				// wrong symbol
 	if (isInt && dotCnt && !eCnt)		// e.g. 1.5e1 is acceptable as int
-		cerr << Warning << ToStr(false) << SepSCl << "float value "
+		cerr << Warning << ToStr() << SepSCl << "float value "
 		<< (isPair ? "in " : strEmpty)
 		<< str0 << " will be treated is integer\n";
 	return true;
@@ -85,7 +85,7 @@ void Options::Option::PrintSubLine(char* buff, const char* str, const char* subS
 	if (subStr) {	// is substring ended by LF exist?
 		// form substring
 		size_t strLen = subStr - str;
-		memcpy(buff, str, strLen);	// instead of strncpy(buff, str, strLen);
+		memcpy(buff, str, strLen);				// instead of strncpy(buff, str, strLen);
 		buff[strLen] = 0;
 		PrintTransformDescr(buff, vals, cnt);	// output enum values
 		cout << LF;
@@ -95,7 +95,9 @@ void Options::Option::PrintSubLine(char* buff, const char* str, const char* subS
 		PrintSubLine(buff, str, subStr, vals, cnt);
 	}
 	else {			// output rest of initial string without LF
-		memcpy(buff, str, strlen(str)); // instead of strcpy(buff, str);
+		auto strLen = strlen(str);
+		memcpy(buff, str, strLen);				// instead of strcpy(buff, str);
+		buff[strLen] = 0;
 		PrintTransformDescr(buff, vals, cnt);
 	}
 }
@@ -265,7 +267,21 @@ string Options::Option::ToStr(bool prVal) const
 {
 	string res(optTitle);
 	res += NameToStr(true);
-	if (prVal)	res += sSPACE + string(SVal);
+	if (prVal && ValType != valType::tUNDEF) {
+		res += sSPACE;
+		switch (ValType) {
+		case tCHAR:
+		case tNAME:	res += string(SVal);	break;
+		case tFLOAT: {
+			// to print value with actual precision
+			ostringstream os;
+			os << NVal;
+			res += os.str();
+			break;
+		}
+		default:	res += to_string(int(NVal));
+		}
+	}
 	return res;
 }
 
@@ -375,7 +391,7 @@ int Options::Option::GetEnumInd(const char* val)
 
 int Options::Option::PrintWrong(const char* val, const string& msg) const
 {
-	cerr << ToStr(false) << SepSCl << (msg == strEmpty ? "wrong " + sValue : msg);
+	cerr << ToStr() << SepSCl << (msg == strEmpty ? "wrong " + sValue : msg);
 	if (val) cerr << SPACE << val;
 	cerr << LF;
 	return 1;
@@ -514,8 +530,8 @@ int Options::Parse(int argc, char* argv[], const char* obligPar)
 		token = argv[i];
 		nextToken = argv[i + 1];
 		if (*token != HPH) {			// token is not an option
-			if (i < argc - 1 				// not a last token
-				&& *nextToken == HPH)		// next token is an option
+			if (i < argc - 1 			// not a last token
+				&& *nextToken == HPH)	// next token is an option
 				cerr << token << ": neither option nor parameter" << LF, res = -1;
 			break;
 		}

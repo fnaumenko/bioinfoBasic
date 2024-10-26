@@ -2,7 +2,7 @@
 Options.h
 Provides managing executable options
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 08/04/2024
+Last modified: 08/06/2024
 ***********************************************************/
 #pragma once
 
@@ -98,7 +98,9 @@ private:
 		void PrintGroup(BYTE g) const { if (OptGroup == g) Print(true); }
 
 		// Returns option name and value optionally
-		string ToStr(bool prVal) const;
+		//	@param prVal: if true then print value
+		//	@returns: established value as a string
+		string ToStr(bool prVal = false) const;
 
 		// Prints option in full or short way.
 		//	@param descr: if true, prints in full way: 
@@ -267,6 +269,8 @@ public:
 	static int PrintUsage(bool title);
 
 	// Returns option name [and value]
+	//	@param opt: option
+	//	@param prVal: if true then print value
 	static string OptionToStr(int opt, bool prVal = false) { return List[opt].ToStr(prVal); }
 
 	// Returns command line.

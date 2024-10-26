@@ -1,6 +1,6 @@
 /**********************************************************
 Feature.cpp
-Last modified: 07/31/2024
+Last modified: 08/06/2024
 ***********************************************************/
 #include "Features.h"
 
@@ -97,7 +97,6 @@ chrlen Features::GetMinFeatureLength() const
 }
 #endif
 
-#ifdef _BIOCC
 chrlen Features::GetMinDistance() const
 {
 	chrlen dist, minDist = CHRLEN_MAX;
@@ -111,7 +110,6 @@ chrlen Features::GetMinDistance() const
 	}
 	return minDist;
 }
-#endif
 
 //const chrlen UNDEFINED  = std::numeric_limits<int>::max();
 #define UNDEFINED	vUNDEF
