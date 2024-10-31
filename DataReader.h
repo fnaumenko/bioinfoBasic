@@ -2,7 +2,7 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 10/26/2024
+Last modified: 10/31/2024
 ***********************************************************/
 #pragma once
 
@@ -10,6 +10,7 @@ Last modified: 10/26/2024
 #include <map>
 #include <unordered_map>
 
+//#define	MY_DEBUG
 #ifdef _PE_READ
 #define _READS
 #endif

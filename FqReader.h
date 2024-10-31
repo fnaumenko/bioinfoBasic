@@ -2,11 +2,13 @@
 FqReader.h
 Provides FQ reader functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/23/2023
+Last modified: 10/31/2024
 ***********************************************************/
 #pragma once
 
 #include "TxtFile.h"
+
+//#define MY_DEBUG
 
 // 'FqReader' implements reading file in FQ format.
 class FqReader : public TxtReader
@@ -28,4 +30,13 @@ public:
 
 	// Returns count of sequences.
 	size_t Count() const { return RecordCount(); }
+
+#ifdef MY_DEBUG
+	// Returns record length
+	reclen RecordLength() const;
+
+	// Reads and prints sequences
+	//	@param recCnt: number of printed sequences or all by default
+	void Print(UINT recCnt = 0);
+#endif
 };

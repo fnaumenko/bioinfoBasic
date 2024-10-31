@@ -2,11 +2,13 @@
 TxtFile.h
 Provides read|write basic bioinfo text files functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 06/23/2024
+Last modified: 10/31/2024
 ***********************************************************/
 #pragma once
 
 #include "common.h"
+
+//#define MY_DEBUG
 
 // Number of basics file's reading|writing buffer blocks.
 // Should be less than 2047 because of ULONG type of block size variable.
@@ -297,8 +299,26 @@ class TxtReader : public TxtFile
 	//const string RecordNumbToStr() const { return LineNumbToStr(0); }
 
 	// Gets line number
-	//	@param lineInd: index of line in a record
+	//	@param lineInd: index of the line in a record
 	size_t LineNumber(BYTE lineInd) const { return (_recCnt - 1) * _recLineCnt + lineInd + 1; }
+
+	typedef  void (*tTreatChar)(short* const, const BYTE, BYTE*, short);
+
+	// Sets current record position and increments record counter
+	//	@param pos: new record position
+	//	@returns: pointer to the new record
+	char* SetNextRecord(bufflen pos);
+
+	// Sets current reading position at the beginnig of the next line
+	//	@param rec: index of the line in a record
+	//	@param currPos[in,out]: current reading position
+	//	@param ch: TAB for tabulator accounting or 0
+	//	@param tabPos[out]: array of tabulator indices in a line
+	//	@param tabCnt: maximum number of accounting tabulators
+	bool SetNextLine(BYTE lineInd, bufflen& currPos, char ch = '\0', short* const tabPos = nullptr, const BYTE tabCnt = 0);
+
+	//UINT _byteCnt = 0;	// byte-by-byte cycle counter: for debugging
+	//UINT _wordCnt = 0;	// word-by-word cycle counter: for debugging
 
 protected:
 	// Constructs an TxtReader instance: allocates buffers, opens an assigned file.
@@ -309,7 +329,10 @@ protected:
 	//	@param abortInvalid: true if invalid instance should be completed by throwing exception
 	TxtReader(const string& fName, eAction mode, BYTE cntRecLines, bool msgFName = true, bool abortInvalid = true);
 
-	~TxtReader() { if (_linesLen)	delete[] _linesLen; }
+	~TxtReader() {
+		//printf(">%s: %.1f%%\n", FileName().c_str(), Percent(_wordCnt, _byteCnt + _wordCnt));
+		if (_linesLen)	delete[] _linesLen;
+	}
 
 	// Returns record without control
 	char* RealRecord() const { return _buff + _currRecPos - _recLen; }
@@ -321,18 +344,18 @@ protected:
 	//	@returns: pointer to line or NULL if no more lines
 	const char* GetNextRecord();
 
-	// Reads one-line N-controlled record
-	//	@param counterN: counter of 'N'
-	//	@returns: pointer to line or NULL if no more lines
-	const char* GetNextRecord(chrlen& counterN);
-
 	// Reads one-line tab-controlled record
 	//	@param tabPos: TAB's positions array that should be filled
 	//	@param cntTabs: maximum number of TABS in TAB's positions array
 	//	@returns: pointer to line or NULL if no more lines
 	char* GetNextRecord(short* const tabPos, const BYTE tabCnt);
 
-	// Returns line length in a multiline record
+	// Reads one-line N-controlled record
+	//	@param counterN: counter of 'N'
+	//	@returns: pointer to line or NULL if no more lines
+	const char* GetNextRecord(chrlen& counterN);
+
+	// Returns current line length in a multiline record
 	//	@param lineInd: index of line in a record
 	//	@param withoutLF: if true then without LF marker length
 	reclen LineLengthByInd(BYTE lineInd, bool withoutLF = true) const {
@@ -747,6 +770,12 @@ public:
 	//	@param fInd: first field index
 	//	@param rgn: region that is initialized
 	void InitRegion(BYTE fInd, Region& rgn) const;
+
+#ifdef MY_DEBUG
+	// Reads and prints file
+	//	@param lnCnt: number of printed lines or all by default
+	void Print(UINT lnCnt = 0);
+#endif
 };
 
 

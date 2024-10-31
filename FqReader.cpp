@@ -1,6 +1,6 @@
 /**********************************************************
 FqReader.cpp
-Last modified: 11/23/2023
+Last modified: 10/31/2024
 ***********************************************************/
 
 #include "FqReader.h"
@@ -28,4 +28,20 @@ const char* FqReader::GetSequence()
 	}
 	return record;
 }
+
+#ifdef MY_DEBUG
+reclen FqReader::RecordLength() const
+{
+	return LineLengthByInd(HEADER1) + LineLengthByInd(HEADER2) + 2 * LineLengthByInd(READ)
+		+ 3;	// 3*LF
+}
+
+void FqReader::Print(UINT recCnt)
+{
+	const char* seq;
+	for (UINT cnt = 0; seq = GetSequence(); cnt++)
+		if (!recCnt || cnt < recCnt)
+			printf("%.*s\n", RecordLength(), seq);
+}
+#endif
 
