@@ -1,6 +1,6 @@
 /**********************************************************
 OrderedData.cpp
-Last modified:10/26/2024
+Last modified: 11/09/2024
 ***********************************************************/
 
 #include "OrderedData.h"
@@ -17,7 +17,7 @@ void AccumCover::CheckHint(const covmap::iterator& hint, chrlen newPos) const
 }
 #endif
 
-void AccumCover::AddRegion(const Region& rgn, bool sorted)
+void AccumCover::AddRegion(const Region& rgn, bool incrStart)
 {
 	if (empty()) {
 		emplace_hint(end(), rgn.Start, 1);
@@ -25,15 +25,12 @@ void AccumCover::AddRegion(const Region& rgn, bool sorted)
 		return;
 	}
 
-	covmap::iterator it2;
-	if (sorted) {
-		it2 = prev(end());				// 'end' entry iterator
-		fraglen val = it2->second;		// 'end' entry value
+	// *** set up 'end' entry
+	covmap::iterator it2;		// 'end' entry iterator
+	if (incrStart) {
+		for (it2 = prev(end()); rgn.End <= it2->first; it2--);
 
-		for (; rgn.End < it2->first; it2--);
-
-		if (it2->first != rgn.End)		// 'end' entry doesn't exist
-			it2 = emplace_hint(next(it2), rgn.End, val);
+		it2 = emplace_hint(next(it2), rgn.End, it2->second);	// duplicate doesn't change anything
 	}
 	else {
 		it2 = lower_bound(rgn.End);		// 'end' entry iterator
@@ -46,7 +43,7 @@ void AccumCover::AddRegion(const Region& rgn, bool sorted)
 		}
 
 		if (it2 == end())
-			it2 = emplace_hint(it2, rgn.End, 0);					// new 'end' entry
+			it2 = emplace_hint(it2, rgn.End, 0);					// new last 'end' entry
 		else if (it2->first != rgn.End)
 			it2 = emplace_hint(it2, rgn.End, prev(it2)->second);	// new 'end' entry
 	}
@@ -67,7 +64,7 @@ void AccumCover::AddRegion(const Region& rgn, bool sorted)
 	}
 
 	// *** correct range between 'start' and 'end', set 'end' entry value
-	for (it1++; it1 != it2; it1++)				// correct values within range
+	for (it1++; it1 != it2; it1++)				// correct values within range (except the 'end')
 		++it1->second;							// increase value
 	if ((--it1)->second == it2->second)			// is the last added entry a duplicate?
 		erase(it2);								// remove duplicated entry

@@ -2,7 +2,7 @@
 OrderedData.h
 Provides chromosomally sorted data functionality
 2022 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 10/26/2024
+Last modified: 11/09/2024
 ***********************************************************/
 #pragma once
 
@@ -48,8 +48,8 @@ protected:
 public:
 	// Adds region to accumulate the coverage
 	//	@param rng: added region
-	//	@param sorted: true if input alignment is sorted
-	void AddRegion(const Region& rgn, bool sorted = false);
+	//	@param incrStart: true if the starting position of the added region is always equal or greater than the previous one
+	void AddRegion(const Region& rgn, bool incrStart = false);
 
 #ifdef _WIG_READER
 	// Adds next sequential region with value
@@ -266,8 +266,14 @@ public:
 	const DATA& DataByInd(BYTE ind = 0) const { return _data[ind]; }
 
 	// Returnes common data from dataset
+	//	@note: if only strand data is specified, returns forward strand data
 	DATA& TotalData() { return _data[0]; }
 	const DATA& TotalData() const { return _data[0]; }
+
+	// Returns a direct pointer to the strand data array
+	DATA* StrandData() {
+		return _data.size() == 1 ? nullptr : _data.data() + (_data.size() == 3);
+	}
 
 	// Returnes strand data by strand
 	DATA& StrandData(eStrand strand) {
