@@ -30,7 +30,7 @@ void AccumCover::AddRegion(const Region& rgn, bool incrStart)
 	if (incrStart) {
 		for (it2 = prev(end()); rgn.End <= it2->first; it2--);
 
-		it2 = emplace_hint(next(it2), rgn.End, it2->second);	// duplicate doesn't change anything
+		it2 = emplace_hint(next(it2), rgn.End, it2->second);	// duplicate ignored
 	}
 	else {
 		it2 = lower_bound(rgn.End);		// 'end' entry iterator
@@ -41,11 +41,7 @@ void AccumCover::AddRegion(const Region& rgn, bool incrStart)
 			emplace_hint(it2, rgn.Start, 1);
 			return;
 		}
-
-		if (it2 == end())
-			it2 = emplace_hint(it2, rgn.End, 0);					// new last 'end' entry
-		else if (it2->first != rgn.End)
-			it2 = emplace_hint(it2, rgn.End, prev(it2)->second);	// new 'end' entry
+		it2 = emplace_hint(it2, rgn.End, it2 == end() ? 0 : prev(it2)->second);	// duplicate ignored
 	}
 
 	// *** set up 'start' entry
