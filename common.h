@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 08/26/2024
+Last modified: 12/03/2024
 ***********************************************************/
 #pragma once
 
@@ -950,9 +950,9 @@ struct Region
 
 	Region(chrlen start = 0, chrlen end = 0) : Start(start), End(end) {}
 
-	Region(const Region& rgn) { memcpy(this, &rgn, sizeof(Region)); }
+	//Region(const Region& rgn) { memcpy(this, &rgn, sizeof(Region)); }
 
-	// Constructs region expanded to the right or left (i.e. fragment)
+	// Constructs region expanded to the right or left, i.e. constructs fragment
 	//	@param rgn: original read
 	//	@param len: length of instance after expansion
 	//	@param reverse: if true then expand to the left, otherwise to the right

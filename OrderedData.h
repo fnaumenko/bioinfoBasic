@@ -274,6 +274,9 @@ public:
 	DATA* StrandData() {
 		return _data.size() == 1 ? nullptr : _data.data() + (_data.size() == 3);
 	}
+	DATA* StrandData() const {
+		return _data.size() == 1 ? nullptr : _data.data() + (_data.size() == 3);
+	}
 
 	// Returnes strand data by strand
 	DATA& StrandData(eStrand strand) {

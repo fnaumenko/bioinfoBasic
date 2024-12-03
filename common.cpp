@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 08/04/2024
+Last modified: 12/03/2024
 ***********************************************************/
 
 #include "common.h"
@@ -854,15 +854,14 @@ const string Chrom::NoChromMsg()
 
 /************************ struct Region ************************/
 
-Region::Region(const Region& rgn, fraglen len, bool reverse)
+Region::Region(const Region& read, fraglen len, bool reverse)
 {
-	static void (*expand[])(Region* r, fraglen l) = {
-		[](Region* r, fraglen l) { r->End = r->Start + l; },
-		[](Region* r, fraglen l) { r->Start = r->End - l; }
+	static void (*expand[])(Region * frag, const Region & read, fraglen l) = {
+		[](Region* frag, const Region& read, fraglen l) { frag->End = (frag->Start = read.Start) + l; },	// forward
+		[](Region* frag, const Region& read, fraglen l) { frag->Start = (frag->End = read.End) - l; }		// reverse
 	};
 
-	memcpy(this, &rgn, sizeof(Region));
-	expand[reverse](this, len);
+	expand[reverse](this, read, len);
 }
 
 void Region::Expand(chrlen expLen, chrlen cLen)

@@ -26,7 +26,7 @@ public:
 	// Returns 'silent zone length' - number of values pushed in after which the output is non-zero
 	//	@param type: curve type
 	//	@param base: half-length of moving window
-	static slen_t SilentLength(eCurveType type, slen_t base) { return base * (2 + type) - 1; }
+	static slen_t SilentLength(eCurveType type, slen_t base) { return base * (2 + type); }
 
 	// Constructor
 	//	@param type: curve type
@@ -46,7 +46,7 @@ public:
 	//	@param val: input raw value
 	float Push(T val) {
 		_filledLen += (_filledLen <= _silentLen);
-		return _ma.Push((_mm.get()->*_push)(val, _filledLen < _baseLen), _filledLen < _silentLen);
+		return _ma.Push((_mm.get()->*_push)(val, _filledLen <= _baseLen), _filledLen <= _silentLen);
 	}
 
 	// Returns true X position
