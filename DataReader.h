@@ -2,7 +2,7 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 10/31/2024
+Last modified: 12/05/2024
 ***********************************************************/
 #pragma once
 
@@ -288,7 +288,7 @@ public:
 		ABORT,	// interruption at the first issue
 	};
 
-	// Ñonsolidated issue information; public becauseod use in CallDist (class FragDist)
+	// Ñonsolidated issue information; public because of use in CallDist (class FragDist)
 	struct Issue {
 		const char* Title;			// issue description
 		string	Extra = strEmpty;	// addition to issue description
@@ -333,13 +333,26 @@ private:
 	// Returns overlapping action
 	virtual eAction GetOverlAction() const { return eAction::ACCEPT; }
 
+	// Returns chrom size
+	//	Defined in cpp because of call in template function (otherwise ''ChromSize' is no defined')
+	chrlen ChromSize(chrid cID) const;
+
+	// Prints item issues statistics
+	//	@param cnt: total count of items
+	//	@param issCnt: count of item issues
+	//	@param issues: extern or inner issue info collection
+	//	@param prStat: it TRUE then print issue statsistics
+	static void PrintIssuesStats(size_t cnt, size_t issCnt, const vector<Issue>& issues/*, bool prStat*/);
+
 	// Prints items statistics
 	//	@param cnt: total count of items
 	void PrintStats(size_t cnt);
 
-	// Returns chrom size
-	//	Defined in cpp because of call in template function (otherwise ''ChromSize' is no defined')
-	chrlen ChromSize(chrid cID) const;
+	// Prints items statistics
+	//	@param cnt: total count of items
+	//	@param issues: extern or inner issue info collection
+	//	@param innerIssues: it TRUE then treat some inner actions
+	void PrintStats(size_t cnt, vector<Issue>& issues, bool innerIssues);
 
 protected:
 	// Item essue types
@@ -369,13 +382,6 @@ public:
 	//	@param title: item title
 	static void PrintItemCount(size_t cnt, const string& title);
 
-	// Prints items statistics
-	//	@param cnt: total count of items
-	//	@param issCnt: count of item issues
-	//	@param issues: issue info collection
-	//	@param prStat: it TRUE then print issue statsistics
-	static void PrintStats(size_t cnt, size_t issCnt, const vector<Issue>& issues, bool prStat);
-
 	// Creates new instance for reading and open file
 	//	@param fName: file name
 	//	@param type: file type
@@ -401,7 +407,7 @@ public:
 
 	// pass through records
 	template<typename Functor>
-	void Pass(Functor& func)
+	void Pass(Functor& func, bool prLF = true)
 	{
 		const bool setCustom = Chrom::IsSetByUser();	// 	chrom is specified by user
 		size_t	cItemCnt = 0;					// count of chrom entries
@@ -441,8 +447,13 @@ public:
 
 		if (_oinfo >= eOInfo::STD)	PrintStats(tItemCnt);
 		timer.Stop(1, true);
-		//if (_oinfo >= eOInfo::NM)	dout << "_LF" << LF;
+		if (prLF)	dout << LF;
 	}
+
+	// Prints generalized items statistics
+	//	@param cnt: total count of generalized items
+	//	@param issues: extern issue info collection
+	void PrintStats(size_t cnt, vector<Issue>& issues) { PrintStats(cnt, issues, false); }
 
 	// Prints LF once, if the instance constractor printed file name (i.e. called with parameter eOInfo >= eOInfo::NM).
 	//	Typically called during intermediate printing in the Pass() method, 
@@ -732,9 +743,11 @@ public:
 class FragIdent
 {
 	unordered_map<ULONG, Read> _waits;	// 'waiting list' - pair mate candidate's collection
-	chrlen	_pos[2] = { 0,0 };			// mates start positions ([0] - neg read, [1] - pos read)
+	chrlen	_pos[2] = { 0,0 };			// mates start positions ([0] - reversed read, [1] - forwarded read)
 	const bool	_duplAccept;			// if TRUE then duplicate frags are allowed
-	size_t _cnt = 0, _duplCnt = 0;		// total, duplicate count
+	size_t _cnt = 0;		// total number of fragments
+	size_t _duplCnt = 0;	// number of duplicate fragments
+	size_t _shortCnt = 0;	// number of unacceptably short fragments (with length less than read length)
 #ifdef MY_DEBUG
 	size_t	_maxSize = 0;				// maximum waiting _waits size
 #endif
@@ -747,6 +760,9 @@ public:
 
 	// Returns number of duplicate fragments
 	size_t DuplCount() const { return _duplCnt; }
+
+	// Returns number of unacceptably short fragments
+	size_t ShortCount() const { return _shortCnt; }
 
 	// Identifies fragment
 	//	@param read[in]: accepted PE read

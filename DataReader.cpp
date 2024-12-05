@@ -1,6 +1,6 @@
 /**********************************************************
 DataReader.cpp
-Last modified: 10/26/2024
+Last modified: 12/05/2024
 ***********************************************************/
 
 #include "DataReader.h"
@@ -211,22 +211,8 @@ void UniBedReader::PrintItemCount(size_t cnt, const string& title)
 void UniBedReader::PrintStats(size_t cnt)
 {
 	PrintItemCount(cnt, FT::ItemTitle(_type, cnt != 1));
-	if (cnt) {
-		size_t issCnt = 0;
-		for (const Issue& iss : _issues)	issCnt += iss.Cnt;
-		if (issCnt) {
-			if (_MaxDuplLevel)
-				_issues[DUPL].Extra = " except for the first " + to_string(_MaxDuplLevel);
-			else
-				_issues[DUPL].Action = ACCEPT;
-			
-			_issues[OVERL].Action = GetOverlAction();
-			if (_type == FT::BED)	_issues[ENDOUT].Action = TRUNC;
-
-			PrintStats(cnt, issCnt, _issues, _oinfo == eOInfo::STAT);
-		}
-	}
-	if (!(Timer::Enabled && IsTimer))	dout << LF;
+	if(_oinfo == eOInfo::STAT)
+		PrintStats(cnt, _issues, true);
 };
 
 // Prints part number and percent of total
@@ -239,15 +225,17 @@ void PrintValAndPercent(size_t part, size_t total, BYTE fwidth = 1)
 	dout << part << sPercent(part, total, 2, 0, true);
 }
 
-void UniBedReader::PrintStats(size_t cnt, size_t issCnt, const vector<Issue>& issues, bool prStat)
+void UniBedReader::PrintIssuesStats(size_t cnt, size_t issCnt, const vector<Issue>& issues/*, bool prStat*/)
 {
 	static const char* sActions[] = { "accepted", "truncated", "joined", "omitted" };
 	const BYTE pWidth = 4;		// padding width
 
-	if (prStat)		dout << ", from which\n";
+	//if (prStat)
+		dout << ", from which\n";
 	for (const Issue& iss : issues)
 		if (iss.Cnt) {
-			if (prStat) {
+			//if (prStat)
+			{
 				PrintValAndPercent(iss.Cnt, cnt, pWidth);
 				dout << SPACE << iss.Title << SepCl << sActions[iss.Action];
 				if (iss.Extra.length())	dout << iss.Extra;
@@ -256,13 +244,35 @@ void UniBedReader::PrintStats(size_t cnt, size_t issCnt, const vector<Issue>& is
 			if (iss.Action <= UniBedReader::eAction::TRUNC)
 				issCnt -= iss.Cnt;
 		}
-	if (prStat)	dout << setw(pWidth) << SPACE << sTotal;
-	else		dout << COMMA;
+	//if (prStat)	
+		dout << setw(pWidth) << SPACE << sTotal;
+	//else		dout << COMMA;
 	if (issCnt)
 		dout << SPACE << sActions[0], PrintValAndPercent(cnt - issCnt, cnt);
 	else
 		dout << " all " << sActions[0];
 };
+
+void UniBedReader::PrintStats(size_t cnt, vector<Issue>& issues, bool innerIssues)
+{
+	if (cnt) {
+		size_t issCnt = 0;
+		for (const Issue& iss : issues)	issCnt += iss.Cnt;
+		if (issCnt) {
+			if (innerIssues) {
+				if (_MaxDuplLevel)
+					issues[DUPL].Extra = " except for the first " + to_string(_MaxDuplLevel);
+				else
+					issues[DUPL].Action = ACCEPT;
+
+				issues[OVERL].Action = GetOverlAction();
+				if (_type == FT::BED)	issues[ENDOUT].Action = TRUNC;
+			}
+			PrintIssuesStats(cnt, issCnt, issues);
+		}
+	}
+};
+
 
 UniBedReader::UniBedReader(
 	const char* fName,
@@ -369,9 +379,9 @@ size_t RBedReader::ReadNumber() const
 {
 	if (IsReadNameParserUninit()) {
 		const char* name = ItemName();
-		const char* numb = strchr(name + 1, DOT);
+		const char* numb = strrchr(name + 1, DOT);
 		if (!numb || !isdigit(*(++numb)))
-			ThrowExceptWithLineNumb(MsgNotFind + "number in the read's name. It should be '*.<number>'");
+			ThrowExceptWithLineNumb(MsgNotFind + "number in the read's name. It should be '*.<number>[/<mate>]'");
 		_rNamePrefix = reclen(numb - name);
 
 	}
@@ -527,10 +537,12 @@ void Read::Print() const
 
 bool FragIdent::operator()(const Read& read, Region& frag)
 {
-	auto getFrag = [](const Read& r1, const Read& r2, Region& frag) {
+	auto getFrag = [this](const Read& r1, const Read& r2, Region& frag) {
 		if (r1.Strand)	frag.Set(r1.Start, r2.End);
 		else			frag.Set(r2.Start, r1.End);
-		return true;
+		const bool validLen = frag.Length() >= r1.Length();
+		if (!validLen)	_shortCnt++;
+		return validLen;
 	};
 	bool res = false;
 	const auto itMate = _waits.find(read.Number);	// look for the read with given Numb
