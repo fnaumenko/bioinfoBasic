@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 12/03/2024
+Last modified: 12/06/2024
 ***********************************************************/
 #pragma once
 
@@ -207,7 +207,7 @@ inline float Percent(size_t part, size_t total) { return total ? 100.f * part / 
 // Returns string represents the percent of part relatively total
 //	@param percent: value of percent
 //	@param precision: count of fractional digits; 
-//	if count of value's mapped digits is more then that, printed "<X%", or exactly by default
+//	if count of value's mapped digits is more then the specified one (too little percent), printed "<X%", or exactly by default
 //	@param fieldWith: displayed width of value and '%' or '<' sign (excluding parentheses), or exactly if 0;
 //	@param parentheses: if true then parenthesize the value (not considering fieldWith)
 string PercentToStr(float percent, BYTE precision = 0, BYTE fieldWith = 0, bool parentheses = false);
@@ -216,12 +216,11 @@ string PercentToStr(float percent, BYTE precision = 0, BYTE fieldWith = 0, bool 
 //	@param part: value represents desired %
 //	@param total: value represents 100%
 //	@param precision: count of mapped digits; 
-//	if count of value's mapped digits is more then that (too little percent), printed "<n%" or exactly by default
+//	if number of value's mapped digits is more then the specified one (too little percent), printed "<n%" or exactly by default;
+//  if percent > 10 and specified precision is 2, increase precision for displaying one decimal fraction
 //	@param fieldWith: the width of the display field insine parentheses or exactly by default; should include a '%' mark
 //	@param parentheses: if true parenthesize the value
-inline string sPercent(size_t part, size_t total, BYTE precision=0, BYTE fieldWith=0, bool parentheses=false) {
-	return PercentToStr(Percent(part, total), precision, fieldWith, parentheses);
-}
+string sPercent(size_t part, size_t total, BYTE precision = 0, BYTE fieldWith = 0, bool parentheses = false);
 
 // Gets linear density (density per 1000 bs) of some elements
 //	@param cnt: number of elements

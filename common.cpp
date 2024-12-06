@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 12/03/2024
+Last modified: 12/06/2024
 ***********************************************************/
 
 #include "common.h"
@@ -159,6 +159,13 @@ string	PercentToStr(float val, BYTE precision, BYTE fieldWith, bool parentheses)
 	ss << PERS;
 	if (parentheses)		ss << ')';
 	return ss.str();
+}
+
+string sPercent(size_t part, size_t total, BYTE precision, BYTE fieldWith, bool parentheses)
+{
+	const auto prc = Percent(part, total);
+	if (precision == 2 && prc > 10.f)	precision++;
+	return PercentToStr(prc, precision, fieldWith, parentheses);
 }
 
 void PrintSolidLine(USHORT lw)
