@@ -2,7 +2,7 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 12/05/2024
+Last modified: 12/06/2024
 ***********************************************************/
 #pragma once
 
@@ -308,6 +308,7 @@ private:
 	Region	_rgn0{ 0,0 };		// previous item's region
 	Region	_rgn{ 0,0 };		// current item's region
 	size_t	_cDuplCnt = 0;		// number of duplicates per chrom; the first 'originals' are not counted
+	size_t	_tItemCnt = 0;		// total number of entries read
 	BYTE	_duplLevel = 0;		// current allowed number of duplicates
 	bool	_strand = true;		// current item's strand
 	bool	_strand0 = true;	// previous item's strand; first sorted read is always negative
@@ -411,7 +412,6 @@ public:
 	{
 		const bool setCustom = Chrom::IsSetByUser();	// 	chrom is specified by user
 		size_t	cItemCnt = 0;					// count of chrom entries
-		size_t	tItemCnt = 0;					// total count of entries
 		chrid cID = Chrom::UnID, nextcID = cID;	// current, next chrom
 		chrlen	cLen = 0;						// current chrom length
 		bool skipChrom = false;
@@ -441,11 +441,11 @@ public:
 				cItemCnt += func(unsorted); 			// treat entry
 				_rgn0 = _rgn;
 			}
-			tItemCnt++;
+			_tItemCnt++;
 		}
-		func(cID, cLen, cItemCnt, tItemCnt);			// close last chrom
+		func(cID, cLen, cItemCnt, _tItemCnt);			// close last chrom
 
-		if (_oinfo >= eOInfo::STD)	PrintStats(tItemCnt);
+		if (_oinfo >= eOInfo::STD)	PrintStats(_tItemCnt);
 		timer.Stop(1, true);
 		if (prLF)	dout << LF;
 	}
@@ -471,8 +471,11 @@ public:
 	// Gets file bioinfo type
 	FT::eType Type() const { return _type; }
 
-	// Gets count of chromosomes read
+	// Gets number of chromosomes read
 	chrid ReadedChromCount() const { return _cCnt; }
+
+	// Gets total number of entries read
+	size_t ReadedItemCount() const { return _tItemCnt; }
 
 	// Returns current item region
 	const Region& ItemRegion() const { return _rgn; }
