@@ -544,7 +544,7 @@ bool FragIdent::operator()(const Read& read, readlen readLen, Region& frag)
 
 		if (r1.Strand)	frag.Set(r1.Start, r2.End);
 		else			frag.Set(r2.Start, r1.End);
-		_lastValid = frag.Length() >= readLen;
+		_lastValid = frag.Length() > readLen;
 
 		if (!_lastValid)	_shortCnt++;
 		return _lastValid;
