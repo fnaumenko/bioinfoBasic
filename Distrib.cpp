@@ -1,6 +1,6 @@
 /**********************************************************
 Distrib.cpp
-Last modified: 05/24/2024
+Last modified: 12/08/2024
 ***********************************************************/
 
 #include "Distrib.h"
@@ -63,7 +63,7 @@ double Distrib::GetVal(eCType ctype, float mean, float sigma, fraglen x)
 // Returns distribution mode
 //	@param p: distrib params: mean/alpha and sigma/beta
 float (*GetMode[])(const fpair& p) = {
-	[](const fpair& p) { return 0.0f; },								// normal
+	[](const fpair& p) { return p.first; },								// normal
 	[](const fpair& p) { return exp(p.first - p.second * p.second); },	// lognormal
 	[](const fpair& p) { return (p.first - 1) * p.second; }				// gamma 
 };
@@ -71,9 +71,17 @@ float (*GetMode[])(const fpair& p) = {
 // Returns distribution Mean (expected value)
 //	@param p: distrib params: mean/alpha and sigma/beta
 float (*GetMean[])(const fpair& p) = {
-	[](const fpair& p) { return 0.0f; },									// normal
+	[](const fpair& p) { return p.first; },									// normal
 	[](const fpair& p) { return exp(p.first + p.second * p.second / 2); },	// lognormal
 	[](const fpair& p) { return p.first * p.second; }						// gamma 
+};
+
+// Returns distribution Median
+//	@param p: distrib params: mean/alpha and sigma/beta
+float (*GetMedian[])(const fpair& p) = {
+	[](const fpair& p) { return p.first; },			// normal
+	[](const fpair& p) { return exp(p.first); },	// lognormal
+	[](const fpair& p) { return 0.f; }				// gamma 
 };
 
 // Calculates distribution parameters
@@ -97,6 +105,9 @@ void (*CalcParams[])(const fpair& keypts, fpair& p) = {
 	}
 };
 
+#define SETW left<<setw(4)
+#define UNITAB SETW<<SPACE<<TAB	// tab stretching 4 spaces to display regardless of tab size (4 or 8)
+
 void Distrib::AllDParams::QualDParams::Print(dostream& s, float maxPCC) const
 {
 	if (IsSet()) {
@@ -105,15 +116,25 @@ void Distrib::AllDParams::QualDParams::Print(dostream& s, float maxPCC) const
 			s << "parameters cannot be called";
 		else {
 			s << setprecision(5) << dParams.PCC << TAB;
-			if (maxPCC) {		// print percent to max PCC
-				if (maxPCC != dParams.PCC)	s << setprecision(3) << 100 * ((dParams.PCC - maxPCC) / maxPCC) << '%';
-				s << TAB;
-			}
-			s << setprecision(4) << dParams.Params.first << TAB << dParams.Params.second << TAB;
+
+			// ** print PCC
+			if (maxPCC)
+				// print percent to max PCC
+				if (maxPCC != dParams.PCC)
+					s << setprecision(3) << 100 * ((dParams.PCC - maxPCC) / maxPCC) << "%\t";
+				else
+					s << UNITAB;
+
+			// ** print basic params
+			s << SETW << setprecision(4) << dParams.Params.first << TAB << dParams.Params.second << TAB;
+
+			// ** print derived params
 			const dtype type = GetDType(Type);
-			float Mode = GetMode[type](dParams.Params);
-			if (Mode)		// for normal Mode is equal to 0
-				s << Mode << TAB << GetMean[type](dParams.Params);
+			s   << SETW << GetMode[type](dParams.Params) << TAB
+				<< SETW << GetMean[type](dParams.Params) << TAB;
+			float median = GetMedian[type](dParams.Params);
+			if (median)		// for gamma Median is equal to 0
+				s << SETW << median;
 		}
 		s << LF;
 	}
@@ -151,8 +172,6 @@ Distrib::AllDParams::AllDParams()
 	int i = 0;
 	for (QualDParams& dp : _allParams)
 		dp.SetTitle(i++);
-	//for (int i = 0; i < DTCNT; i++)
-	//	_allParams[i].SetTitle(i);
 }
 
 Distrib::dtype Distrib::AllDParams::GetBestParams(DParams& dParams)
@@ -165,30 +184,37 @@ Distrib::dtype Distrib::AllDParams::GetBestParams(DParams& dParams)
 
 void Distrib::AllDParams::Print(dostream& s)
 {
-	static const char* N[] = { "mean", "sigma" };
-	static const char* G[] = { "alpha", "beta" };
-	static const char* P[] = { "p1", "p2" };
-	static const char* a[] = { "*", "**" };
+	static const char* N[] = { "mean", "sigma" };	// normal, lognormal parameters
+	static const char* G[] = { "alpha", "beta" };	// gamma parameters
+	static const char* P[] = { "p1", "p2" };		// unified parameters
+	static const char* a[] = { "* ", "**" };		// asterisks - footnotes
 	const bool notSingle = SetCntInSorted() > 1;	// more then 1 output distr type
 	float maxPCC = 0;
-	bool note = false;
 
 	Sort();			// should already be sorted by PrintSpecs(), but just in case
-	s << LF << "\t PCC\t";
+	const bool isGamma = IsSetInSorted(eCType::GAMMA);
+
+	// ** print title
+	s << LF << UNITAB << " PCC\t";
 	if (notSingle)
 		s << "relPCC\t",
 		maxPCC = _allParams[0].dParams.PCC;
-	if (!IsSetInSorted(eCType::GAMMA))	s << N[0] << TAB << N[1];
-	else if (note = notSingle)			s << P[0] << a[0] << TAB << P[1] << a[1];
-	else								s << G[0] << TAB << G[1];
-	if (notSingle || !IsSetInSorted(eCType::NORM))
-		s << "\tmode\texp.val";
+	if (!isGamma)		s << N[0] << TAB << N[1];
+	else if (notSingle)	s << P[0] << a[0] << TAB << P[1] << a[1];
+	else				s << G[0] << TAB << G[1];
+	s << "\tMode\tMean";
+	if (notSingle || !isGamma)
+		s << "\tMedian";
+
+	// ** print values
 	s << LF;
 	for (const QualDParams& params : _allParams)
 		params.Print(s, maxPCC);
-	if (note) {
+
+	// ** print note
+	if (notSingle && isGamma) {
 		s << LF;
-		for (int i = 0; i < 2; i++)
+		for (BYTE i = 0; i < 2; i++)
 			s << setw(3) << a[i] << P[i] << " - " << N[i] << ", or "
 			<< G[i] << " for " << Distrib::sTitle[GetDType(eCType::GAMMA)] << LF;
 	}
