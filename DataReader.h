@@ -2,7 +2,7 @@
 DataReader.h
 Provides read|write text file functionality
 2021 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 12/06/2024
+Last modified: 12/08/2024
 ***********************************************************/
 #pragma once
 
@@ -745,12 +745,30 @@ public:
 // Accepts PE reads and returns a fragment when it's recognized
 class FragIdent
 {
+	// Keeps read and mate last start positions
+	class LastStart {
+		chrlen	_pos[2] = { 0,0 };	// last start positions: [0] - reversed, [1] - forward
+		
+		// Returns true if last start positions matches the read position
+		bool Match(const Read& read) const { return read.Start == _pos[read.Strand]; }
+		// Sets read start position
+		void Set(const Read& read) { _pos[read.Strand] = read.Start; }
+
+	public:
+		// Returns true if last start positions match the read & mate start positions
+		bool Match(const Read& read, const Read& mate) const { return Match(read) && Match(mate); }
+
+		// Sets read & mate start positions
+		void Set(const Read& read, const Read& mate) { Set(read); Set(mate); }
+	};
+
 	unordered_map<ULONG, Read> _waits;	// 'waiting list' - pair mate candidate's collection
-	chrlen	_pos[2] = { 0,0 };			// mates start positions ([0] - reversed read, [1] - forwarded read)
+	LastStart	_lastStart;
 	const bool	_duplAccept;			// if TRUE then duplicate frags are allowed
-	size_t _cnt = 0;		// total number of fragments
-	size_t _duplCnt = 0;	// number of duplicate fragments
-	size_t _shortCnt = 0;	// number of unacceptably short fragments (with length less than read length)
+	bool	_lastValid = true;			// last identified fragment is valid
+	size_t	_cnt = 0;		// total number of fragments
+	size_t	_duplCnt = 0;	// number of duplicate fragments
+	size_t	_shortCnt = 0;	// number of unacceptably short fragments (with length less than read length)
 #ifdef MY_DEBUG
 	size_t	_maxSize = 0;				// maximum waiting _waits size
 #endif
@@ -769,9 +787,10 @@ public:
 
 	// Identifies fragment
 	//	@param read[in]: accepted PE read
+	//	@param readLen[in]: most frequent read length
 	//	@param frag[out]: identified fragment
-	//	@returns: if true then fragment is identified
-	bool operator()(const Read& read, Region& frag);
+	//	@returns: if true then fragment is identified and valid
+	bool operator()(const Read& read, readlen readLen, Region& frag);
 
 #ifdef MY_DEBUG
 	size_t MaxMapSize() const { return _maxSize; }

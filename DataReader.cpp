@@ -1,6 +1,6 @@
 /**********************************************************
 DataReader.cpp
-Last modified: 12/05/2024
+Last modified: 12/08/2024
 ***********************************************************/
 
 #include "DataReader.h"
@@ -535,14 +535,19 @@ void Read::Print() const
 
 //========== FragIdent
 
-bool FragIdent::operator()(const Read& read, Region& frag)
+bool FragIdent::operator()(const Read& read, readlen readLen, Region& frag)
 {
-	auto getFrag = [this](const Read& r1, const Read& r2, Region& frag) {
+	// set fragment, return true if fragment is valid
+	auto getFrag = [this,readLen](const Read& r1, const Read& r2, Region& frag) {
+		if (!_lastValid)
+			return false;	// original or previous duplicate is already invalid
+
 		if (r1.Strand)	frag.Set(r1.Start, r2.End);
 		else			frag.Set(r2.Start, r1.End);
-		const bool validLen = frag.Length() >= r1.Length();
-		if (!validLen)	_shortCnt++;
-		return validLen;
+		_lastValid = frag.Length() >= readLen;
+
+		if (!_lastValid)	_shortCnt++;
+		return _lastValid;
 	};
 	bool res = false;
 	const auto itMate = _waits.find(read.Number);	// look for the read with given Numb
@@ -551,15 +556,16 @@ bool FragIdent::operator()(const Read& read, Region& frag)
 		_waits.emplace(read.Number, read);		// add read to the waiting list
 	else {										// mate case
 		const Read& mate = itMate->second;
-		if (mate.Start == _pos[mate.Strand] && read.Start == _pos[read.Strand]) {	// duplicate of the previous one
+		if (_lastStart.Match(read, mate)) {	// duplicate of the previous one
 			if (_duplAccept)
-				res = getFrag(mate, read, frag);	// dupl fragment
-			_duplCnt++;
+				res = getFrag(read, mate, frag);	// dupl fragment
+			_duplCnt += _lastValid;
 		}
-		else 
-			res = getFrag(mate, read, frag);		// uniq or first duplicate fragment
-		_pos[mate.Strand] = mate.Start;
-		_pos[read.Strand] = read.Start;
+		else {
+			_lastValid = true;
+			res = getFrag(read, mate, frag);		// uniq or first duplicate fragment
+		}
+		_lastStart.Set(read, mate);
 #ifdef MY_DEBUG
 		if (_maxSize < _waits.size())	_maxSize = _waits.size();
 #endif
