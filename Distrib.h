@@ -2,7 +2,7 @@
 Distrib.h
 2023 Fedor Naumenko (fedor.naumenko@gmail.com)
 -------------------------
-Last modified: 05/24/2024
+Last modified: 12/10/2024
 -------------------------
 Provides value (typically frequency) distribution functionality
 ***********************************************************/
@@ -139,8 +139,7 @@ private:
 		dtype GetBestParams(DParams& dParams);
 
 		// Prints sorted distibutions params on a new line
-		//	@param s: print stream
-		//void Print(dostream& s);
+		//	@param s: output stream
 		void Print(dostream& s);
 	};
 
@@ -165,7 +164,7 @@ private:
 	//	@returns estimated base, or 0 in case of degenerate distribution
 	fraglen GetBase();
 
-	// Defines key points
+	// Builds spline curve and defines key points
 	//	@param base: moving window half-length
 	//	@param summit: returned X,Y coordinates of spliced (smoothed) summit
 	//	@returns key points: X-coord of highest point, X-coord of right middle hight point

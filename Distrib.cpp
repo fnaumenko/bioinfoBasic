@@ -1,11 +1,12 @@
 /**********************************************************
 Distrib.cpp
-Last modified: 12/08/2024
+Last modified: 12/10/2024
 ***********************************************************/
 
 #include "Distrib.h"
 #include "spline.h"
 #include <algorithm>    // std::sort
+#include <utility>      // std::swap
 
 const float SDPI = float(sqrt(3.1415926 * 2));		// square of doubled Pi
 // ratio of the summit height to height of the measuring point
@@ -318,7 +319,7 @@ fpair Distrib::GetKeyPoints(fraglen base, dpoint& summit) const
 	dpoint p0 = make_pair(begin()->first, float(begin()->second));	// previous point
 	dpoint p{};					// current point
 	SSpliner<dVal_t> spliner(
-#ifdef MY_DEBUG					// to visualize SPIKED or SMOOTH distributions individually
+#ifdef MY_DEBUG					// to visualize SPIKED or SMOOTH distributions separately
 		eCurveType::SPIKED, 
 		//eCurveType::SMOOTH,
 #else
@@ -332,12 +333,13 @@ fpair Distrib::GetKeyPoints(fraglen base, dpoint& summit) const
 	fpair keyPts(0, 0);
 #endif
 	for (const value_type& f : *this) {
-		p.first = spliner.CorrectX(f.first);		// X: minus MA & MM base back shift
-		p.second = spliner.Push(f.second);	// Y: splined
+		p.first = spliner.CorrectX(f.first);	// X: minus MA & MM base back shift
+		p.second = spliner.Push(f.second);		// Y: splined
 #ifdef MY_DEBUG
 		if (_fillSpline)	_spline.push_back(p);	// to print
 #endif
-		if (p.second >= summit.second)	summit = p;
+		if (p.second >= summit.second)	
+			std::swap(p, summit);
 		else {
 			if (p.second < summit.second / hRatio) {
 #ifdef MY_DEBUG
@@ -350,7 +352,7 @@ fpair Distrib::GetKeyPoints(fraglen base, dpoint& summit) const
 #endif
 				break;
 			}
-			p0 = p;
+			std::swap(p, p0);
 		}
 	}
 
