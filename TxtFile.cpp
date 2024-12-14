@@ -1,6 +1,6 @@
 /**********************************************************
 TxtFile.cpp
-Last modified: 10/31/2024
+Last modified: 12/14/2024
 ***********************************************************/
 
 #include "TxtFile.h"
@@ -267,58 +267,58 @@ void TxtReader::DefineLF()
 	SetLF(*(buf - 1));
 }
 
-char* TxtReader::SetNextRecord(bufflen pos)
+
+#define TREAT_LF_AND_OVERSIZE {			\
+if (*buf == LF) {						\
+	if (i == currPos) {	/* LF is first in line */	\
+		++currPos; ++emptyLineCnt;		\
+		continue; /* skip empty line */	\
+	}									\
+lf:	_recLen += (_linesLen[lineInd] = ++i - currPos);\
+	currPos = i;						\
+	return true;						\
+}										\
+if (i >= _readedLen) {		/* check for buffer oversize */	\
+	/* 'i' correction is only needed when reading by word */\
+	/* because in this case EOF handling may be skipped */	\
+	/* while reading by byte i == _readedLen always */		\
+	i = _readedLen;								\
+	if (_readedLen != _buffLen && i > currPos)	\
+		goto lf;	/*last record does not end with LF*/ \
+	if (CompleteBlock(currPos, emptyLineCnt))	\
+		return false;						\
+	currPos = emptyLineCnt = i = lineInd = 0;	\
+	buf = _buff;								\
+} }
+
+#define TREAT_CHAR								\
+if (tabPos && *buf == TAB) {					\
+	if (tabInd < tabCnt)						\
+		tabPos[tabInd++] = short(i + 1 - currPos);	\
+}												\
+else TREAT_LF_AND_OVERSIZE
+
+char* TxtReader::SetNextRecord(function<bool(bufflen& currPos, bufflen& emptyLineCnt)> func)
 {
-	_currRecPos = pos;			// next record position
+	if (IsFlag(ENDREAD))	return NULL;
+	bufflen currPos = _currRecPos;
+	bufflen emptyLineCnt = 0;
+	_recLen = 0;
+
+	if (!func(currPos, emptyLineCnt))
+		return NULL;
+	_currRecPos = currPos;			// next record position
 	_recCnt++;
 	return RealRecord();
 }
 
-#define NextRecordLocalDECL				\
-if (IsFlag(ENDREAD))	return NULL;	\
-bufflen currPos = _currRecPos;			\
-_recLen = 0
-
-#define TREAT_LF_AND_OVERSIZE {			\
-if (*buf == LF) {						\
-	if (i == currPos) {		/* LF marker is first in line */	\
-		currPos++; emptyLineCnt++;		/* skip empty line */	\
-		continue;									\
-	}												\
-lf:	_recLen += (_linesLen[lineInd] = ++i - currPos);\
-	currPos = i;									\
-	nextWord = false;		/* used only when reading by word */\
-	break;											\
-}													\
-if (i >= _readedLen) {		/* check for buffer oversize */		\
-		/* 'i' correction is only needed when reading by word */\
-		/* because in this case EOF handling may be skipped */	\
-		/* while reading by byte i == _readedLen always */		\
-		i = _readedLen;								\
-	if (_readedLen != _buffLen && i > currPos){	/*last record does not end with LF*/ \
-		/*printf("GOTO %u %u %u\n", currPos,_readedLen,_buffLen);*/\
-		goto lf; }									\
-	if (CompleteBlock(currPos, emptyLineCnt)) {		\
-		return NULL; }								\
-	currPos = emptyLineCnt = i = lineInd = 0;		\
-	buf = _buff;									\
-} }
-
-#define TREAT_CHAR									\
-if (*buf == ch) {									\
-	if (tabInd < tabCnt)							\
-		tabPos[tabInd++] = short(i + 1 - currPos);	\
-}													\
-else TREAT_LF_AND_OVERSIZE
-
-
 #define READ_BY_WORD
 
-bool TxtReader::SetNextLine(BYTE lineInd, bufflen& currPos, char ch, short* const tabPos, const BYTE tabCnt)
+bool TxtReader::SetNextLine(BYTE lineInd, bufflen& currPos, bufflen& emptyLineCnt, short* const tabPos, const BYTE tabCnt)
 {
 	BYTE tabInd = 1;		// index of TAB position in tabPos
-	bufflen i, emptyLineCnt = 0;
-	bool nextWord = true;	// used only when reading by word
+	bufflen i = currPos;
+	char* buf = _buff + currPos;
 
 #ifdef READ_BY_WORD
 	/*
@@ -338,35 +338,33 @@ bool TxtReader::SetNextLine(BYTE lineInd, bufflen& currPos, char ch, short* cons
 	** the percentage of jumps (unprocessed words) relative to the total word number
 	*/
 	constexpr BYTE MASK_LEN = sizeof(uint32_t);
-	const auto minusWordLen = _buffLen - MASK_LEN;
-	char* buf = _buff + (i = currPos);
+	//const auto critBuffLen = _buffLen - MASK_LEN;	// critical buffer length for word reading
+	const auto critReadLen = _readedLen - MASK_LEN;	// critical readed length for word reading
 
-	while (nextWord) {
+	while (true) {
 		const auto word = *(uint32_t*)buf;
 		int8_t incr = -1;
 
-		if (i > minusWordLen		// word exceeds buffer boundary
-			||  (!(word & 0x000000F0)))	incr = 0;	// ... 11110000
+		//if (i > critBuffLen			// word exceeds buffer boundary
+		//	|| i >= critReadLen		// word exceeds readed length
+		if (i >= critReadLen			// word exceeds readed length
+			||   !(word & 0x000000F0))	incr = 0;	// ... 11110000
 		else if (!(word & 0x0000F000))	incr = 1;	// .. 11110000 .
 		else if (!(word & 0x00F00000))	incr = 2;	// . 11110000 ..
 		else if (!(word & 0xF0000000))	incr = 3;	//  11110000 ...
 
-		//if ((word & 0x08080808) || i > minusWordLen) {	// [00001000]
-		//	int8_t incr = 0;
 		if (incr >= 0) {
-			//_byteCnt++;
 			const bufflen lim = i + MASK_LEN;
 			for (i += incr, buf += incr; i < lim; buf++, i++)
 				TREAT_CHAR;
 		}
 		else {
-			//_wordCnt++;
 			buf += MASK_LEN;
 			i += MASK_LEN;
 		}
 	}
 #else
-	for (char* buf = _buff + (i = currPos);; buf++, i++)
+	for (;; buf++, i++)
 		TREAT_CHAR;
 #endif
 	return true;
@@ -374,33 +372,38 @@ bool TxtReader::SetNextLine(BYTE lineInd, bufflen& currPos, char ch, short* cons
 
 const char* TxtReader::GetNextRecord()
 {
-	NextRecordLocalDECL;
-
-	for (BYTE lnInd = 0; lnInd < _recLineCnt; lnInd++)
-		if (!SetNextLine(lnInd, currPos))		return NULL;
-	return SetNextRecord(currPos);
+	return SetNextRecord(
+		[&](bufflen& currPos, bufflen& emptyLineCnt) {
+			for (BYTE lnInd = 0; lnInd < _recLineCnt; lnInd++)
+				if (!SetNextLine(lnInd, currPos, emptyLineCnt))	
+					return false;
+			return true;
+		}
+	);
 }
 
 char* TxtReader::GetNextRecord(short* const tabPos, const BYTE tabCnt)
 {
-	NextRecordLocalDECL;
-
-	if (!SetNextLine(0, currPos, TAB, tabPos, tabCnt))	return NULL;
-	return SetNextRecord(currPos);
+	return SetNextRecord(
+		[&](bufflen& currPos, bufflen& emptyLineCnt) {
+			return SetNextLine(0, currPos, emptyLineCnt, tabPos, tabCnt);
+		}
+	);
 }
 
 const char* TxtReader::GetNextRecord(chrlen& counterN)
 {
-	NextRecordLocalDECL;
-	bufflen i, emptyLineCnt = 0;
-	BYTE lineInd = 0;		// for a single-line recird it is redundant
-	bool nextWord;			// not used here
+	return SetNextRecord(
+		[&](bufflen& currPos, bufflen& emptyLineCnt) {
+			bufflen i = currPos;
+			BYTE lineInd = 0;		// for a single-line it is redundant
 
-	for (char* buf = _buff + (i = currPos);; buf++, i++)
-		if (*buf == cN)		counterN++;
-		else TREAT_LF_AND_OVERSIZE;
-
-	return SetNextRecord(currPos);
+			for (char* buf = _buff + currPos;; buf++, i++)
+				if (*buf == cN)		counterN++;
+				else TREAT_LF_AND_OVERSIZE;
+			return true;
+		}
+	);
 }
 
 void TxtReader::RollBackRecord(char sep)

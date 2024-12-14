@@ -2,7 +2,7 @@
 TxtFile.h
 Provides read|write basic bioinfo text files functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 10/31/2024
+Last modified: 12/14/2024
 ***********************************************************/
 #pragma once
 
@@ -304,21 +304,19 @@ class TxtReader : public TxtFile
 
 	typedef  void (*tTreatChar)(short* const, const BYTE, BYTE*, short);
 
-	// Sets current record position and increments record counter
-	//	@param pos: new record position
+	// Sets current reading record position and increments record counter
+	//	@param func: record processing method
 	//	@returns: pointer to the new record
-	char* SetNextRecord(bufflen pos);
+	char* SetNextRecord(function<bool(bufflen& currPos, bufflen& emptyLineCnt)> func);
 
 	// Sets current reading position at the beginnig of the next line
 	//	@param rec: index of the line in a record
 	//	@param currPos[in,out]: current reading position
-	//	@param ch: TAB for tabulator accounting or 0
-	//	@param tabPos[out]: array of tabulator indices in a line
-	//	@param tabCnt: maximum number of accounting tabulators
-	bool SetNextLine(BYTE lineInd, bufflen& currPos, char ch = '\0', short* const tabPos = nullptr, const BYTE tabCnt = 0);
-
-	//UINT _byteCnt = 0;	// byte-by-byte cycle counter: for debugging
-	//UINT _wordCnt = 0;	// word-by-word cycle counter: for debugging
+	//	@param emptyLineCnt[in,out]: counter of empty lines
+	//	@param tabPos[out]: array of tabulator indices in a line or nullptr if TAB should not be processed
+	//	@param tabCnt: maximum number of accounting tabulators or 0 if TAB should not be processed
+	//	@returns: TRUE in case of success
+	bool SetNextLine(BYTE lineInd, bufflen& currPos, bufflen& emptyLineCnt, short* const tabPos = nullptr, const BYTE tabCnt = 0);
 
 protected:
 	// Constructs an TxtReader instance: allocates buffers, opens an assigned file.
@@ -329,10 +327,7 @@ protected:
 	//	@param abortInvalid: true if invalid instance should be completed by throwing exception
 	TxtReader(const string& fName, eAction mode, BYTE cntRecLines, bool msgFName = true, bool abortInvalid = true);
 
-	~TxtReader() {
-		//printf(">%s: %.1f%%\n", FileName().c_str(), Percent(_wordCnt, _byteCnt + _wordCnt));
-		if (_linesLen)	delete[] _linesLen;
-	}
+	~TxtReader() { if (_linesLen)	delete[] _linesLen;	}
 
 	// Returns record without control
 	char* RealRecord() const { return _buff + _currRecPos - _recLen; }

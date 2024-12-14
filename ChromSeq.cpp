@@ -1,6 +1,6 @@
 /**********************************************************
 ChromSeq.cpp  2023 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 05/22/2024
+Last modified: 12/14/2024
 ***********************************************************/
 #include "ChromSeq.h"
 
@@ -18,11 +18,13 @@ bool ChromSeq::Init(const string& fName, ChromDefRegions& rgns, bool fill)
 		try { _seq = new char[_len]; }
 		catch (const bad_alloc&) { Err(Err::F_MEM, fName.c_str()).Throw(); }
 		const char* line = file.Line();		// First line is readed by FaReader()
-		chrlen lineLen;
 		_len = 0;
 
-		do	memcpy(_seq + _len, line, lineLen = file.LineLength()),
+		do {
+			chrlen lineLen = file.LineLength();
+			memcpy(_seq + _len, line, lineLen);
 			_len += lineLen;
+		}
 		while (line = file.NextGetLine());
 	}
 	else if (getN)	while (file.NextGetLine());	// just to fill chrom def regions
