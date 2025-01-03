@@ -1,6 +1,6 @@
 /**********************************************************
 TxtFile.cpp
-Last modified: 12/14/2024
+Last modified: 01/02/2025
 ***********************************************************/
 
 #include "TxtFile.h"
@@ -215,6 +215,13 @@ TxtReader::TxtReader(const string& fName, eAction mode,
 		RaiseFlag(ENDREAD);						// empty file
 }
 
+void TxtReader::DefineLF()
+{
+	char* buf = _buff;
+	for (; *buf != LF; buf++);
+	SetLF(*(buf - 1));
+}
+
 int TxtReader::ReadBlock(const bufflen offset)
 {
 	bufflen readLen;
@@ -260,61 +267,32 @@ bool TxtReader::CompleteBlock(bufflen currLinePos, bufflen blankLineCnt)
 	return false;
 }
 
-void TxtReader::DefineLF()
-{
-	char* buf = _buff;
-	for (; *buf != LF; buf++);
-	SetLF(*(buf - 1));
-}
-
-
 #define TREAT_LF_AND_OVERSIZE {			\
 if (*buf == LF) {						\
-	if (i == currPos) {	/* LF is first in line */	\
+	if (i == currPos) {	/*LF is first in line*/	\
 		++currPos; ++emptyLineCnt;		\
 		continue; /* skip empty line */	\
 	}									\
 lf:	_recLen += (_linesLen[lineInd] = ++i - currPos);\
-	currPos = i;						\
-	return true;						\
+	currPos = i;	return true;		\
 }										\
 if (i >= _readedLen) {		/* check for buffer oversize */	\
 	/* 'i' correction is only needed when reading by word */\
-	/* because in this case EOF handling may be skipped */	\
-	/* while reading by byte i == _readedLen always */		\
-	i = _readedLen;								\
-	if (_readedLen != _buffLen && i > currPos)	\
-		goto lf;	/*last record does not end with LF*/ \
+	/* cause in this case EOF handling may be skipped. */	\
+	/* While reading by byte i==_readedLen always */		\
+	i = _readedLen;						\
+	if (i != _buffLen && i > currPos)	\
+		goto lf;  /*last record doesn't end with LF*/ \
 	if (CompleteBlock(currPos, emptyLineCnt))	\
-		return false;						\
-	currPos = emptyLineCnt = i = lineInd = 0;	\
+		return false;							\
+	emptyLineCnt = currPos = i = lineInd = 0;	\
 	buf = _buff;								\
 } }
 
-#define TREAT_CHAR								\
-if (tabPos && *buf == TAB) {					\
-	if (tabInd < tabCnt)						\
-		tabPos[tabInd++] = short(i + 1 - currPos);	\
-}												\
-else TREAT_LF_AND_OVERSIZE
-
-char* TxtReader::SetNextRecord(function<bool(bufflen& currPos, bufflen& emptyLineCnt)> func)
-{
-	if (IsFlag(ENDREAD))	return NULL;
-	bufflen currPos = _currRecPos;
-	bufflen emptyLineCnt = 0;
-	_recLen = 0;
-
-	if (!func(currPos, emptyLineCnt))
-		return NULL;
-	_currRecPos = currPos;			// next record position
-	_recCnt++;
-	return RealRecord();
-}
 
 #define READ_BY_WORD
 
-bool TxtReader::SetNextLine(BYTE lineInd, bufflen& currPos, bufflen& emptyLineCnt, short* const tabPos, const BYTE tabCnt)
+bool TxtReader::SetNextLine(BYTE& lineInd, bufflen& currPos, bufflen& emptyLineCnt, short* const tabPos, const BYTE tabCnt)
 {
 	BYTE tabInd = 1;		// index of TAB position in tabPos
 	bufflen i = currPos;
@@ -353,29 +331,48 @@ bool TxtReader::SetNextLine(BYTE lineInd, bufflen& currPos, bufflen& emptyLineCn
 		else if (!(word & 0x00F00000))	incr = 2;	// . 11110000 ..
 		else if (!(word & 0xF0000000))	incr = 3;	//  11110000 ...
 
-		if (incr >= 0) {
-			const bufflen lim = i + MASK_LEN;
-			for (i += incr, buf += incr; i < lim; buf++, i++)
-				TREAT_CHAR;
-		}
-		else {
+		if (incr == -1) {
 			buf += MASK_LEN;
 			i += MASK_LEN;
 		}
-	}
+		else {
+			const bufflen lim = i + MASK_LEN;
 #else
-	for (;; buf++, i++)
-		TREAT_CHAR;
+	{
+		{
+			const bufflen incr = 0, lim = LONG_MAX;	// always TRUE condition
 #endif
+			for (i += incr, buf += incr; i < lim; buf++, i++)
+				if (tabPos && *buf == TAB) {
+					if (tabInd < tabCnt)
+						tabPos[tabInd++] = short(i + 1 - currPos);
+				}
+				else TREAT_LF_AND_OVERSIZE;
+		}
+	}
 	return true;
+}
+
+char* TxtReader::SetNextRecord(function<bool(bufflen& currPos, bufflen& emptyLineCnt)> func)
+{
+	if (IsFlag(ENDREAD))	return NULL;
+	bufflen currPos = _currRecPos;
+	bufflen emptyLineCnt = 0;
+	_recLen = 0;
+
+	if (!func(currPos, emptyLineCnt))
+		return NULL;
+	_currRecPos = currPos;			// next record position
+	_recCnt++;
+	return RealRecord();
 }
 
 const char* TxtReader::GetNextRecord()
 {
 	return SetNextRecord(
 		[&](bufflen& currPos, bufflen& emptyLineCnt) {
-			for (BYTE lnInd = 0; lnInd < _recLineCnt; lnInd++)
-				if (!SetNextLine(lnInd, currPos, emptyLineCnt))	
+			for (BYTE lineInd = 0; lineInd < _recLineCnt; lineInd++)
+				if (!SetNextLine(lineInd, currPos, emptyLineCnt))
 					return false;
 			return true;
 		}
@@ -386,7 +383,9 @@ char* TxtReader::GetNextRecord(short* const tabPos, const BYTE tabCnt)
 {
 	return SetNextRecord(
 		[&](bufflen& currPos, bufflen& emptyLineCnt) {
-			return SetNextLine(0, currPos, emptyLineCnt, tabPos, tabCnt);
+			BYTE lineInd = 0;		// for a single-line it is redundant
+
+			return SetNextLine(lineInd, currPos, emptyLineCnt, tabPos, tabCnt);
 		}
 	);
 }

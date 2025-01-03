@@ -2,7 +2,7 @@
 TxtFile.h
 Provides read|write basic bioinfo text files functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 12/14/2024
+Last modified: 01/02/2025
 ***********************************************************/
 #pragma once
 
@@ -277,6 +277,9 @@ class TxtReader : public TxtFile
 	// Raises ENDREAD sign an return NULL
 	//char* ReadingEnded()		  { RaiseFlag(ENDREAD); return NULL; }
 
+	// Establishes the presence of CR symbol at the end of line.
+	void DefineLF();
+
 	// Reads next block
 	//	@param offset: shift of start reading position
 	//	@returns: 0 if file is finished; -1 if unsuccess reading; otherwhise number of readed chars
@@ -289,9 +292,6 @@ class TxtReader : public TxtFile
 	//	@returns true if block is complete
 	bool CompleteBlock(bufflen currLinePos, bufflen blankLineCnt);
 
-	// Establishes the presence of CR symbol at the end of line.
-	void DefineLF();
-
 	// Fills I/O buffer with 0, beginning from @offset position
 	//void ClearBuff(size_t offset = 0) { memset(_buff + offset, 0, _buffLen - offset); }
 
@@ -302,21 +302,19 @@ class TxtReader : public TxtFile
 	//	@param lineInd: index of the line in a record
 	size_t LineNumber(BYTE lineInd) const { return (_recCnt - 1) * _recLineCnt + lineInd + 1; }
 
-	typedef  void (*tTreatChar)(short* const, const BYTE, BYTE*, short);
+	// Sets current reading position at the beginnig of the next line
+	//	@param lineInd[in,out]: index of the line in a record
+	//	@param currPos[in,out]: current reading position
+	//	@param emptyLineCnt[in,out]: counter of empty lines
+	//	@param tabPos[out]: array of tabulator indices in a line or nullptr if TAB should not be processed
+	//	@param tabCnt[in]: maximum number of accounting tabulators or 0 if TAB should not be processed
+	//	@returns: TRUE in case of success
+	bool SetNextLine(BYTE& lineInd, bufflen& currPos, bufflen& emptyLineCnt, short* const tabPos = nullptr, const BYTE tabCnt = 0);
 
 	// Sets current reading record position and increments record counter
 	//	@param func: record processing method
 	//	@returns: pointer to the new record
 	char* SetNextRecord(function<bool(bufflen& currPos, bufflen& emptyLineCnt)> func);
-
-	// Sets current reading position at the beginnig of the next line
-	//	@param rec: index of the line in a record
-	//	@param currPos[in,out]: current reading position
-	//	@param emptyLineCnt[in,out]: counter of empty lines
-	//	@param tabPos[out]: array of tabulator indices in a line or nullptr if TAB should not be processed
-	//	@param tabCnt: maximum number of accounting tabulators or 0 if TAB should not be processed
-	//	@returns: TRUE in case of success
-	bool SetNextLine(BYTE lineInd, bufflen& currPos, bufflen& emptyLineCnt, short* const tabPos = nullptr, const BYTE tabCnt = 0);
 
 protected:
 	// Constructs an TxtReader instance: allocates buffers, opens an assigned file.
