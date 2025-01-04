@@ -2,7 +2,7 @@
 Distrib.h
 2023 Fedor Naumenko (fedor.naumenko@gmail.com)
 -------------------------
-Last modified: 12/10/2024
+Last modified: 01/04/2025
 -------------------------
 Provides value (typically frequency) distribution functionality
 ***********************************************************/
@@ -14,7 +14,6 @@ Provides value (typically frequency) distribution functionality
 //#define MY_DEBUG
 
 using dVal_t = size_t;
-using fpair = pair<float, float>;
 
 // 'Distrib' represents a value (typically fragment's/read's length frequency) distribution statistics
 class Distrib : map<fraglen, dVal_t>
