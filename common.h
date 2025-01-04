@@ -2,7 +2,7 @@
 common.h 
 Provides common functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 12/06/2024
+Last modified: 01/04/2025
 ***********************************************************/
 #pragma once
 
@@ -302,20 +302,6 @@ static struct Product
 
 
 typedef pair<float,float> pairVal;	// pair of float values
-
-	// 'PairVals' holds pair of values and their min and max limits
-class PairVals
-{
-	pairVal vals[3];
-
-public:
-	enum Type { SET = 0, MIN = 1, MAX = 2 };
-
-	PairVals(float val1, float val2, float min1, float min2, float max1, float max2);
-
-	// Gets pair of values
-	const pairVal& Values(Type t = SET) const { return vals[t]; }
-};
 
 #define ErrWARNING	Err::NONE
 

@@ -1,6 +1,6 @@
 /**********************************************************
 Options.cpp
-Last modified: 10/26/2024
+Last modified: 01/04/2025
 ***********************************************************/
 #include "Options.h"
 
@@ -246,19 +246,19 @@ int Options::Option::SetPair(const char* vals, bool isInt)
 	const char* delim = strchr(vals, EnumDelims[2]);	// a pointer to the delimiter ';' in vals
 
 	if (!delim)	return PrintWrong(vals, "missed '" + string(1, EnumDelims[2]) + "' delimiter in value");
-	PairVals& lim = *((PairVals*)SVal);
+	fpairLimits& lim = *((fpairLimits*)SVal);
 
 	if (delim != vals) {		// first value is set
 		if (!IsValidFloat(vals, isInt, true)
-			|| SetTriedFloat(float(atof(vals)), lim.Values(PairVals::MIN).first, lim.Values(PairVals::MAX).first))
+			|| SetTriedFloat(float(atof(vals)), lim.Values(fpairLimits::MIN).first, lim.Values(fpairLimits::MAX).first))
 			return 1;
-		((pairVal*)SVal)->first = NVal;		// set first PairVals element
+		((pairVal*)SVal)->first = NVal;		// set first fpairLimits element
 	}
 	if (*(delim + 1)) {			// second value is set
 		if (!IsValidFloat(delim + 1, isInt)
-			|| SetTriedFloat(float(atof(delim + 1)), lim.Values(PairVals::MIN).second, lim.Values(PairVals::MAX).second))
+			|| SetTriedFloat(float(atof(delim + 1)), lim.Values(fpairLimits::MIN).second, lim.Values(fpairLimits::MAX).second))
 			return 1;
-		((pairVal*)SVal)->second = NVal;		// set first PairVals element
+		((pairVal*)SVal)->second = NVal;		// set first fpairLimits element
 	}
 	return 0;
 }
@@ -482,6 +482,14 @@ int Options::PrintSummary(bool prTitle)
 	cout << Product::Descr << LF;
 	return 1;
 }
+
+Options::fpairLimits::fpairLimits(float val1, float val2, float min1, float min2, float max1, float max2)
+{
+	vals[SET] = make_pair(val1, val2);
+	vals[MIN] = make_pair(min1, min2);
+	vals[MAX] = make_pair(max1, max2);
+}
+
 
 int Options::PrintUsage(bool title)
 {

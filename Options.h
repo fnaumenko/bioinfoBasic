@@ -2,7 +2,7 @@
 Options.h
 Provides managing executable options
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 08/06/2024
+Last modified: 01/04/2025
 ***********************************************************/
 #pragma once
 
@@ -263,6 +263,21 @@ private:
 #endif
 
 public:
+	// 'fpairLimits' holds pair of float values and their min and max limits
+	class fpairLimits
+	{
+		pairVal vals[3];
+
+	public:
+		enum Type { SET = 0, MIN = 1, MAX = 2 };
+
+		fpairLimits(float val1, float val2, float min1, float min2, float max1, float max2);
+
+		// Gets pair of values
+		const pairVal& Values(Type t = SET) const { return vals[t]; }
+	};
+
+
 	// Prints 'usage' information
 	//	@param title: if true prints title before information
 	//	@returns: 1 if title is settinf to true, 0 otherwise

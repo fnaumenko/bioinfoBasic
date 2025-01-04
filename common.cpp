@@ -1,6 +1,6 @@
 /**********************************************************
 common.cpp
-Last modified: 12/06/2024
+Last modified: 01/04/2025
 ***********************************************************/
 
 #include "common.h"
@@ -231,13 +231,6 @@ void dostream::Imbue(const locale& loc)
 }
 
 #endif
-
-PairVals::PairVals(float val1, float val2, float min1, float min2, float max1, float max2)
-{
-	vals[SET] = make_pair(val1, val2);
-	vals[MIN] = make_pair(min1, min2);
-	vals[MAX] = make_pair(max1, max2);
-}
 
 /************************ class Err ************************/
 
