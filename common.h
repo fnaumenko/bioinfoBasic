@@ -139,6 +139,7 @@ static const string strEmpty = "";
 #define NO_VAL	-1	// option value is prohibited
 #define NO_DEF	-1	// do not print option default value
 
+using fpair = pair<float, float>;	// pair of float values
 
 // Gets number of members in static array
 #define ArrCnt(arr)	sizeof(arr)/sizeof(arr[0])
@@ -300,8 +301,6 @@ static struct Product
 	//static const string& Name() { return Title + string(1, HPH) + string(Version); }
 } product;
 
-
-typedef pair<float,float> pairVal;	// pair of float values
 
 #define ErrWARNING	Err::NONE
 

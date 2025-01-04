@@ -180,7 +180,7 @@ string Options::Option::NameToStr(bool asPointed) const
 	return ss.str();
 }
 
-const string Options::Option::PairValsToStr(const pairVal* vals) const
+const string Options::Option::PairValsToStr(const fpair* vals) const
 {
 	static const char* sAuto = "auto";
 	ostringstream ss;
@@ -252,13 +252,13 @@ int Options::Option::SetPair(const char* vals, bool isInt)
 		if (!IsValidFloat(vals, isInt, true)
 			|| SetTriedFloat(float(atof(vals)), lim.Values(fpairLimits::MIN).first, lim.Values(fpairLimits::MAX).first))
 			return 1;
-		((pairVal*)SVal)->first = NVal;		// set first fpairLimits element
+		((fpair*)SVal)->first = NVal;		// set first fpairLimits element
 	}
 	if (*(delim + 1)) {			// second value is set
 		if (!IsValidFloat(delim + 1, isInt)
 			|| SetTriedFloat(float(atof(delim + 1)), lim.Values(fpairLimits::MIN).second, lim.Values(fpairLimits::MAX).second))
 			return 1;
-		((pairVal*)SVal)->second = NVal;		// set first fpairLimits element
+		((fpair*)SVal)->second = NVal;		// set first fpairLimits element
 	}
 	return 0;
 }
@@ -347,7 +347,7 @@ void Options::Option::Print(bool descr) const
 			break;
 		case tPR_INT:
 		case tPR_FL:
-			PRINT_IN_PRTHS(PairValsToStr((pairVal*)SVal)); break;
+			PRINT_IN_PRTHS(PairValsToStr((fpair*)SVal)); break;
 		case tCHAR:	PRINT_IN_PRTHS(char(NVal)); break;
 		default:	PRINT_IN_PRTHS(NVal);
 		}

@@ -125,7 +125,7 @@ private:
 		string NameToStr(bool asPointed) const;
 
 		// Returns string represented pair of value's separated by delimiter.
-		const string PairValsToStr(const pairVal* vals) const;
+		const string PairValsToStr(const fpair* vals) const;
 
 		// returns true if option value is required
 		bool ValRequired() const { return MinNVal != vUNDEF; }
@@ -266,7 +266,7 @@ public:
 	// 'fpairLimits' holds pair of float values and their min and max limits
 	class fpairLimits
 	{
-		pairVal vals[3];
+		fpair vals[3];
 
 	public:
 		enum Type { SET = 0, MIN = 1, MAX = 2 };
@@ -274,7 +274,7 @@ public:
 		fpairLimits(float val1, float val2, float min1, float min2, float max1, float max2);
 
 		// Gets pair of values
-		const pairVal& Values(Type t = SET) const { return vals[t]; }
+		const fpair& Values(Type t = SET) const { return vals[t]; }
 	};
 
 
