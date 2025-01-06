@@ -41,13 +41,13 @@ public:
 	// Adds value to the instance
 	void AddVal(fraglen val) { (*this)[val]++; }
 
-	//// Returns distibution Y-value by X-value
-	////	@param ctype: type of distribution
-	////	@param mean: mean (for norm, lognorm) or alpha (for gamma)
-	////	@param sigma: sigma (for norm, lognorm) or beta (for gamma)
-	////	@param x: X-value for which Y-value is calculated
-	////	@returs Y-value
-	//static double GetVal(eCType ctype, float mean, float sigma, fraglen x);
+	// Returns distibution Y-value by X-value
+	//	@param ctype: type of distribution
+	//	@param mean: mean (for norm, lognorm) or alpha (for gamma)
+	//	@param sigma: sigma (for norm, lognorm) or beta (for gamma)
+	//	@param x: X-value for which Y-value is calculated
+	//	@returs Y-value
+	static double GetVal(eCType ctype, float mean, float sigma, fraglen x);
 
 	// Calculate and print distribution on a new line
 	//	@param s[out]: print stream
@@ -188,14 +188,6 @@ private:
 	//	@param summit: returned X,Y coordinates of spliced (smoothed) summit
 	//	@returns key points: X-coord of highest point, X-coord of right middle hight point
 	fpair GetKeyPoints(fraglen base, dpoint& summit) const;
-
-	// Returns distibution Y-value by X-value
-	//	@param ctype: type of distribution
-	//	@param mean: mean (for norm, lognorm) or alpha (for gamma)
-	//	@param sigma: sigma (for norm, lognorm) or beta (for gamma)
-	//	@param x: X-value for which Y-value is calculated
-	//	@returs Y-value
-	static double GetVal(eCType ctype, float mean, float sigma, fraglen x);
 
 	// Compares this sequence with calculated one with given mean&sigma, and returns PCC
 	//	@param type[in]: consecutive distribution type
