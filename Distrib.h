@@ -2,7 +2,7 @@
 Distrib.h
 2023 Fedor Naumenko (fedor.naumenko@gmail.com)
 -------------------------
-Last modified: 01/04/2025
+Last modified: 01/06/2025
 -------------------------
 Provides value (typically frequency) distribution functionality
 ***********************************************************/
@@ -28,13 +28,33 @@ public:
 	};
 	static const char* sDistrib;
 
-	// Returns distibution Y-value by X-value
-	//	@param ctype: type of distribution
-	//	@param mean: mean (for norm, lognorm) or alpha (for gamma)
-	//	@param sigma: sigma (for norm, lognorm) or beta (for gamma)
-	//	@param x: X-value for which Y-value is calculated
-	//	@returs Y-value
-	static double GetVal(eCType ctype, float mean, float sigma, fraglen x);
+	// Default constructor
+	Distrib() {}
+
+	// Constructor by ready distribution file
+	//	@param fname: name of ready distribution file
+	Distrib(const char* fname, dostream& s);
+
+	// Returns size distribution
+	size_t Size() const { return size(); }
+
+	// Adds value to the instance
+	void AddVal(fraglen val) { (*this)[val]++; }
+
+	//// Returns distibution Y-value by X-value
+	////	@param ctype: type of distribution
+	////	@param mean: mean (for norm, lognorm) or alpha (for gamma)
+	////	@param sigma: sigma (for norm, lognorm) or beta (for gamma)
+	////	@param x: X-value for which Y-value is calculated
+	////	@returs Y-value
+	//static double GetVal(eCType ctype, float mean, float sigma, fraglen x);
+
+	// Calculate and print distribution on a new line
+	//	@param s[out]: print stream
+	//	@param type[in]: combined type of distribution
+	//	@param prWarning[in]: if true then print possible warning message
+	//	@param prDistr[in]: if true then print original distribution additionally
+	void Print(dostream& s, eCType type, bool prWarning, bool prDistr);
 
 private:
 	using dtype = int;	// consecutive distribution type: just to designate dist type, used as an index
@@ -169,6 +189,14 @@ private:
 	//	@returns key points: X-coord of highest point, X-coord of right middle hight point
 	fpair GetKeyPoints(fraglen base, dpoint& summit) const;
 
+	// Returns distibution Y-value by X-value
+	//	@param ctype: type of distribution
+	//	@param mean: mean (for norm, lognorm) or alpha (for gamma)
+	//	@param sigma: sigma (for norm, lognorm) or beta (for gamma)
+	//	@param x: X-value for which Y-value is calculated
+	//	@returs Y-value
+	static double GetVal(eCType ctype, float mean, float sigma, fraglen x);
+
 	// Compares this sequence with calculated one with given mean&sigma, and returns PCC
 	//	@param type[in]: consecutive distribution type
 	//	@param dParams[in, out]: returned PCC, input mean(alpha) & sigma(beta)
@@ -192,25 +220,4 @@ private:
 	// Prints original distribution as a set of <value>-<size> pairs
 	//	@param s: print stream
 	void PrintOriginal(dostream& s) const;
-
-public:
-	// Default constructor
-	Distrib() {}
-
-	// Constructor by ready distribution file
-	//	@param fname: name of ready distribution file
-	Distrib(const char* fname, dostream& s);
-
-	// Returns size distribution
-	size_t Size() const { return size(); }
-
-	// Adds value to the instance
-	void AddVal(fraglen val) { (*this)[val]++; }
-
-	// Calculate and print distribution on a new line
-	//	@param s[out]: print stream
-	//	@param type[in]: combined type of distribution
-	//	@param prWarning[in]: if true then print possible warning message
-	//	@param prDistr[in]: if true then print original distribution additionally
-	void Print(dostream& s, eCType type, bool prWarning, bool prDistr);
 };
