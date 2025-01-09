@@ -1,6 +1,6 @@
 /**********************************************************
 Distrib.cpp
-Last modified: 12/10/2024
+Last modified: 01/09/2025
 ***********************************************************/
 
 #include "Distrib.h"
@@ -33,27 +33,26 @@ const string Distrib::sSpec[] = {
 // Returns two constant terms of the distrib equation of type, supplied as an index
 //	@param p: distrib params: mean/alpha and sigma/beta
 //	@returns: two initialized constant terms of the distrib equation
-//	Implemeted as an array of lambdas treated like a regular function and assigned to a function pointer.
 fpair(*GetEqTerms[])(const fpair& p) = {
 	[](const fpair& p) -> fpair { return { p.second * SDPI, 0.f}; },						// normal
 	[](const fpair& p) -> fpair { return { p.second * SDPI, 2 * p.second * p.second}; },	// lognormal
 	[](const fpair& p) -> fpair { return { p.first - 1, float(pow(p.second, p.first)) }; }	// gamma
 };
 
-// Returns y-coordinate by x-coordinate of the distrib of type, supplied as an index
+// Returns the value of the distribution function of a given type, supplied as an index, at a given point
 //	@param p: distrib params: mean/alpha and sigma/beta
 //	@param x: x-coordinate
 //	@param eqTerms: two constant terms of the distrib equation
 double (*Distrs[])(const fpair& p, fraglen x, const fpair& eqTerms) = {
-	[](const fpair& p, fraglen x, const fpair& eqTerms) ->	double { return 		// normal
+	[](const fpair& p, fraglen x, const fpair& eqTerms) ->	double { return 	// normal
 		exp(-pow(((x - p.first) / p.second), 2) / 2) / eqTerms.first; },
-	[](const fpair& p, fraglen x, const fpair& eqTerms) ->	double { return 		// lognormal
+	[](const fpair& p, fraglen x, const fpair& eqTerms) ->	double { return 	// lognormal
 		exp(-pow((log(x) - p.first), 2) / eqTerms.second) / (eqTerms.first * x); },
-	[](const fpair& p, fraglen x, const fpair& eqTerms) ->	double { return 		// gamma
+	[](const fpair& p, fraglen x, const fpair& eqTerms) ->	double { return 	// gamma
 		pow(x, eqTerms.first) * exp(-(x / p.second)) / eqTerms.second; }
 };
 
-double Distrib::GetVal(eCType ctype, float mean, float sigma, fraglen x)
+double Distrib::GetApprValue(eCType ctype, float mean, float sigma, fraglen x)
 {
 	const fpair p{ mean, sigma };
 	auto type = GetDType(ctype);
@@ -130,10 +129,10 @@ void Distrib::AllDParams::QualDParams::Print(dostream& s, float maxPCC) const
 			s << SETW << setprecision(4) << dParams.Params.first << TAB << dParams.Params.second << TAB;
 
 			// ** print derived params
-			const dtype type = GetDType(Type);
-			s   << SETW << GetMode[type](dParams.Params) << TAB
-				<< SETW << GetMean[type](dParams.Params) << TAB;
-			float median = GetMedian[type](dParams.Params);
+			const dind ind = GetDType(Type);
+			s   << SETW << GetMode[ind](dParams.Params) << TAB
+				<< SETW << GetMean[ind](dParams.Params) << TAB;
+			float median = GetMedian[ind](dParams.Params);
 			if (median)		// for gamma Median is equal to 0
 				s << SETW << median;
 		}
@@ -175,7 +174,7 @@ Distrib::AllDParams::AllDParams()
 		dp.SetTitle(i++);
 }
 
-Distrib::dtype Distrib::AllDParams::GetBestParams(DParams& dParams)
+Distrib::dind Distrib::AllDParams::GetBestParams(DParams& dParams)
 {
 	Sort();
 	const QualDParams& QualDParams = _allParams[0];
@@ -223,15 +222,17 @@ void Distrib::AllDParams::Print(dostream& s)
 
 fraglen Distrib::GetBase()
 {
+	using rpoint = pair<fraglen, dVal_t>;	// initial raw sequence point
+
 	const int CutoffFrac = 100;	// fraction of the maximum height below which scanning stops on the first pass
 	dVal_t	cutoffY = 0;		// Y-value below which scanning stops on the first pass
 	fraglen halfX = 0;
 	USHORT peakCnt = 0;
 	bool up = false;
 	auto it = begin();
-	spoint p0(*it), p;			// previous, current point
-	spoint pMin(0, 0), pMax(pMin), pMMax(pMin);	// current, previous, maximum point
-	vector<spoint> extr;		// local extremums
+	rpoint p0(*it), p;			// previous, current point
+	rpoint pMin(0, 0), pMax(pMin), pMMax(pMin);	// current, previous, maximum point
+	vector<value_type> extr;		// local extremums
 	SSpliner<dVal_t> spliner(eCurveType::ROUGH, 1);
 
 	//== define pMMax and halfX
@@ -271,8 +272,8 @@ fraglen Distrib::GetBase()
 	cout << "pMMax: " << pMMax.first << TAB << pMMax.second << LF;
 #endif
 	//== define splined max point
-	pMMax = make_pair(0, 0);
-	for (spoint p : extr) {
+	pMMax.second = 0;
+	for (auto& p : extr) {
 		if (p.second > pMMax.second)	pMMax = p;
 		//cout << p.first << TAB << p.second << LF;
 	}
@@ -281,8 +282,8 @@ fraglen Distrib::GetBase()
 	auto itv = extr.begin();	// always 0,0
 	itv++;						// always 0,0 as well
 	p0 = *(++itv);				// first point in sequence
-	pMin = pMMax;
-	pMax = make_pair(0, 0);
+	//pMin = pMMax;
+	//pMax = make_pair(0, 0);
 	int i = 1;
 	bool isDip = false, isPeakAfterDip = false;
 
@@ -313,6 +314,7 @@ fraglen Distrib::GetBase()
 	return fraglen(float(diffX) * (isPeakAfterDip ? 0.9F : (diffX > 20 ? 0.1F : 0.35F)));
 #endif
 }
+
 
 fpair Distrib::GetKeyPoints(fraglen base, dpoint& summit) const
 {
@@ -366,10 +368,10 @@ fpair Distrib::GetKeyPoints(fraglen base, dpoint& summit) const
 #endif
 }
 
-void Distrib::CalcPCC(dtype type, DParams& dParams, fraglen Mode, bool full) const
+void Distrib::CalcPCC(dind ind, DParams& dParams, fraglen Mode, bool full) const
 {
-	const auto dist = Distrs[type];								// function that calculates the 'type' distribution coordinate
-	const fpair eqTerms = GetEqTerms[type](dParams.Params);	// two constant terms of the distrib equation
+	const fpair eqTerms = GetEqTerms[ind](dParams.Params);	// two constant terms of the distrib equation
+	const auto dist = Distrs[ind];	// function that calculates the 'type' distribution coordinate
 	const double cutoffY = dist(dParams.Params, Mode, eqTerms) / 1000;	// break when Y became less then 0.1% of max value
 	double	sumA = 0, sumA2 = 0;	// sum, sum of squares of original values
 	double	sumB = 0, sumB2 = 0;	// sum, sum of squares of calculated values
@@ -396,7 +398,7 @@ void Distrib::CalcPCC(dtype type, DParams& dParams, fraglen Mode, bool full) con
 	if (!isNaN(pcc))	dParams.PCC = pcc;
 }
 
-void Distrib::CallParams(dtype type, fraglen base, dpoint& summit)
+void Distrib::CallParams(dind ind, fraglen base, dpoint& summit)
 {
 	const BYTE failCntLim = 2;	// max count of base's decreasing steps after which PCC is considered only decreasing
 	BYTE failCnt = 0;			// counter of base's decreasing steps after which PCC is considered only decreasing
@@ -412,8 +414,8 @@ void Distrib::CallParams(dtype type, fraglen base, dpoint& summit)
 	for (; base; base--) {
 		const fpair keypts = GetKeyPoints(base, summit0);
 
-		CalcParams[type](keypts, dParams0.Params);
-		CalcPCC(type, dParams0, summit0.first);
+		CalcParams[ind](keypts, dParams0.Params);
+		CalcPCC(ind, dParams0, summit0.first);
 #ifdef MY_DEBUG
 		* _s << setw(4) << setfill(SPACE) << left << ++i;
 		*_s << "base: " << setw(2) << base << "  summitX: " << keypts.first << "\tpcc: " << dParams0.PCC;
@@ -435,7 +437,7 @@ void Distrib::CallParams(dtype type, fraglen base, dpoint& summit)
 			if (failCnt > failCntLim)	break;
 		}
 	}
-	_allParams.SetParams(type, dParams);
+	_allParams.SetParams(ind, dParams);
 
 #ifdef MY_DEBUG
 	* _s << LF;
@@ -525,8 +527,8 @@ void Distrib::Print(dostream& s, eCType ctype, bool prWarning, bool prDistr)
 			for (int i = 0; i < tmCycleCnt; i++)
 #endif
 				dpoint summit;				// returned value
-			for (dtype i = 0; i < eCType::CNT; i++)
-				if (IsType(ctype, i))
+			for (dind i = 0; i < eCType::CNT; i++)
+				if (IsIndex(ctype, i))
 					CallParams(i, base, summit);
 #ifdef _TIME
 			auto stop = high_resolution_clock::now();

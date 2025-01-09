@@ -2,7 +2,7 @@
 Distrib.h
 2023 Fedor Naumenko (fedor.naumenko@gmail.com)
 -------------------------
-Last modified: 01/06/2025
+Last modified: 01/09/2025
 -------------------------
 Provides value (typically frequency) distribution functionality
 ***********************************************************/
@@ -13,9 +13,9 @@ Provides value (typically frequency) distribution functionality
 
 //#define MY_DEBUG
 
-using dVal_t = size_t;
+using dVal_t = size_t;	// type of distribution value
 
-// 'Distrib' represents a value (typically fragment's/read's length frequency) distribution statistics
+// 'Distrib' represents a value frequency distribution and its approximation by a two-parameter distribution
 class Distrib : map<fraglen, dVal_t>
 {
 public:
@@ -38,16 +38,16 @@ public:
 	// Returns size distribution
 	size_t Size() const { return size(); }
 
-	// Adds value to the instance
-	void AddVal(fraglen val) { (*this)[val]++; }
+	// Increments value frequency
+	void IncrFreq(fraglen val) { (*this)[val]++; }
 
-	// Returns distibution Y-value by X-value
+	// Returns the value the value of the approximate distribution function at a given point
 	//	@param ctype: type of distribution
 	//	@param mean: mean (for norm, lognorm) or alpha (for gamma)
 	//	@param sigma: sigma (for norm, lognorm) or beta (for gamma)
-	//	@param x: X-value for which Y-value is calculated
-	//	@returs Y-value
-	static double GetVal(eCType ctype, float mean, float sigma, fraglen x);
+	//	@param x: X-value of the point
+	//	@returs Y-value of the point
+	static double GetApprValue(eCType ctype, float mean, float sigma, fraglen x);
 
 	// Calculate and print distribution on a new line
 	//	@param s[out]: print stream
@@ -57,15 +57,14 @@ public:
 	void Print(dostream& s, eCType type, bool prWarning, bool prDistr);
 
 private:
-	using dtype = int;	// consecutive distribution type: just to designate dist type, used as an index
-	using spoint = pair<fraglen, dVal_t>;	// initial raw sequence point
+	using dind = int;						// inner distribution index
 	using dpoint = pair<fraglen, float>;	// distribution point 
 
-	// Returns combined distribution type by consecutive distribution type
-	static eCType GetCType(dtype type) { return eCType(1 << type); }
+	// Returns combined distribution type by inner distribution index
+	static eCType GetCType(dind ind) { return eCType(1 << ind); }
 
-	// Returns consecutive distribution type by combined distribution type
-	const static dtype GetDType(eCType ctype) { return RightOnePos(int(ctype)); }
+	// Returns inner distribution index by combined distribution type
+	const static dind GetDType(eCType ctype) { return RightOnePos(int(ctype)); }
 
 	enum class eSpec {	// distribution specification
 		CLEAR,		// normal quality;	exclusive
@@ -110,8 +109,8 @@ private:
 			const char* Title;		// distribution type title
 			DParams dParams;		// PCC, mean(alpha), sigma(beta)
 
-			// Sets combined type and title by consecutive type
-			void SetTitle(dtype type) { Type = GetCType(type); Title = sTitle[type]; }
+			// Sets combined type and title by inner distribution index
+			void SetTitle(dind ind) { Type = GetCType(ind); Title = sTitle[ind]; }
 
 			// Returns true if distrib parameters set
 			bool IsSet() const { return dParams.PCC != 0; }
@@ -142,9 +141,9 @@ private:
 		AllDParams();
 
 		// Set distribution parameters by type
-		//	@param type: consecutive distribution type
+		//	@param ind: inner distribution index
 		//	@param dp: PCC, mean(alpha) & sigma(beta)
-		void SetParams(dtype type, const DParams& dp) { _allParams[type].dParams = dp; }
+		void SetParams(dind ind, const DParams& dp) { _allParams[ind].dParams = dp; }
 
 		// Clear normal distribution if its PCC is less then lognorm PCC by the threshold
 		void ClearNormDistBelowThreshold(float thresh) {
@@ -154,8 +153,8 @@ private:
 
 		// Returns parameters of distribution with the highest (best) PCC
 		//	@param dParams: returned PCC, mean(alpha) & sigma(beta)
-		//	@returns consecutive distribution type with the highest (best) PCC
-		dtype GetBestParams(DParams& dParams);
+		//	@returns inner distribution index with the highest (best) PCC
+		dind GetBestParams(DParams& dParams);
 
 		// Prints sorted distibutions params on a new line
 		//	@param s: output stream
@@ -165,8 +164,8 @@ private:
 	// Returns specification string by specification type
 	static const string Spec(eSpec s) { return "Distribution " + sSpec[int(s)]; }
 
-	// Returns true if consecutive type is represented in combo cType
-	static bool IsType(eCType cType, dtype type) { return cType & (1 << type); }
+	// Returns true if inner index is represented in combo cType
+	static bool IsIndex(eCType cType, dind ind) { return cType & (1 << ind); }
 
 	// Returns true if combo type is represented in combo cType
 	static bool IsType(eCType cType, eCType type) { return cType & type; }
@@ -190,18 +189,18 @@ private:
 	fpair GetKeyPoints(fraglen base, dpoint& summit) const;
 
 	// Compares this sequence with calculated one with given mean&sigma, and returns PCC
-	//	@param type[in]: consecutive distribution type
+	//	@param ind[in]: inner distribution index
 	//	@param dParams[in, out]: returned PCC, input mean(alpha) & sigma(beta)
 	//	@param Mode[in]: X-coordinate of summit
 	//	@param full[in]: if true then correlate from the beginning, otherwiase from summit
 	//	calculated on the basis of the "start of the sequence" – "the first value less than 0.1% of the maximum".
-	void CalcPCC(dtype type, DParams& dParams, fraglen Mode, bool full = true) const;
+	void CalcPCC(dind ind, DParams& dParams, fraglen Mode, bool full = true) const;
 
 	// Calculates the best distribution parameters
-	//	@param type[in]: consecutive distribution type
+	//	@param ind[in]: inner distribution index
 	//	@param base[in]: moving window half-length
 	//	@param summit[out]: returned X,Y coordinates of best spliced (smoothed) summit
-	void CallParams(dtype type, fraglen base, dpoint& summit);
+	void CallParams(dind ind, fraglen base, dpoint& summit);
 
 	// Prints original distribution specification (flaws)
 	//	@param s: print stream
