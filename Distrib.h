@@ -57,7 +57,7 @@ public:
 	void Print(dostream& s, eCType type, bool prWarning, bool prDistr);
 
 private:
-	using dind = int;						// inner distribution index
+	using dind = BYTE;						// inner distribution index
 	using dpoint = pair<fraglen, float>;	// distribution point 
 
 	// Returns combined distribution type by inner distribution index
