@@ -14,12 +14,11 @@ const int hRatio = 2;
 // log of ratio of the summit height to height of the measuring point
 const float lghRatio = float(log(hRatio));
 
-const char* Distrib::sDistrib = "distribution";
-const char* Distrib::sTitle[] = { "Norm", "Lognorm", "Gamma" };
-const float Distrib::ADParams::UndefPCC = -1;
-const string Distrib::sParams = "parameters";
-const string Distrib::sInaccurate = " may be biased";
-const string Distrib::sSpec[] = {
+const char* sDistrib = "distribution";
+const char* sTitle[] = { "Norm", "Lognorm", "Gamma" };
+const string sParams = "parameters";
+const string sInaccurate = " may be biased";
+const string sSpec[] = {
 	"is degenerate",
 	"is smooth",
 	"is modulated",
@@ -29,6 +28,8 @@ const string Distrib::sSpec[] = {
 	"looks slightly defective on the left",
 	"looks defective on the left"
 };
+
+const float Distrib::ADParams::UndefPCC = -1;
 
 // Returns two constant terms of the distrib equation of type, supplied as an index
 //	@param p: distrib params: mean/alpha and sigma/beta
@@ -209,9 +210,11 @@ void Distrib::SetADParams::Print(dostream& s)
 		s << LF;
 		for (BYTE i = 0; i < 2; i++)
 			s << setw(3) << a[i] << P[i] << " - " << N[i] << ", or "
-			<< G[i] << " for " << Distrib::sTitle[GetDType(eCType::GAMMA)] << LF;
+			<< G[i] << " for " << sTitle[GetDType(eCType::GAMMA)] << LF;
 	}
 }
+
+const string Distrib::Spec(eSpec s) { return "Distribution " + sSpec[int(s)]; }
 
 fraglen Distrib::GetBase()
 {

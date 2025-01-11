@@ -26,7 +26,6 @@ public:
 		GAMMA = 1 << 2,
 		CNT = 3,
 	};
-	static const char* sDistrib;
 
 	// Default constructor
 	Distrib() {}
@@ -77,10 +76,6 @@ private:
 		DEFECT		// defective; exclusive
 	};
 
-	static const char* sTitle[];
-	static const string sSpec[];
-	static const string sParams;
-	static const string sInaccurate;
 	const fraglen smoothBase = 1;	// splining base for the smooth distribution
 
 	// Keeps approximation distribution parameters: PCC, mean(alpha), sigma(beta)
@@ -160,7 +155,7 @@ private:
 	};
 
 	// Returns specification string by specification type
-	static const string Spec(eSpec s) { return "Distribution " + sSpec[int(s)]; }
+	static const string Spec(eSpec s);
 
 	// Returns true if inner index is represented in combo cType
 	static bool IsIndex(eCType cType, dind ind) { return cType & (1 << ind); }
