@@ -1,6 +1,6 @@
 /**********************************************************
 Distrib.cpp
-Last modified: 01/09/2025
+Last modified: 01/11/2025
 ***********************************************************/
 
 #include "Distrib.h"
@@ -16,7 +16,7 @@ const float lghRatio = float(log(hRatio));
 
 const char* Distrib::sDistrib = "distribution";
 const char* Distrib::sTitle[] = { "Norm", "Lognorm", "Gamma" };
-const float Distrib::DParams::UndefPCC = -1;
+const float Distrib::ADParams::UndefPCC = -1;
 const string Distrib::sParams = "parameters";
 const string Distrib::sInaccurate = " may be biased";
 const string Distrib::sSpec[] = {
@@ -108,31 +108,30 @@ void (*CalcParams[])(const fpair& keypts, fpair& p) = {
 #define SETW left<<setw(4)
 #define UNITAB SETW<<SPACE<<TAB	// tab stretching 4 spaces to display regardless of tab size (4 or 8)
 
-void Distrib::AllDParams::QualDParams::Print(dostream& s, float maxPCC) const
+void Distrib::SetADParams::IndADParams::Print(dostream& s, float maxPCC) const
 {
 	if (IsSet()) {
-		s << Title << TAB;
-		if (dParams.IsUndefPcc())
+		s << sTitle[Index] << TAB;
+		if (IsUndefPcc())
 			s << "parameters cannot be called";
 		else {
-			s << setprecision(5) << dParams.PCC << TAB;
+			s << setprecision(5) << PCC << TAB;
 
 			// ** print PCC
 			if (maxPCC)
 				// print percent to max PCC
-				if (maxPCC != dParams.PCC)
-					s << setprecision(3) << 100 * ((dParams.PCC - maxPCC) / maxPCC) << "%\t";
+				if (maxPCC != PCC)
+					s << setprecision(3) << 100 * ((PCC - maxPCC) / maxPCC) << "%\t";
 				else
 					s << UNITAB;
 
 			// ** print basic params
-			s << SETW << setprecision(4) << dParams.Params.first << TAB << dParams.Params.second << TAB;
+			s << SETW << setprecision(4) << Params.first << TAB << Params.second << TAB;
 
 			// ** print derived params
-			const dind ind = GetDType(Type);
-			s   << SETW << GetMode[ind](dParams.Params) << TAB
-				<< SETW << GetMean[ind](dParams.Params) << TAB;
-			float median = GetMedian[ind](dParams.Params);
+			s	<< SETW << GetMode[Index](Params) << TAB
+				<< SETW << GetMean[Index](Params) << TAB;
+			float median = GetMedian[Index](Params);
 			if (median)		// for gamma Median is equal to 0
 				s << SETW << median;
 		}
@@ -140,55 +139,49 @@ void Distrib::AllDParams::QualDParams::Print(dostream& s, float maxPCC) const
 	}
 }
 
-bool Distrib::AllDParams::IsSetInSorted(eCType ctype) const
+bool Distrib::SetADParams::IsSetInSorted(eCType ctype) const
 {
-	for (const QualDParams& dp : _allParams)
-		if (dp.Type == ctype)
+	const dind ind = GetDType(ctype);
+	for (const auto& dp : _allParams)
+		if (dp.Index == ind)
 			return dp.IsSet();
 	return false;
 }
 
-int Distrib::AllDParams::SetCntInSorted() const
+int Distrib::SetADParams::SetSortedCount() const
 {
 	int cnt = 0;
-	for (const QualDParams& dp : _allParams)
+	for (const auto& dp : _allParams)
 		cnt += dp.IsSet();
 	return cnt;
 }
 
-void Distrib::AllDParams::Sort()
+void Distrib::SetADParams::Sort()
 {
 	if (!_sorted) {
 		sort(_allParams.begin(), _allParams.end(),
-			[](const QualDParams& dp1, const QualDParams& dp2) -> bool
-			{ return dp1.dParams > dp2.dParams; }
+			[](const ADParams& dp1, const ADParams& dp2) -> bool
+			{ return dp1 > dp2; }
 		);
 		_sorted = true;
 	}
 }
 
-Distrib::AllDParams::AllDParams()
+Distrib::SetADParams::SetADParams()
 {
 	int i = 0;
-	for (QualDParams& dp : _allParams)
-		dp.SetTitle(i++);
+	for (auto& dp : _allParams)
+		dp.Index = i++;
 }
 
-Distrib::dind Distrib::AllDParams::GetBestParams(DParams& dParams)
-{
-	Sort();
-	const QualDParams& QualDParams = _allParams[0];
-	dParams = QualDParams.dParams;
-	return GetDType(QualDParams.Type);
-}
 
-void Distrib::AllDParams::Print(dostream& s)
+void Distrib::SetADParams::Print(dostream& s)
 {
 	static const char* N[] = { "mean", "sigma" };	// normal, lognormal parameters
 	static const char* G[] = { "alpha", "beta" };	// gamma parameters
 	static const char* P[] = { "p1", "p2" };		// unified parameters
 	static const char* a[] = { "* ", "**" };		// asterisks - footnotes
-	const bool notSingle = SetCntInSorted() > 1;	// more then 1 output distr type
+	const bool notSingle = SetSortedCount() > 1;	// more then 1 output distr type
 	float maxPCC = 0;
 
 	Sort();			// should already be sorted by PrintSpecs(), but just in case
@@ -198,7 +191,7 @@ void Distrib::AllDParams::Print(dostream& s)
 	s << LF << UNITAB << " PCC\t";
 	if (notSingle)
 		s << "relPCC\t",
-		maxPCC = _allParams[0].dParams.PCC;
+		maxPCC = _allParams[0].PCC;
 	if (!isGamma)		s << N[0] << TAB << N[1];
 	else if (notSingle)	s << P[0] << a[0] << TAB << P[1] << a[1];
 	else				s << G[0] << TAB << G[1];
@@ -208,7 +201,7 @@ void Distrib::AllDParams::Print(dostream& s)
 
 	// ** print values
 	s << LF;
-	for (const QualDParams& params : _allParams)
+	for (const auto& params : _allParams)
 		params.Print(s, maxPCC);
 
 	// ** print note
@@ -368,7 +361,7 @@ fpair Distrib::GetKeyPoints(fraglen base, dpoint& summit) const
 #endif
 }
 
-void Distrib::CalcPCC(dind ind, DParams& dParams, fraglen Mode, bool full) const
+void Distrib::CalcPCC(dind ind, ADParams& dParams, fraglen Mode, bool full) const
 {
 	const fpair eqTerms = GetEqTerms[ind](dParams.Params);	// two constant terms of the distrib equation
 	const auto dist = Distrs[ind];	// function that calculates the 'type' distribution coordinate
@@ -403,7 +396,7 @@ void Distrib::CallParams(dind ind, fraglen base, dpoint& summit)
 	const BYTE failCntLim = 2;	// max count of base's decreasing steps after which PCC is considered only decreasing
 	BYTE failCnt = 0;			// counter of base's decreasing steps after which PCC is considered only decreasing
 	dpoint summit0;				// temporary summit
-	DParams dParams0, dParams;	// temporary, final  PCC & mean(alpha) & sigma(beta)
+	ADParams dParams0, dParams;	// temporary, final  PCC & mean(alpha) & sigma(beta)
 #ifdef MY_DEBUG
 	int i = 0;					// counter of steps
 #endif
@@ -456,13 +449,13 @@ void Distrib::PrintSpecs(dostream& s, fraglen base, const Distrib::dpoint& summi
 	else if (begin()->second / summit.second > 0.5)
 		Err(Spec(eSpec::TRIM)).Warning();
 	else {
-		DParams dParams, dParams0;
+		ADParams dParams;
 
-		CalcPCC(_allParams.GetBestParams(dParams), dParams0, summit.first, false);	// sorts params
-		float diffPCC = dParams0.PCC - dParams.PCC;
+		CalcPCC(_allParams.GetBestIndex(), dParams, summit.first, false);	// sorts params
+		const float diffPCC = dParams.PCC - _allParams.GetBestPCC();
 
 #ifdef MY_DEBUG
-		s << "summit: " << summit.first << "\tPCCsummit: " << dParams.PCC << "\tdiff PCC: " << diffPCC << LF;
+		s << "summit: " << summit.first << "\tPCCsummit: " << dParams.GetBestPCC() << "\tdiff PCC: " << diffPCC << LF;
 #endif
 		if (diffPCC > 0.01)
 			Err(Spec(eSpec::DEFECT) + SepSCl + sParams + sInaccurate).Warning();

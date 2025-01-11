@@ -2,7 +2,7 @@
 Distrib.h
 2023 Fedor Naumenko (fedor.naumenko@gmail.com)
 -------------------------
-Last modified: 01/09/2025
+Last modified: 01/11/2025
 -------------------------
 Provides value (typically frequency) distribution functionality
 ***********************************************************/
@@ -83,8 +83,8 @@ private:
 	static const string sInaccurate;
 	const fraglen smoothBase = 1;	// splining base for the smooth distribution
 
-	// Keeps distribution params: PCC, mean(alpha), sigma(beta)
-	struct DParams
+	// Keeps approximation distribution parameters: PCC, mean(alpha), sigma(beta)
+	struct ADParams
 	{
 	private:
 		static const float UndefPCC;
@@ -92,58 +92,57 @@ private:
 		float	PCC = 0;		// Pearson correlation coefficient
 		fpair	Params{};		// mean(alpha), sigma(beta)
 
-		bool operator >(const DParams& dp) const { return PCC > dp.PCC; }
+		bool operator >(const ADParams& dp) const { return PCC > dp.PCC; }
 
 		bool IsUndefPcc() const { return PCC == UndefPCC; };
 
 		void SetUndefPcc() { PCC = UndefPCC; };
 	};
 
-	// 'AllDParams' represents a collection of restored distribution params for all type of distribution
-	class AllDParams
+	// 'SetADParams' represents a collection of approximation distribution parameters for all type of distribution
+	class SetADParams
 	{
-		// 'QualDParams' keeps restored distribution parameters
-		struct QualDParams
+		// Indexed ADParams: struct ADParams supplied with inner index
+		struct IndADParams : public ADParams
 		{
-			eCType	Type;			//  combined distribution type
-			const char* Title;		// distribution type title
-			DParams dParams;		// PCC, mean(alpha), sigma(beta)
+			dind	Index;		// inner index
 
-			// Sets combined type and title by inner distribution index
-			void SetTitle(dind ind) { Type = GetCType(ind); Title = sTitle[ind]; }
+			// Returns true if AD parameters set
+			bool IsSet() const { return PCC; }
 
-			// Returns true if distrib parameters set
-			bool IsSet() const { return dParams.PCC != 0; }
+			void Copy(const ADParams& dp) { PCC = dp.PCC; Params = dp.Params; }
 
-			// Prints restored distr parameters
+			// Prints AD parameters
 			//	@param s: print stream
 			//	@param maxPCC: masimum PCC to print relative PCC percentage
 			void Print(dostream& s, float maxPCC) const;
 		};
 
-		array<QualDParams, eCType::CNT>	_allParams;
+		array<IndADParams, eCType::CNT>	_allParams;
 		bool _sorted = false;
 
-		// Returns true if distribution parameters set in sorted instance
+		// Returns true if AD parameters set in sorted instance
 		bool IsSetInSorted(eCType ctype) const;
 
-		// Returns number of distribution parameters set in sorted instance
-		int SetCntInSorted() const;
+		// Returns number of AD parameters set in sorted instance
+		int SetSortedCount() const;
 
-		// Returns Distribution Params by combined distribution type
-		DParams& Params(eCType ctype) { return _allParams[GetDType(ctype)].dParams; }
+		// Returns AD Params by combined distribution type
+		ADParams& Params(eCType ctype) { return _allParams[GetDType(ctype)]; }
 
 		// Sorts in PCC descending order
 		void Sort();
 
 	public:
 		// Default constructor
-		AllDParams();
+		SetADParams();
 
-		// Set distribution parameters by type
+		float GetBestPCC() const { return _allParams[0].PCC; }
+
+		// Set distribution parameters by index
 		//	@param ind: inner distribution index
-		//	@param dp: PCC, mean(alpha) & sigma(beta)
-		void SetParams(dind ind, const DParams& dp) { _allParams[ind].dParams = dp; }
+		//	@param adp: approximation distribution parameters
+		void SetParams(dind ind, const ADParams& adp) { _allParams[ind].Copy(adp); }
 
 		// Clear normal distribution if its PCC is less then lognorm PCC by the threshold
 		void ClearNormDistBelowThreshold(float thresh) {
@@ -151,10 +150,9 @@ private:
 				Params(eCType::NORM).PCC = 0;
 		}
 
-		// Returns parameters of distribution with the highest (best) PCC
-		//	@param dParams: returned PCC, mean(alpha) & sigma(beta)
-		//	@returns inner distribution index with the highest (best) PCC
-		dind GetBestParams(DParams& dParams);
+		// Sorts parameters and returns inner index of distribution with the highest PCC
+		//	@returns inner index of distribution with the highest (best) PCC
+		dind GetBestIndex() { Sort(); return _allParams[0].Index; }
 
 		// Prints sorted distibutions params on a new line
 		//	@param s: output stream
@@ -171,7 +169,7 @@ private:
 	static bool IsType(eCType cType, eCType type) { return cType & type; }
 
 	eSpec _spec = eSpec::CLEAR;		// distribution specification
-	AllDParams	_allParams;			// distributions parameters
+	SetADParams	_allParams;			// distributions parameters
 #ifdef MY_DEBUG
 	mutable vector<dpoint> _spline;		// splining curve (container) to visualize splining
 	mutable bool _fillSpline = true;	// true if fill splining curve (container)
@@ -194,7 +192,7 @@ private:
 	//	@param Mode[in]: X-coordinate of summit
 	//	@param full[in]: if true then correlate from the beginning, otherwiase from summit
 	//	calculated on the basis of the "start of the sequence" – "the first value less than 0.1% of the maximum".
-	void CalcPCC(dind ind, DParams& dParams, fraglen Mode, bool full = true) const;
+	void CalcPCC(dind ind, ADParams& dParams, fraglen Mode, bool full = true) const;
 
 	// Calculates the best distribution parameters
 	//	@param ind[in]: inner distribution index
