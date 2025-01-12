@@ -1,6 +1,6 @@
 /**********************************************************
 Distrib.cpp
-Last modified: 01/11/2025
+Last modified: 01/12/2025
 ***********************************************************/
 
 #include "Distrib.h"
@@ -8,103 +8,94 @@ Last modified: 01/11/2025
 #include <algorithm>    // std::sort
 #include <utility>      // std::swap
 
-const float SDPI = float(sqrt(3.1415926 * 2));		// square of doubled Pi
+// square of doubled Pi
+const float SDPI = float(sqrt(3.1415926 * 2));
 // ratio of the summit height to height of the measuring point
 const int hRatio = 2;
 // log of ratio of the summit height to height of the measuring point
 const float lghRatio = float(log(hRatio));
 
-const char* sDistrib = "distribution";
-const char* sTitle[] = { "Norm", "Lognorm", "Gamma" };
-const string sParams = "parameters";
-const string sInaccurate = " may be biased";
-const string sSpec[] = {
-	"is degenerate",
-	"is smooth",
-	"is modulated",
-	"is even",
-	"is trimmed from the left",
-	"is heavily trimmed from the left",
-	"looks slightly defective on the left",
-	"looks defective on the left"
+// Approximate distribution formulas
+struct ADF {
+	const char* Title;
+
+	// Returns two common factors of the distrib equation
+	//	@param p: distrib params: mean/alpha and sigma/beta
+	fpair (*CommonFactors)(const fpair& p);
+
+	// Returns the value of the distribution function at a given point and common factors
+	//	@param p: distrib params: mean/alpha and sigma/beta
+	//	@param x: x-coordinate
+	//	@param commFactors: two common factors of the distrib equation
+	double (*Value)	(const fpair& p, fraglen x, const fpair& commFactors);
+
+	float (*Mode)	(const fpair& p);
+	float (*Mean)	(const fpair& p);
+	float (*Median)	(const fpair& p);
+
+	// Calculates approximate distribution parameters
+	//	@param keypts[in]: key points: X-coord of highest point, X-coord of right middle hight point
+	//	@param p[out]: returned params: mean(alpha) & sigma(beta)
+	void (*CalcParams)(const fpair& keypts, fpair& p);
+
+	// Returns the value of the distribution function at a given point
+	//	@param p: distrib params: mean/alpha and sigma/beta
+	//	@param x: x-coordinate
+	double GetValue	(const fpair& p, fraglen x) { return Value(p, x, CommonFactors(p)); }
 };
 
-const float Distrib::ADParams::UndefPCC = -1;
+static ADF ADFs[3] {
+#define SQR_SIGMA	p.second * p.second
 
-// Returns two constant terms of the distrib equation of type, supplied as an index
-//	@param p: distrib params: mean/alpha and sigma/beta
-//	@returns: two initialized constant terms of the distrib equation
-fpair(*GetEqTerms[])(const fpair& p) = {
-	[](const fpair& p) -> fpair { return { p.second * SDPI, 0.f}; },						// normal
-	[](const fpair& p) -> fpair { return { p.second * SDPI, 2 * p.second * p.second}; },	// lognormal
-	[](const fpair& p) -> fpair { return { p.first - 1, float(pow(p.second, p.first)) }; }	// gamma
-};
-
-// Returns the value of the distribution function of a given type, supplied as an index, at a given point
-//	@param p: distrib params: mean/alpha and sigma/beta
-//	@param x: x-coordinate
-//	@param eqTerms: two constant terms of the distrib equation
-double (*Distrs[])(const fpair& p, fraglen x, const fpair& eqTerms) = {
-	[](const fpair& p, fraglen x, const fpair& eqTerms) ->	double { return 	// normal
-		exp(-pow(((x - p.first) / p.second), 2) / 2) / eqTerms.first; },
-	[](const fpair& p, fraglen x, const fpair& eqTerms) ->	double { return 	// lognormal
-		exp(-pow((log(x) - p.first), 2) / eqTerms.second) / (eqTerms.first * x); },
-	[](const fpair& p, fraglen x, const fpair& eqTerms) ->	double { return 	// gamma
-		pow(x, eqTerms.first) * exp(-(x / p.second)) / eqTerms.second; }
-};
-
-double Distrib::GetApprValue(eCType ctype, float mean, float sigma, fraglen x)
-{
-	const fpair p{ mean, sigma };
-	auto type = GetDType(ctype);
-
-	return Distrs[type](p, x, GetEqTerms[type](p));
-}
-
-// Returns distribution mode
-//	@param p: distrib params: mean/alpha and sigma/beta
-float (*GetMode[])(const fpair& p) = {
-	[](const fpair& p) { return p.first; },								// normal
-	[](const fpair& p) { return exp(p.first - p.second * p.second); },	// lognormal
-	[](const fpair& p) { return (p.first - 1) * p.second; }				// gamma 
-};
-
-// Returns distribution Mean (expected value)
-//	@param p: distrib params: mean/alpha and sigma/beta
-float (*GetMean[])(const fpair& p) = {
-	[](const fpair& p) { return p.first; },									// normal
-	[](const fpair& p) { return exp(p.first + p.second * p.second / 2); },	// lognormal
-	[](const fpair& p) { return p.first * p.second; }						// gamma 
-};
-
-// Returns distribution Median
-//	@param p: distrib params: mean/alpha and sigma/beta
-float (*GetMedian[])(const fpair& p) = {
-	[](const fpair& p) { return p.first; },			// normal
-	[](const fpair& p) { return exp(p.first); },	// lognormal
-	[](const fpair& p) { return 0.f; }				// gamma 
-};
-
-// Calculates distribution parameters
-//	@param keypts[in]: key points: X-coord of highest point, X-coord of right middle hight point
-//	@param p[out]: returned params: mean(alpha) & sigma(beta)
-void (*CalcParams[])(const fpair& keypts, fpair& p) = {
-	[](const fpair& keypts, fpair& p) {		//*** normal
+	{ "Norm",
+	[](const fpair& p) ->fpair { return { p.second * SDPI, 0.f}; },	// CommonFactors
+	[](const fpair& p, fraglen x, const fpair& cmFactors) { 	// Value
+		return exp(-pow(((x - p.first) / p.second), 2) / 2) / cmFactors.first;
+	},
+	[](const fpair& p) { return p.first; },						// Mode
+	[](const fpair& p) { return p.first; },						// Mean
+	[](const fpair& p) { return p.first; },						// Median
+	[](const fpair& keypts, fpair& p) {							// CalcParams
 		p.first = keypts.first;
 		p.second = float(sqrt(pow(keypts.second - p.first, 2) / lghRatio / 2));
 	},
-	[](const fpair& keypts, fpair& p) {		//*** lognormal
+	},
+	{ "Lognorm",
+	[](const fpair& p) ->fpair { return { p.second * SDPI, 2 * SQR_SIGMA}; },	// CommonFactors
+	[](const fpair& p, fraglen x, const fpair& cmFactors) { 		// Value
+		return exp(-pow((log(x) - p.first), 2) / cmFactors.second) / (cmFactors.first * x);
+	},
+	[](const fpair& p) { return exp(p.first - SQR_SIGMA); },		// Mode
+	[](const fpair& p) { return exp(p.first + SQR_SIGMA / 2); },	// Mean
+	[](const fpair& p) { return exp(p.first); },					// Median
+	[](const fpair& keypts, fpair& p) {								// CalcParams
 		const float lgM = log(keypts.first);		// logarifm of Mode
 		const float lgH = log(keypts.second);		// logarifm of middle height
-
 		p.first = (lgM * (lghRatio + lgM - lgH) + (lgH * lgH - lgM * lgM) / 2) / lghRatio;
 		p.second = sqrt(p.first - lgM);
 	},
-	[](const fpair& keypts, fpair& p) {		//*** gamma
+	},
+	{ "Gamma",
+	[](const fpair& p) ->fpair { return { p.first - 1, float(pow(p.second, p.first)) }; },	// CommonFactors
+	[](const fpair& p, fraglen x, const fpair& cmFactors) { 	// Value
+		return pow(x, cmFactors.first) * exp(-(x / p.second)) / cmFactors.second;
+	},
+	[](const fpair& p) { return (p.first - 1) * p.second; },	// Mode
+	[](const fpair& p) { return p.first * p.second; },			// Mean 
+	[](const fpair& p) { return 0.f; },							// Median 
+	[](const fpair& keypts, fpair& p) {							// CalcParams
 		p.second = (keypts.second - keypts.first * (1 + log(keypts.second / keypts.first))) / lghRatio;
 		p.first = (keypts.first / p.second) + 1;
 	}
+	},
 };
+
+
+double Distrib::GetApprValue(eCType ctype, float mean, float sigma, fraglen x)
+{
+	const fpair p{mean, sigma};
+	return ADFs[GetDType(ctype)].GetValue(p, x);
+}
 
 #define SETW left<<setw(4)
 #define UNITAB SETW<<SPACE<<TAB	// tab stretching 4 spaces to display regardless of tab size (4 or 8)
@@ -112,7 +103,9 @@ void (*CalcParams[])(const fpair& keypts, fpair& p) = {
 void Distrib::SetADParams::IndADParams::Print(dostream& s, float maxPCC) const
 {
 	if (IsSet()) {
-		s << sTitle[Index] << TAB;
+		auto& adfs = ADFs[Index];
+
+		s << adfs.Title << TAB;
 		if (IsUndefPcc())
 			s << "parameters cannot be called";
 		else {
@@ -130,9 +123,9 @@ void Distrib::SetADParams::IndADParams::Print(dostream& s, float maxPCC) const
 			s << SETW << setprecision(4) << Params.first << TAB << Params.second << TAB;
 
 			// ** print derived params
-			s	<< SETW << GetMode[Index](Params) << TAB
-				<< SETW << GetMean[Index](Params) << TAB;
-			float median = GetMedian[Index](Params);
+			s	<< SETW << adfs.Mode(Params) << TAB
+				<< SETW << adfs.Mean(Params) << TAB;
+			float median = adfs.Median(Params);
 			if (median)		// for gamma Median is equal to 0
 				s << SETW << median;
 		}
@@ -175,7 +168,6 @@ Distrib::SetADParams::SetADParams()
 		dp.Index = i++;
 }
 
-
 void Distrib::SetADParams::Print(dostream& s)
 {
 	static const char* N[] = { "mean", "sigma" };	// normal, lognormal parameters
@@ -207,14 +199,31 @@ void Distrib::SetADParams::Print(dostream& s)
 
 	// ** print note
 	if (notSingle && isGamma) {
+		auto title = ADFs[GetDType(eCType::GAMMA)].Title;
 		s << LF;
 		for (BYTE i = 0; i < 2; i++)
 			s << setw(3) << a[i] << P[i] << " - " << N[i] << ", or "
-			<< G[i] << " for " << sTitle[GetDType(eCType::GAMMA)] << LF;
+			<< G[i] << " for " << title << LF;
 	}
 }
 
-const string Distrib::Spec(eSpec s) { return "Distribution " + sSpec[int(s)]; }
+const string Distrib::Spec(eSpec s) { 
+	const string sSpec[] = {
+		"is degenerate",
+		"is smooth",
+		"is modulated",
+		"is even",
+		"is trimmed from the left",
+		"is heavily trimmed from the left",
+		"looks slightly defective on the left",
+		"looks defective on the left"
+	};
+
+	return "Distribution " + sSpec[int(s)];
+}
+
+const char* sDistrib = "distribution";
+const string sParams = "parameters";
 
 fraglen Distrib::GetBase()
 {
@@ -311,7 +320,6 @@ fraglen Distrib::GetBase()
 #endif
 }
 
-
 fpair Distrib::GetKeyPoints(fraglen base, dpoint& summit) const
 {
 	dpoint p0 = make_pair(begin()->first, float(begin()->second));	// previous point
@@ -366,9 +374,9 @@ fpair Distrib::GetKeyPoints(fraglen base, dpoint& summit) const
 
 void Distrib::CalcPCC(dind ind, ADParams& dParams, fraglen Mode, bool full) const
 {
-	const fpair eqTerms = GetEqTerms[ind](dParams.Params);	// two constant terms of the distrib equation
-	const auto dist = Distrs[ind];	// function that calculates the 'type' distribution coordinate
-	const double cutoffY = dist(dParams.Params, Mode, eqTerms) / 1000;	// break when Y became less then 0.1% of max value
+	const fpair commFactors = ADFs[ind].CommonFactors(dParams.Params);	// two constant terms of the distrib equation
+	const auto dVal = ADFs[ind].Value;	// function that calculates the 'type' distribution coordinate
+	const double cutoffY = dVal(dParams.Params, Mode, commFactors) / 1000;	// break when Y became less then 0.1% of max value
 	double	sumA = 0, sumA2 = 0;	// sum, sum of squares of original values
 	double	sumB = 0, sumB2 = 0;	// sum, sum of squares of calculated values
 	double	sumAB = 0;				// sum of products of original and calculated values
@@ -378,7 +386,7 @@ void Distrib::CalcPCC(dind ind, ADParams& dParams, fraglen Mode, bool full) cons
 	dParams.SetUndefPcc();
 	for (const value_type& f : *this) {
 		if (!full && f.first < Mode)		continue;
-		const double b = dist(dParams.Params, f.first, eqTerms);	// y-coordinate (value) of the calculated sequence
+		const double b = dVal(dParams.Params, f.first, commFactors);	// y-coordinate (value) of the calculated sequence
 		if (isNaN(b))						return;
 		if (f.first > Mode && b < cutoffY)	break;
 		const double a = double(f.second);							// y-coordinate (value) of the original sequence
@@ -396,6 +404,7 @@ void Distrib::CalcPCC(dind ind, ADParams& dParams, fraglen Mode, bool full) cons
 
 void Distrib::CallParams(dind ind, fraglen base, dpoint& summit)
 {
+	auto calcParams = ADFs[ind].CalcParams;
 	const BYTE failCntLim = 2;	// max count of base's decreasing steps after which PCC is considered only decreasing
 	BYTE failCnt = 0;			// counter of base's decreasing steps after which PCC is considered only decreasing
 	dpoint summit0;				// temporary summit
@@ -410,7 +419,7 @@ void Distrib::CallParams(dind ind, fraglen base, dpoint& summit)
 	for (; base; base--) {
 		const fpair keypts = GetKeyPoints(base, summit0);
 
-		CalcParams[ind](keypts, dParams0.Params);
+		calcParams(keypts, dParams0.Params);
 		CalcPCC(ind, dParams0, summit0.first);
 #ifdef MY_DEBUG
 		* _s << setw(4) << setfill(SPACE) << left << ++i;
@@ -442,6 +451,8 @@ void Distrib::CallParams(dind ind, fraglen base, dpoint& summit)
 
 void Distrib::PrintSpecs(dostream& s, fraglen base, const Distrib::dpoint& summit)
 {
+	const string sInaccurate = " may be biased";
+
 	if (base == smoothBase)
 		s << Spec(eSpec::SMOOTH) << LF;
 	if (summit.first - begin()->first<SSpliner<dVal_t>::SilentLength(eCurveType::SMOOTH, base)

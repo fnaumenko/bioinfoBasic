@@ -2,7 +2,7 @@
 Distrib.h
 2023 Fedor Naumenko (fedor.naumenko@gmail.com)
 -------------------------
-Last modified: 01/11/2025
+Last modified: 01/12/2025
 -------------------------
 Provides value (typically frequency) distribution functionality
 ***********************************************************/
@@ -48,7 +48,7 @@ public:
 	//	@returs Y-value of the point
 	static double GetApprValue(eCType ctype, float mean, float sigma, fraglen x);
 
-	// Calculate and print distribution on a new line
+	// Calculate and print approximate distribution parameters on a new line
 	//	@param s[out]: print stream
 	//	@param type[in]: combined type of distribution
 	//	@param prWarning[in]: if true then print possible warning message
@@ -78,23 +78,20 @@ private:
 
 	const fraglen smoothBase = 1;	// splining base for the smooth distribution
 
-	// Keeps approximation distribution parameters: PCC, mean(alpha), sigma(beta)
+	// Keeps approximate distribution parameters: PCC, mean(alpha), sigma(beta)
 	struct ADParams
 	{
-	private:
-		static const float UndefPCC;
-	public:
-		float	PCC = 0;		// Pearson correlation coefficient
-		fpair	Params{};		// mean(alpha), sigma(beta)
+		float	PCC = 0;	// Pearson correlation coefficient
+		fpair	Params{};	// mean(alpha), sigma(beta)
 
 		bool operator >(const ADParams& dp) const { return PCC > dp.PCC; }
 
-		bool IsUndefPcc() const { return PCC == UndefPCC; };
+		bool IsUndefPcc() const { return PCC == -1; };
 
-		void SetUndefPcc() { PCC = UndefPCC; };
+		void SetUndefPcc() { PCC = -1; };
 	};
 
-	// 'SetADParams' represents a collection of approximation distribution parameters for all type of distribution
+	// 'SetADParams' represents a collection of approximate distribution parameters for all type of distribution
 	class SetADParams
 	{
 		// Indexed ADParams: struct ADParams supplied with inner index
@@ -160,8 +157,10 @@ private:
 	// Returns true if inner index is represented in combo cType
 	static bool IsIndex(eCType cType, dind ind) { return cType & (1 << ind); }
 
-	// Returns true if combo type is represented in combo cType
-	static bool IsType(eCType cType, eCType type) { return cType & type; }
+	// Returns true if exclusive type is represented in combo cType
+	//	@param test: test combo cType
+	//	@param excl: exclusive cType
+	static bool IsType(eCType test, eCType excl) { return test & excl; }
 
 	eSpec _spec = eSpec::CLEAR;		// distribution specification
 	SetADParams	_allParams;			// distributions parameters
