@@ -34,7 +34,7 @@ struct ADF {
 	float (*Median)	(const fpair& p);
 
 	// Calculates approximate distribution parameters
-	//	@param keypts[in]: key points: X-coord of highest point, X-coord of right middle hight point
+	//	@param keypts[in]: key points: X-coord of highest point, X-coord of half height of the highest point
 	//	@param p[out]: returned params: mean(alpha) & sigma(beta)
 	void (*CalcParams)(const fpair& keypts, fpair& p);
 
@@ -45,47 +45,53 @@ struct ADF {
 };
 
 static ADF ADFs[3] {
-#define SQR_SIGMA	p.second * p.second
+#define FACTOR1	cmFactors.first
+#define FACTOR2	cmFactors.second
+#define MEAN	p.first
+#define SIGMA	p.second
+#define SQR_SIGMA	SIGMA * SIGMA
+#define X_HIGH		keypts.first
+#define X_HALFHIGH	keypts.second
 
 	{ "Norm",
-	[](const fpair& p) ->fpair { return { p.second * SDPI, 0.f}; },	// CommonFactors
-	[](const fpair& p, fraglen x, const fpair& cmFactors) { 	// Value
-		return exp(-pow(((x - p.first) / p.second), 2) / 2) / cmFactors.first;
+	[](const fpair& p) ->fpair { return { SIGMA * SDPI, 0.f}; },	// CommonFactors
+	[](const fpair& p, fraglen x, const fpair& cmFactors) { // Value
+		return exp(-pow(((x - MEAN) / SIGMA), 2) / 2) / FACTOR1;
 	},
-	[](const fpair& p) { return p.first; },						// Mode
-	[](const fpair& p) { return p.first; },						// Mean
-	[](const fpair& p) { return p.first; },						// Median
-	[](const fpair& keypts, fpair& p) {							// CalcParams
-		p.first = keypts.first;
-		p.second = float(sqrt(pow(keypts.second - p.first, 2) / lghRatio / 2));
+	[](const fpair& p) { return MEAN; },					// Mode
+	[](const fpair& p) { return MEAN; },					// Mean
+	[](const fpair& p) { return MEAN; },					// Median
+	[](const fpair& keypts, fpair& p) {						// CalcParams
+		MEAN = X_HIGH;
+		SIGMA = float(sqrt(pow(X_HALFHIGH - MEAN, 2) / lghRatio / 2));
 	},
 	},
 	{ "Lognorm",
-	[](const fpair& p) ->fpair { return { p.second * SDPI, 2 * SQR_SIGMA}; },	// CommonFactors
-	[](const fpair& p, fraglen x, const fpair& cmFactors) { 		// Value
-		return exp(-pow((log(x) - p.first), 2) / cmFactors.second) / (cmFactors.first * x);
+	[](const fpair& p) ->fpair { return { SIGMA * SDPI, 2 * SQR_SIGMA}; },	// CommonFactors
+	[](const fpair& p, fraglen x, const fpair& cmFactors) { 	// Value
+		return exp(-pow((log(x) - MEAN), 2) / FACTOR2) / (FACTOR1 * x);
 	},
-	[](const fpair& p) { return exp(p.first - SQR_SIGMA); },		// Mode
-	[](const fpair& p) { return exp(p.first + SQR_SIGMA / 2); },	// Mean
-	[](const fpair& p) { return exp(p.first); },					// Median
-	[](const fpair& keypts, fpair& p) {								// CalcParams
-		const float lgM = log(keypts.first);		// logarifm of Mode
-		const float lgH = log(keypts.second);		// logarifm of middle height
-		p.first = (lgM * (lghRatio + lgM - lgH) + (lgH * lgH - lgM * lgM) / 2) / lghRatio;
-		p.second = sqrt(p.first - lgM);
+	[](const fpair& p) { return exp(MEAN - SQR_SIGMA); },		// Mode
+	[](const fpair& p) { return exp(MEAN + SQR_SIGMA / 2); },	// Mean
+	[](const fpair& p) { return exp(MEAN); },					// Median
+	[](const fpair& keypts, fpair& p) {							// CalcParams
+		const float lgM = log(X_HIGH);		// logarifm of Mode
+		const float lgH = log(X_HALFHIGH);	// logarifm of middle height
+		MEAN = (lgM * (lghRatio + lgM - lgH) + (lgH * lgH - lgM * lgM) / 2) / lghRatio;
+		SIGMA = sqrt(MEAN - lgM);
 	},
 	},
 	{ "Gamma",
-	[](const fpair& p) ->fpair { return { p.first - 1, float(pow(p.second, p.first)) }; },	// CommonFactors
-	[](const fpair& p, fraglen x, const fpair& cmFactors) { 	// Value
-		return pow(x, cmFactors.first) * exp(-(x / p.second)) / cmFactors.second;
+	[](const fpair& p) ->fpair { return { MEAN - 1, float(pow(SIGMA, MEAN)) }; },	// CommonFactors
+	[](const fpair& p, fraglen x, const fpair& cmFactors) { // Value
+		return pow(x, FACTOR1) * exp(-(x / SIGMA)) / FACTOR2;
 	},
-	[](const fpair& p) { return (p.first - 1) * p.second; },	// Mode
-	[](const fpair& p) { return p.first * p.second; },			// Mean 
-	[](const fpair& p) { return 0.f; },							// Median 
-	[](const fpair& keypts, fpair& p) {							// CalcParams
-		p.second = (keypts.second - keypts.first * (1 + log(keypts.second / keypts.first))) / lghRatio;
-		p.first = (keypts.first / p.second) + 1;
+	[](const fpair& p) { return (MEAN - 1) * SIGMA; },		// Mode
+	[](const fpair& p) { return MEAN * SIGMA; },			// Mean 
+	[](const fpair& p) { return 0.f; },						// Median: undefined
+	[](const fpair& keypts, fpair& p) {						// CalcParams
+		SIGMA = (X_HALFHIGH - X_HIGH * (1 + log(X_HALFHIGH / X_HIGH))) / lghRatio;
+		MEAN = (X_HIGH / SIGMA) + 1;
 	}
 	},
 };
