@@ -49,7 +49,9 @@ static ADF ADFs[3] {
 #define FACTOR2	cmFactors.second
 #define MEAN	p.first
 #define SIGMA	p.second
-#define SQR_SIGMA	SIGMA * SIGMA
+#define ALPHA	p.first
+#define BETA	p.second
+#define POW2_SIGMA	SIGMA * SIGMA
 #define X_HIGH		keypts.first
 #define X_HALFHIGH	keypts.second
 
@@ -67,12 +69,12 @@ static ADF ADFs[3] {
 	},
 	},
 	{ "Lognorm",
-	[](const fpair& p) ->fpair { return { SIGMA * SDPI, 2 * SQR_SIGMA}; },	// CommonFactors
+	[](const fpair& p) ->fpair { return { SIGMA * SDPI, 2 * POW2_SIGMA}; },	// CommonFactors
 	[](const fpair& p, fraglen x, const fpair& cmFactors) { 	// Value
 		return exp(-pow((log(x) - MEAN), 2) / FACTOR2) / (FACTOR1 * x);
 	},
-	[](const fpair& p) { return exp(MEAN - SQR_SIGMA); },		// Mode
-	[](const fpair& p) { return exp(MEAN + SQR_SIGMA / 2); },	// Mean
+	[](const fpair& p) { return exp(MEAN - POW2_SIGMA); },		// Mode
+	[](const fpair& p) { return exp(MEAN + POW2_SIGMA / 2); },	// Mean
 	[](const fpair& p) { return exp(MEAN); },					// Median
 	[](const fpair& keypts, fpair& p) {							// CalcParams
 		const float lgM = log(X_HIGH);		// logarifm of Mode
@@ -82,16 +84,16 @@ static ADF ADFs[3] {
 	},
 	},
 	{ "Gamma",
-	[](const fpair& p) ->fpair { return { MEAN - 1, float(pow(SIGMA, MEAN)) }; },	// CommonFactors
+	[](const fpair& p) ->fpair { return { ALPHA - 1, float(pow(BETA, ALPHA)) }; },	// CommonFactors
 	[](const fpair& p, fraglen x, const fpair& cmFactors) { // Value
-		return pow(x, FACTOR1) * exp(-(x / SIGMA)) / FACTOR2;
+		return pow(x, FACTOR1) * exp(-(x / BETA)) / FACTOR2;
 	},
-	[](const fpair& p) { return (MEAN - 1) * SIGMA; },		// Mode
-	[](const fpair& p) { return MEAN * SIGMA; },			// Mean 
+	[](const fpair& p) { return (ALPHA - 1) * BETA; },		// Mode
+	[](const fpair& p) { return ALPHA * BETA; },			// Mean 
 	[](const fpair& p) { return 0.f; },						// Median: undefined
 	[](const fpair& keypts, fpair& p) {						// CalcParams
-		SIGMA = (X_HALFHIGH - X_HIGH * (1 + log(X_HALFHIGH / X_HIGH))) / lghRatio;
-		MEAN = (X_HIGH / SIGMA) + 1;
+		BETA = (X_HALFHIGH - X_HIGH * (1 + log(X_HALFHIGH / X_HIGH))) / lghRatio;
+		ALPHA = (X_HIGH / BETA) + 1;
 	}
 	},
 };
