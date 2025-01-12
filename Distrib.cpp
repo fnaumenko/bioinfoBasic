@@ -222,7 +222,7 @@ const string Distrib::Spec(eSpec s) {
 	return "Distribution " + sSpec[int(s)];
 }
 
-const char* sDistrib = "distribution";
+const char* Distrib::sDistrib = "distribution";
 const string sParams = "parameters";
 
 fraglen Distrib::GetBase()

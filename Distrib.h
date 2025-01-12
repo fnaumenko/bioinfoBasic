@@ -27,6 +27,8 @@ public:
 		CNT = 3,
 	};
 
+	static const char* sDistrib;
+
 	// Default constructor
 	Distrib() {}
 
