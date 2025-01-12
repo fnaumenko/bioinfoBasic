@@ -339,7 +339,7 @@ fpair Distrib::GetKeyPoints(fraglen base, dpoint& summit) const
 	dpoint p{};					// current point
 	SSpliner<dVal_t> spliner(
 #ifdef MY_DEBUG					// to visualize SPIKED or SMOOTH distributions separately
-		eCurveType::SPIKED, 
+		eCurveType::ROUGH, 
 		//eCurveType::SMOOTH,
 #else
 		base <= smoothBase ? eCurveType::ROUGH : eCurveType::SMOOTH,
@@ -482,7 +482,7 @@ void Distrib::PrintSpecs(dostream& s, fraglen base, const Distrib::dpoint& summi
 		const float diffPCC = dParams.PCC - _allParams.GetBestPCC();
 
 #ifdef MY_DEBUG
-		s << "summit: " << summit.first << "\tPCCsummit: " << dParams.GetBestPCC() << "\tdiff PCC: " << diffPCC << LF;
+		s << "summit: " << summit.first << "\tPCCsummit: " << dParams.PCC << "\tdiff PCC: " << diffPCC << LF;
 #endif
 		if (diffPCC > 0.01)
 			Err(Spec(eSpec::DEFECT) + SepSCl + sParams + sInaccurate).Warning();

@@ -11,7 +11,7 @@ Provides value (typically frequency) distribution functionality
 #include "DataReader.h"
 #include <array>
 
-//#define MY_DEBUG
+// MY_DEBUG should be managed via DataReader.h
 
 using dVal_t = size_t;	// type of distribution value
 
