@@ -90,12 +90,7 @@ static ADF ADFs[3] {
 	},
 };
 
-
-double Distrib::GetApprValue(eCType ctype, float mean, float sigma, fraglen x)
-{
-	const fpair p{mean, sigma};
-	return ADFs[GetDType(ctype)].GetValue(p, x);
-}
+//===== Distrib::SetADParams
 
 #define SETW left<<setw(4)
 #define UNITAB SETW<<SPACE<<TAB	// tab stretching 4 spaces to display regardless of tab size (4 or 8)
@@ -207,6 +202,17 @@ void Distrib::SetADParams::Print(dostream& s)
 	}
 }
 
+
+//===== Distrib
+
+const char* Distrib::sDistrib = "distribution";
+
+double Distrib::GetApprValue(eCType ctype, float mean, float sigma, fraglen x)
+{
+	const fpair p{ mean, sigma };
+	return ADFs[GetDType(ctype)].GetValue(p, x);
+}
+
 const string Distrib::Spec(eSpec s) { 
 	const string sSpec[] = {
 		"is degenerate",
@@ -222,7 +228,6 @@ const string Distrib::Spec(eSpec s) {
 	return "Distribution " + sSpec[int(s)];
 }
 
-const char* Distrib::sDistrib = "distribution";
 const string sParams = "parameters";
 
 fraglen Distrib::GetBase()
