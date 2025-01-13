@@ -112,7 +112,7 @@ private:
 			void Print(dostream& s, float maxPCC) const;
 		};
 
-		array<IndADParams, eCType::CNT>	_allParams;
+		array<IndADParams, eCType::CNT>	_setADParams;
 		bool _sorted = false;
 
 		// Returns true if AD parameters set in sorted instance
@@ -122,7 +122,7 @@ private:
 		int SetSortedCount() const;
 
 		// Returns AD Params by combined distribution type
-		ADParams& Params(eCType ctype) { return _allParams[GetDType(ctype)]; }
+		ADParams& Params(eCType ctype) { return _setADParams[GetDType(ctype)]; }
 
 		// Sorts in PCC descending order
 		void Sort();
@@ -131,12 +131,12 @@ private:
 		// Default constructor
 		SetADParams();
 
-		float GetBestPCC() const { return _allParams[0].PCC; }
+		float GetBestPCC() const { return _setADParams[0].PCC; }
 
 		// Set distribution parameters by index
 		//	@param ind: inner distribution index
 		//	@param adp: approximation distribution parameters
-		void SetParams(dind ind, const ADParams& adp) { _allParams[ind].Copy(adp); }
+		void SetParams(dind ind, const ADParams& adp) { _setADParams[ind].Copy(adp); }
 
 		// Clear normal distribution if its PCC is less then lognorm PCC by the threshold
 		void ClearNormDistBelowThreshold(float thresh) {
@@ -146,7 +146,7 @@ private:
 
 		// Sorts parameters and returns inner index of distribution with the highest PCC
 		//	@returns inner index of distribution with the highest (best) PCC
-		dind GetBestIndex() { Sort(); return _allParams[0].Index; }
+		dind GetBestIndex() { Sort(); return _setADParams[0].Index; }
 
 		// Prints sorted distibutions params on a new line
 		//	@param s: output stream
@@ -165,7 +165,7 @@ private:
 	static bool IsType(eCType test, eCType excl) { return test & excl; }
 
 	eSpec _spec = eSpec::CLEAR;		// distribution specification
-	SetADParams	_allParams;			// distributions parameters
+	SetADParams	_setADParams;			// approximate distributions parameters
 #ifdef MY_DEBUG
 	mutable vector<dpoint> _spline;		// splining curve (container) to visualize splining
 	mutable bool _fillSpline = true;	// true if fill splining curve (container)

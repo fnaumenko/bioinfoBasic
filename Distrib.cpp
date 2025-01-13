@@ -139,7 +139,7 @@ void Distrib::SetADParams::IndADParams::Print(dostream& s, float maxPCC) const
 bool Distrib::SetADParams::IsSetInSorted(eCType ctype) const
 {
 	const dind ind = GetDType(ctype);
-	for (const auto& dp : _allParams)
+	for (const auto& dp : _setADParams)
 		if (dp.Index == ind)
 			return dp.IsSet();
 	return false;
@@ -148,7 +148,7 @@ bool Distrib::SetADParams::IsSetInSorted(eCType ctype) const
 int Distrib::SetADParams::SetSortedCount() const
 {
 	int cnt = 0;
-	for (const auto& dp : _allParams)
+	for (const auto& dp : _setADParams)
 		cnt += dp.IsSet();
 	return cnt;
 }
@@ -156,7 +156,7 @@ int Distrib::SetADParams::SetSortedCount() const
 void Distrib::SetADParams::Sort()
 {
 	if (!_sorted) {
-		sort(_allParams.begin(), _allParams.end(),
+		sort(_setADParams.begin(), _setADParams.end(),
 			[](const ADParams& dp1, const ADParams& dp2) -> bool
 			{ return dp1 > dp2; }
 		);
@@ -167,7 +167,7 @@ void Distrib::SetADParams::Sort()
 Distrib::SetADParams::SetADParams()
 {
 	int i = 0;
-	for (auto& dp : _allParams)
+	for (auto& dp : _setADParams)
 		dp.Index = i++;
 }
 
@@ -187,7 +187,7 @@ void Distrib::SetADParams::Print(dostream& s)
 	s << LF << UNITAB << " PCC\t";
 	if (notSingle)
 		s << "relPCC\t",
-		maxPCC = _allParams[0].PCC;
+		maxPCC = _setADParams[0].PCC;
 	if (!isGamma)		s << N[0] << TAB << N[1];
 	else if (notSingle)	s << P[0] << a[0] << TAB << P[1] << a[1];
 	else				s << G[0] << TAB << G[1];
@@ -197,7 +197,7 @@ void Distrib::SetADParams::Print(dostream& s)
 
 	// ** print values
 	s << LF;
-	for (const auto& params : _allParams)
+	for (const auto& params : _setADParams)
 		params.Print(s, maxPCC);
 
 	// ** print note
@@ -455,7 +455,7 @@ void Distrib::CallParams(dind ind, fraglen base, dpoint& summit)
 			if (failCnt > failCntLim)	break;
 		}
 	}
-	_allParams.SetParams(ind, dParams);
+	_setADParams.SetParams(ind, dParams);
 
 #ifdef MY_DEBUG
 	* _s << LF;
@@ -478,8 +478,8 @@ void Distrib::PrintSpecs(dostream& s, fraglen base, const Distrib::dpoint& summi
 	else {
 		ADParams dParams;
 
-		CalcPCC(_allParams.GetBestIndex(), dParams, summit.first, false);	// sorts params
-		const float diffPCC = dParams.PCC - _allParams.GetBestPCC();
+		CalcPCC(_setADParams.GetBestIndex(), dParams, summit.first, false);	// sorts params
+		const float diffPCC = dParams.PCC - _setADParams.GetBestPCC();
 
 #ifdef MY_DEBUG
 		s << "summit: " << summit.first << "\tPCCsummit: " << dParams.PCC << "\tdiff PCC: " << diffPCC << LF;
@@ -558,11 +558,11 @@ void Distrib::Print(dostream& s, eCType ctype, bool prWarning, bool prDistr)
 			// check for NORM if LNORM is defined
 			if (IsType(ctype, eCType::LNORM) && !IsType(ctype, eCType::NORM)) {
 				CallParams(GetDType(eCType::NORM), base, summit);
-				_allParams.ClearNormDistBelowThreshold(1.02F);	// threshold 2%
+				_setADParams.ClearNormDistBelowThreshold(1.02F);	// threshold 2%
 			}
 #endif
 			if (prWarning)	PrintSpecs(s, base, summit);
-			_allParams.Print(s);
+			_setADParams.Print(s);
 			if (prDistr)	PrintOriginal(s);
 		}
 		else
