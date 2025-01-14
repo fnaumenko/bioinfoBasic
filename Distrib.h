@@ -16,7 +16,7 @@ Provides value (typically frequency) distribution functionality
 using dVal_t = size_t;	// type of distribution value
 
 // 'Distrib' represents a value frequency distribution and its approximation by a two-parameter distribution
-class Distrib : map<int, dVal_t>	// sync type with 'rpoint' in .cpp 
+class Distrib : map<int, dVal_t>	// sync type with 'rpoint' in  .cpp 
 {
 public:
 	// combined type of distribution
@@ -28,10 +28,10 @@ public:
 	};
 
 	// method of smoothing distribution
-	//enum eSmooth {
-	//	SPLINE,		// sliding splining
-	//	INTERPOL,	// Bezier interpolation
-	//};
+	enum eSmooth {
+		SPLINE,		// sliding splining
+		INTERPOL,	// Bezier interpolation
+	};
 
 	static const char* sDistrib;
 
@@ -59,7 +59,7 @@ public:
 	// Calculate approximate distribution parameters
 	//	@param type: combined type of distribution
 	//	@param smooth: method of smoothing
-	void CalcADParams(eDType type/*, eSmooth smooth = eSmooth::SPLINE*/);
+	void CalcADParams(eDType type, eSmooth smooth = eSmooth::SPLINE);
 
 	// Prints approximate distribution parameters on a new line
 	//	@param s[out]: print stream
@@ -180,7 +180,7 @@ private:
 	fraglen	_base = FRAGLEN_MAX;	// moving window half-length of best spline
 	dpoint	_summit;				// X,Y coordinates of best splined (smoothed) summit
 
-	//eSmooth	_smooth = eSmooth::SPLINE;
+	eSmooth	_smooth = eSmooth::SPLINE;
 #ifdef MY_DEBUG
 	mutable vector<dpoint> _spline;		// splining curve (container) to visualize splining
 	mutable bool _fillSpline = true;	// true if fill splining curve (container)
@@ -191,8 +191,8 @@ private:
 	void SetBase();
 
 	// Builds spline curve and defines key points
-	//	@param base[in]: moving window half-length
-	//	@param summit[out]: returned X,Y coordinates of splined (smoothed) summit
+	//	@param base: moving window half-length
+	//	@param summit: returned X,Y coordinates of splined (smoothed) summit
 	//	@returns key points: X-coord of highest point, X-coord of right middle hight point
 	fpair GetKeyPoints(fraglen base, dpoint& summit) const;
 
@@ -210,11 +210,11 @@ private:
 
 	// Calculates the best approximate distribution parameters for a specific type of distribution
 	//	@param ind[in]: inner distribution index
-	//void SetParamsForInterpol(dind ind) {}
+	void SetParamsForInterpol(dind ind) {}
 
 	// Calculates the best approximate distribution parameters for a specific type of distribution
 	//	@param ind[in]: inner distribution index
-	void SetParams(dind ind) { SetParamsForSpline(ind); }
+	void SetParams(dind ind) { _smooth == eSmooth::SPLINE ? SetParamsForSpline(ind) : SetParamsForInterpol(ind); }
 
 	// Prints warnings about poor quality distributions
 	//	@param s: print stream

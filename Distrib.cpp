@@ -239,7 +239,7 @@ const string sParams = "parameters";
 
 void Distrib::SetBase()
 {
-	//if (_smooth == eSmooth::INTERPOL)	return;
+	if (_smooth == eSmooth::INTERPOL)	return;
 
 	using rpoint = pair<int, dVal_t>;	// initial raw sequence point
 	fraglen halfX = 0;
@@ -523,9 +523,9 @@ Distrib::Distrib(const char* fName, dostream& s)
 using namespace std::chrono;
 #endif
 
-void Distrib::CalcADParams(eDType dtype)	//, eSmooth smooth)
+void Distrib::CalcADParams(eDType dtype, eSmooth smooth)
 {
-	//_smooth = smooth;
+	_smooth = smooth;
 
 	if (!empty()) {
 		SetBase();
