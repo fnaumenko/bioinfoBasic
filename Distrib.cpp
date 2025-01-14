@@ -1,12 +1,11 @@
 /**********************************************************
 Distrib.cpp
-Last modified: 01/12/2025
+Last modified: 01/14/2025
 ***********************************************************/
 
 #include "Distrib.h"
 #include "spline.h"
 #include <algorithm>    // std::sort
-#include <utility>      // std::swap
 
 // square of doubled Pi
 const float SDPI = float(sqrt(3.1415926 * 2));
@@ -44,7 +43,7 @@ struct ADF {
 	double GetValue	(const fpair& p, fraglen x) { return Value(p, x, CommonFactors(p)); }
 };
 
-static ADF ADFs[3] {
+static ADF ADFs[Distrib::eDType::CNT] {
 #define FACTOR1	cmFactors.first
 #define FACTOR2	cmFactors.second
 #define MEAN	p.first
@@ -136,9 +135,9 @@ void Distrib::SetADParams::IndADParams::Print(dostream& s, float maxPCC) const
 	}
 }
 
-bool Distrib::SetADParams::IsSetInSorted(eCType ctype) const
+bool Distrib::SetADParams::IsSetInSorted(eDType dtype) const
 {
-	const dind ind = GetDType(ctype);
+	const dind ind = GetDType(dtype);
 	for (const auto& dp : _setADParams)
 		if (dp.Index == ind)
 			return dp.IsSet();
@@ -180,8 +179,8 @@ void Distrib::SetADParams::Print(dostream& s)
 	const bool notSingle = SetSortedCount() > 1;	// more then 1 output distr type
 	float maxPCC = 0;
 
-	Sort();			// should already be sorted by PrintSpecs(), but just in case
-	const bool isGamma = IsSetInSorted(eCType::GAMMA);
+	Sort();			// should already be sorted by PrintWarning(), but just in case
+	const bool isGamma = IsSetInSorted(eDType::GAMMA);
 
 	// ** print title
 	s << LF << UNITAB << " PCC\t";
@@ -202,7 +201,7 @@ void Distrib::SetADParams::Print(dostream& s)
 
 	// ** print note
 	if (notSingle && isGamma) {
-		auto title = ADFs[GetDType(eCType::GAMMA)].Title;
+		auto title = ADFs[GetDType(eDType::GAMMA)].Title;
 		s << LF;
 		for (BYTE i = 0; i < 2; i++)
 			s << setw(3) << a[i] << P[i] << " - " << N[i] << ", or "
@@ -215,10 +214,10 @@ void Distrib::SetADParams::Print(dostream& s)
 
 const char* Distrib::sDistrib = "distribution";
 
-double Distrib::GetApprValue(eCType ctype, float mean, float sigma, fraglen x)
+double Distrib::GetApprValue(eDType dtype, float mean, float sigma, fraglen x)
 {
 	const fpair p{ mean, sigma };
-	return ADFs[GetDType(ctype)].GetValue(p, x);
+	return ADFs[GetDType(dtype)].GetValue(p, x);
 }
 
 const string Distrib::Spec(eSpec s) { 
@@ -238,127 +237,127 @@ const string Distrib::Spec(eSpec s) {
 
 const string sParams = "parameters";
 
-fraglen Distrib::GetBase()
+void Distrib::SetBase()
 {
-	using rpoint = pair<fraglen, dVal_t>;	// initial raw sequence point
+	//if (_smooth == eSmooth::INTERPOL)	return;
 
-	const int CutoffFrac = 100;	// fraction of the maximum height below which scanning stops on the first pass
-	dVal_t	cutoffY = 0;		// Y-value below which scanning stops on the first pass
+	using rpoint = pair<int, dVal_t>;	// initial raw sequence point
 	fraglen halfX = 0;
-	USHORT peakCnt = 0;
-	bool up = false;
-	auto it = begin();
-	rpoint p0(*it), p;			// previous, current point
-	rpoint pMin(0, 0), pMax(pMin), pMMax(pMin);	// current, previous, maximum point
-	vector<value_type> extr;		// local extremums
-	SSpliner<dVal_t> spliner(eCurveType::ROUGH, 1);
+	rpoint pMin(0, 0), pMMax(pMin);	// minimum, maximum point
+	vector<value_type> extr;		// local extremes
 
-	//== define pMMax and halfX
-	extr.reserve(20);
-	for (it++; it != end(); p0 = p, it++) {
-		p.first = it->first;
-		p.second = dVal_t(spliner.Push(it->second));
-		if (p.second > p0.second) {		// increasing part
-			if (!up) {					// treat pit
-				extr.push_back(pMax); pMin = p0; up = true;
+	//== define pMin, pMMax and halfX
+	{
+		const int CutoffFrac = 100;	// fraction of the maximum height below which scanning stops on the first pass
+		dVal_t	cutoffY = 0;		// Y-value below which scanning stops on the first pass
+		USHORT peakCnt = 0;
+		bool up = false;
+		auto it = begin();
+		SSpliner<dVal_t> spliner(eCurveType::ROUGH, 1);
+
+		_base = 0;
+		extr.reserve(20);
+		for (rpoint p0(*it++), pMax(pMin); it != end(); it++) {
+			rpoint p{
+				it->first,
+				dVal_t(spliner.Push(it->second))
+			};
+			if (p.second > p0.second) {		// increasing curve
+				if (!up)					// treat pit
+					extr.push_back(pMax), up = true, pMin.swap(p0);
 			}
-		}
-		else {							// decreasing part
-			if (up) {					// treat peak
-				extr.push_back(pMin); pMax = p0; up = false;
+			else {							// decreasing curve
+				if (up) {					// treat peak
+					extr.push_back(pMin), up = false, pMax = p0;
 
-				if (p0.second > pMMax.second) {
-					pMMax = p0;
-					cutoffY = pMMax.second / CutoffFrac;
+					if (p0.second > pMMax.second) {
+						pMMax.swap(p0);
+						cutoffY = pMMax.second / CutoffFrac;
+					}
+					peakCnt++;
 				}
-				peakCnt++;
+				if (peakCnt && p.second >= pMMax.second / 2)
+					halfX = p.first;
+				if (p.second < cutoffY) {
+					extr.push_back(pMax);
+					break;
+				}
 			}
-			if (peakCnt && p.second >= pMMax.second / 2)
-				halfX = p.first;
-			if (p.second < cutoffY) {
-				extr.push_back(pMax);
-				break;
-			}
+			p0.swap(p);
 		}
 	}
 	if (!halfX || pMMax.second - pMin.second <= 4) {	// why 4? 5 maybe enough to identify a peak
 		//_spec = eSpec::EVEN;
 		Err(Spec(_spec) + SepSCl + sParams + " are not called").Throw(false);	// even distribution
-		return 0;
 	}
 #ifdef MY_DEBUG
 	cout << "pMMax: " << pMMax.first << TAB << pMMax.second << LF;
 #endif
 	//== define splined max point
 	pMMax.second = 0;
-	for (auto& p : extr) {
+	for (const auto& p : extr)
 		if (p.second > pMMax.second)	pMMax = p;
-		//cout << p.first << TAB << p.second << LF;
-	}
 
 	//== define if sequence is modulated
-	auto itv = extr.begin();	// always 0,0
-	itv++;						// always 0,0 as well
-	p0 = *(++itv);				// first point in sequence
-	//pMin = pMMax;
-	//pMax = make_pair(0, 0);
-	int i = 1;
-	bool isDip = false, isPeakAfterDip = false;
+	bool isPeakAfterDip = false;
+	{
+		bool isDip = false;
+		auto itv = extr.begin();		// always 0,0
+		itv++;							// always 0,0 as well
+		dVal_t val = (++itv)->second;	// first unzero value in sequence
+		itv++;
 
-	// from now odd is always dip, even - peak, last - peak
-	// looking critical dip in extr
-	for (itv++; itv != extr.end(); i++, itv++) {
-		p = *itv;	// we don't need point, using the Y-coordinate is enough. Point is used for debugging
-		//cout << p.first << TAB << p.second << TAB;
-		//if(i % 2)		cout << float(p0.second - p.second) / pMMax.second << "\tdip\n";
-		//else			cout << float(p.second - p0.second) / pMMax.second << "\tpeak\n";
-		if (i % 2)		// dip
-			isDip = float(p0.second - p.second) / pMMax.second > 0.3;
-		else 			// peak
-			if (isPeakAfterDip = isDip && float(p.second - p0.second) / pMMax.second > 0.1)
-				break;
-		p0 = p;
+		// from now odd is always dip, even - peak, last - peak
+		// looking critical dip in extremes
+		for (int i = 1; itv != extr.end(); val = itv++->second) {
+			//if(i % 2)		cout << float(val - itv->second) / pMMax.second << "\tdip\n";
+			//else			cout << float(itv->second - val) / pMMax.second << "\tpeak\n";
+			if (i++ % 2)	// dip
+				isDip = float(val - itv->second) / pMMax.second > 0.3;
+			else 			// peak
+				if (isPeakAfterDip = isDip && float(itv->second - val) / pMMax.second > 0.1)
+					break;
+		}
+		if (isPeakAfterDip)	_spec = eSpec::MODUL;
 	}
-	// set  
-	if (isPeakAfterDip)	_spec = eSpec::MODUL;
 
-	if (!halfX)		return smoothBase;
-	fraglen diffX = halfX - pMMax.first;
+	//== set _base
+	if (halfX) {
+		fraglen diffX = halfX - pMMax.first;
+		_base = fraglen(float(diffX) * (isPeakAfterDip ? 0.9F : (diffX > 20 ? 0.1F : 0.35F)));
 #ifdef MY_DEBUG
-	fraglen base = fraglen((isPeakAfterDip ? 0.9F : (diffX > 20 ? 0.1F : 0.35F)) * diffX);
-	cout << "isPeakAfterDip: " << isPeakAfterDip << "\thalfX: " << halfX << "\tdiffX: " << diffX << "\tbase: " << base << LF;
-	return base;
-#else
-	return fraglen(float(diffX) * (isPeakAfterDip ? 0.9F : (diffX > 20 ? 0.1F : 0.35F)));
+		cout << "isPeakAfterDip: " << isPeakAfterDip << "\thalfX: " << halfX << "\tdiffX: " << diffX << "\tbase: " << base << LF;
 #endif
+	}
+	else
+		_base = smoothBase;
 }
 
 fpair Distrib::GetKeyPoints(fraglen base, dpoint& summit) const
 {
-	dpoint p0 = make_pair(begin()->first, float(begin()->second));	// previous point
-	dpoint p{};					// current point
+	dpoint p0{ begin()->first, float(begin()->second) };	// previous point
+	dpoint p{};												// current point
 	SSpliner<dVal_t> spliner(
-#ifdef MY_DEBUG					// to visualize SPIKED or SMOOTH distributions separately
+#ifdef MY_DEBUG					// to visualize ROUGH or SMOOTH distributions separately
 		eCurveType::ROUGH, 
-		//eCurveType::SMOOTH,
 #else
 		base <= smoothBase ? eCurveType::ROUGH : eCurveType::SMOOTH,
 #endif
 		base);
-
-	summit.second = 0;
 #ifdef MY_DEBUG
 	_spline.clear();
 	fpair keyPts(0, 0);
 #endif
-	for (const value_type& f : *this) {
+
+	summit.second = 0;
+	for (auto& f : *this) {
 		p.first = spliner.CorrectX(f.first);	// X: minus MA & MM base back shift
 		p.second = spliner.Push(f.second);		// Y: splined
 #ifdef MY_DEBUG
 		if (_fillSpline)	_spline.push_back(p);	// to print
 #endif
-		if (p.second >= summit.second)	
-			std::swap(p, summit);
+		if (p.second >= summit.second)
+			p.swap(summit);
 		else {
 			if (p.second < summit.second / hRatio) {
 #ifdef MY_DEBUG
@@ -371,7 +370,7 @@ fpair Distrib::GetKeyPoints(fraglen base, dpoint& summit) const
 #endif
 				break;
 			}
-			std::swap(p, p0);
+			p.swap(p0);
 		}
 	}
 
@@ -379,13 +378,13 @@ fpair Distrib::GetKeyPoints(fraglen base, dpoint& summit) const
 	return keyPts;
 #else
 	return fpair(
-		float(summit.first),							// summit X
-		p0.first + p0.second / (p.second + p0.second)	// final point with half height; proportional X
+		float(summit.first),							// summit X-coord
+		p0.first + p0.second / (p.second + p0.second)	// half-summit X-coord (proportional)
 	);
 #endif
 }
 
-void Distrib::CalcPCC(dind ind, ADParams& dParams, fraglen Mode, bool full) const
+void Distrib::CalcPCC(dind ind, ADParams& dParams, int Mode, bool full) const
 {
 	const fpair commFactors = ADFs[ind].CommonFactors(dParams.Params);	// two constant terms of the distrib equation
 	const auto dVal = ADFs[ind].Value;	// function that calculates the 'type' distribution coordinate
@@ -415,25 +414,23 @@ void Distrib::CalcPCC(dind ind, ADParams& dParams, fraglen Mode, bool full) cons
 	if (!isNaN(pcc))	dParams.PCC = pcc;
 }
 
-void Distrib::CallParams(dind ind, fraglen base, dpoint& summit)
+void Distrib::SetParamsForSpline(dind ind)
 {
 	auto calcParams = ADFs[ind].CalcParams;
 	const BYTE failCntLim = 2;	// max count of base's decreasing steps after which PCC is considered only decreasing
 	BYTE failCnt = 0;			// counter of base's decreasing steps after which PCC is considered only decreasing
-	dpoint summit0;				// temporary summit
+	dpoint summit;				// temporary summit
 	ADParams dParams0, dParams;	// temporary, final  PCC & mean(alpha) & sigma(beta)
 #ifdef MY_DEBUG
 	int i = 0;					// counter of steps
 #endif
 
 	// calculate the highest PCC by iteratively searching through the 'base' values
-	//base = 9;					// to print spline for fixed base
-	//for (int i=0; !i; i++) {	// to print spline for fixed base
-	for (; base; base--) {
-		const fpair keypts = GetKeyPoints(base, summit0);
+	for (fraglen base = _base; base; base--) {
+		const auto keypts = GetKeyPoints(base, summit);
 
 		calcParams(keypts, dParams0.Params);
-		CalcPCC(ind, dParams0, summit0.first);
+		CalcPCC(ind, dParams0, keypts.first);
 #ifdef MY_DEBUG
 		* _s << setw(4) << setfill(SPACE) << left << ++i;
 		*_s << "base: " << setw(2) << base << "  summitX: " << keypts.first << "\tpcc: " << dParams0.PCC;
@@ -442,8 +439,8 @@ void Distrib::CallParams(dind ind, fraglen base, dpoint& summit)
 		if (_fillSpline) { for (dpoint p : _spline)	*_s << p.first << TAB << p.second << LF; _fillSpline = false; }
 #endif
 		if (dParams0 > dParams) {
-			dParams = dParams0;
-			summit = summit0;
+			std::swap(dParams, dParams0);
+			_summit.swap(summit);
 			failCnt = 0;
 		}
 		else {
@@ -456,29 +453,30 @@ void Distrib::CallParams(dind ind, fraglen base, dpoint& summit)
 		}
 	}
 	_setADParams.SetParams(ind, dParams);
-
 #ifdef MY_DEBUG
 	* _s << LF;
 #endif
 }
 
-void Distrib::PrintSpecs(dostream& s, fraglen base, const Distrib::dpoint& summit)
+void Distrib::PrintWarning(dostream& s)
 {
+	if (_base == FRAGLEN_MAX)	return;
+
 	const string sInaccurate = " may be biased";
 
-	if (base == smoothBase)
+	if (_base == smoothBase)
 		s << Spec(eSpec::SMOOTH) << LF;
-	if (summit.first - begin()->first<SSpliner<dVal_t>::SilentLength(eCurveType::SMOOTH, base)
-	|| begin()->second / summit.second > 0.95)
+	if (_summit.first - begin()->first<SSpliner<dVal_t>::SilentLength(eCurveType::SMOOTH, _base)
+	|| begin()->second / _summit.second > 0.95)
 		Err(Spec(eSpec::HTRIM) + SepSCl + sParams + sInaccurate).Warning();
 	else if (_spec == eSpec::MODUL)
 		s << Spec(_spec) << LF;
-	else if (begin()->second / summit.second > 0.5)
+	else if (begin()->second / _summit.second > 0.5)
 		Err(Spec(eSpec::TRIM)).Warning();
 	else {
 		ADParams dParams;
 
-		CalcPCC(_setADParams.GetBestIndex(), dParams, summit.first, false);	// sorts params
+		CalcPCC(_setADParams.GetBestIndex(), dParams, _summit.first, false);	// sorts params
 		const float diffPCC = dParams.PCC - _setADParams.GetBestPCC();
 
 #ifdef MY_DEBUG
@@ -525,17 +523,18 @@ Distrib::Distrib(const char* fName, dostream& s)
 using namespace std::chrono;
 #endif
 
-void Distrib::Print(dostream& s, eCType ctype, bool prWarning, bool prDistr)
+void Distrib::CalcADParams(eDType dtype)	//, eSmooth smooth)
 {
-	if (empty())		s << "\nempty " << sDistrib << LF;
-	else {
-		fraglen base = GetBase();	// initialized returned value
-		if (base) {
+	//_smooth = smooth;
+
+	if (!empty()) {
+		SetBase();
+		if (_base) {
 #ifdef _TIME
 			auto start = high_resolution_clock::now();
 			const int	tmCycleCnt = 1000;
 #endif			
-			// For optimization purposes, we can initialize base, keypts & summit at the first call of CallParams,
+			// For optimization purposes, we can initialize base, keypts & summit at the first call of SetParamsForSpline,
 			// and use them on subsequent calls to avoid repeated PCC iterations.
 			// However, the same base (and, as a consequence, keypts & summit) only works well for LNORM and GAMMA.
 			// For the best NORM, base may be less, therefore, for simplicity and reliability, all parameters are always recalculated
@@ -546,27 +545,35 @@ void Distrib::Print(dostream& s, eCType ctype, bool prWarning, bool prDistr)
 #ifdef _TIME
 			for (int i = 0; i < tmCycleCnt; i++)
 #endif
-				dpoint summit;				// returned value
-			for (dind i = 0; i < eCType::CNT; i++)
-				if (IsIndex(ctype, i))
-					CallParams(i, base, summit);
+				for (dind i = 0; i < eDType::CNT; i++)
+					if (IsIndex(dtype, i))
+						SetParams(i);
 #ifdef _TIME
 			auto stop = high_resolution_clock::now();
 			auto duration = duration_cast<microseconds>(stop - start);
 			s << duration.count() / tmCycleCnt << " mcs\n";
 #else
 			// check for NORM if LNORM is defined
-			if (IsType(ctype, eCType::LNORM) && !IsType(ctype, eCType::NORM)) {
-				CallParams(GetDType(eCType::NORM), base, summit);
+			if (IsType(dtype, eDType::LNORM) && !IsType(dtype, eDType::NORM)) {
+				SetParams(GetDType(eDType::NORM));
 				_setADParams.ClearNormDistBelowThreshold(1.02F);	// threshold 2%
 			}
 #endif
-			if (prWarning)	PrintSpecs(s, base, summit);
+		}
+	}
+}
+
+void Distrib::Print(dostream& s, bool prWarning, bool prDistr)
+{
+	if (empty())
+		s << "\nempty " << sDistrib << LF;
+	else
+		if (_base) {
+			if (prWarning)	PrintWarning(s);
 			_setADParams.Print(s);
 			if (prDistr)	PrintOriginal(s);
 		}
 		else
 			s << "\nDegenerate " << sDistrib << " (only " << size() << " points)\n";
-	}
 	std::fflush(stdout);		// when called from a package
 }

@@ -2,7 +2,7 @@
 Distrib.h
 2023 Fedor Naumenko (fedor.naumenko@gmail.com)
 -------------------------
-Last modified: 01/12/2025
+Last modified: 01/14/2025
 -------------------------
 Provides value (typically frequency) distribution functionality
 ***********************************************************/
@@ -16,16 +16,22 @@ Provides value (typically frequency) distribution functionality
 using dVal_t = size_t;	// type of distribution value
 
 // 'Distrib' represents a value frequency distribution and its approximation by a two-parameter distribution
-class Distrib : map<fraglen, dVal_t>
+class Distrib : map<int, dVal_t>	// sync type with 'rpoint' in .cpp 
 {
 public:
 	// combined type of distribution
-	enum /*class*/ eCType {		// not class to have a cast to integer by default
+	enum /*class*/ eDType {		// not class to have a cast to integer by default
 		NORM = 1 << 0,
 		LNORM = 1 << 1,
 		GAMMA = 1 << 2,
 		CNT = 3,
 	};
+
+	// method of smoothing distribution
+	//enum eSmooth {
+	//	SPLINE,		// sliding splining
+	//	INTERPOL,	// Bezier interpolation
+	//};
 
 	static const char* sDistrib;
 
@@ -43,29 +49,33 @@ public:
 	void IncrFreq(fraglen val) { (*this)[val]++; }
 
 	// Returns the value the value of the approximate distribution function at a given point
-	//	@param ctype: type of distribution
+	//	@param dtype: type of distribution
 	//	@param mean: mean (for norm, lognorm) or alpha (for gamma)
 	//	@param sigma: sigma (for norm, lognorm) or beta (for gamma)
 	//	@param x: X-value of the point
 	//	@returs Y-value of the point
-	static double GetApprValue(eCType ctype, float mean, float sigma, fraglen x);
+	static double GetApprValue(eDType dtype, float mean, float sigma, fraglen x);
 
-	// Calculate and print approximate distribution parameters on a new line
+	// Calculate approximate distribution parameters
+	//	@param type: combined type of distribution
+	//	@param smooth: method of smoothing
+	void CalcADParams(eDType type/*, eSmooth smooth = eSmooth::SPLINE*/);
+
+	// Prints approximate distribution parameters on a new line
 	//	@param s[out]: print stream
-	//	@param type[in]: combined type of distribution
 	//	@param prWarning[in]: if true then print possible warning message
 	//	@param prDistr[in]: if true then print original distribution additionally
-	void Print(dostream& s, eCType type, bool prWarning, bool prDistr);
+	void Print(dostream& s, bool prWarning, bool prDistr);
 
 private:
 	using dind = BYTE;						// inner distribution index
 	using dpoint = pair<fraglen, float>;	// distribution point 
 
 	// Returns combined distribution type by inner distribution index
-	static eCType GetCType(dind ind) { return eCType(1 << ind); }
+	static eDType GetCType(dind ind) { return eDType(1 << ind); }
 
 	// Returns inner distribution index by combined distribution type
-	const static dind GetDType(eCType ctype) { return RightOnePos(int(ctype)); }
+	const static dind GetDType(eDType dtype) { return RightOnePos(int(dtype)); }
 
 	enum class eSpec {	// distribution specification
 		CLEAR,		// normal quality;	exclusive
@@ -112,17 +122,17 @@ private:
 			void Print(dostream& s, float maxPCC) const;
 		};
 
-		array<IndADParams, eCType::CNT>	_setADParams;
+		array<IndADParams, eDType::CNT>	_setADParams;
 		bool _sorted = false;
 
 		// Returns true if AD parameters set in sorted instance
-		bool IsSetInSorted(eCType ctype) const;
+		bool IsSetInSorted(eDType dtype) const;
 
 		// Returns number of AD parameters set in sorted instance
 		int SetSortedCount() const;
 
 		// Returns AD Params by combined distribution type
-		ADParams& Params(eCType ctype) { return _setADParams[GetDType(ctype)]; }
+		ADParams& Params(eDType dtype) { return _setADParams[GetDType(dtype)]; }
 
 		// Sorts in PCC descending order
 		void Sort();
@@ -133,15 +143,15 @@ private:
 
 		float GetBestPCC() const { return _setADParams[0].PCC; }
 
-		// Set distribution parameters by index
+		// Calculates and set approximate distribution parameters by index
 		//	@param ind: inner distribution index
-		//	@param adp: approximation distribution parameters
+		//	@param adp: approximate distribution parameters
 		void SetParams(dind ind, const ADParams& adp) { _setADParams[ind].Copy(adp); }
 
 		// Clear normal distribution if its PCC is less then lognorm PCC by the threshold
 		void ClearNormDistBelowThreshold(float thresh) {
-			if (Params(eCType::LNORM).PCC / Params(eCType::NORM).PCC > thresh)
-				Params(eCType::NORM).PCC = 0;
+			if (Params(eDType::LNORM).PCC / Params(eDType::NORM).PCC > thresh)
+				Params(eDType::NORM).PCC = 0;
 		}
 
 		// Sorts parameters and returns inner index of distribution with the highest PCC
@@ -157,28 +167,32 @@ private:
 	static const string Spec(eSpec s);
 
 	// Returns true if inner index is represented in combo cType
-	static bool IsIndex(eCType cType, dind ind) { return cType & (1 << ind); }
+	static bool IsIndex(eDType cType, dind ind) { return cType & (1 << ind); }
 
 	// Returns true if exclusive type is represented in combo cType
 	//	@param test: test combo cType
 	//	@param excl: exclusive cType
-	static bool IsType(eCType test, eCType excl) { return test & excl; }
+	static bool IsType(eDType test, eDType excl) { return test & excl; }
 
 	eSpec _spec = eSpec::CLEAR;		// distribution specification
-	SetADParams	_setADParams;			// approximate distributions parameters
+	SetADParams	_setADParams;		// approximate distribution parameters for all type of distributions
+	// these two fields are needed to print warnings after calculating the parameters
+	fraglen	_base = FRAGLEN_MAX;	// moving window half-length of best spline
+	dpoint	_summit;				// X,Y coordinates of best splined (smoothed) summit
+
+	//eSmooth	_smooth = eSmooth::SPLINE;
 #ifdef MY_DEBUG
 	mutable vector<dpoint> _spline;		// splining curve (container) to visualize splining
 	mutable bool _fillSpline = true;	// true if fill splining curve (container)
 	dostream* _s = NULL;				// print stream
 #endif
 
-	// Returns estimated moving window half-length ("base")
-	//	@returns estimated base, or 0 in case of degenerate distribution
-	fraglen GetBase();
+	// Set moving window half-length of appropriate spline (estimated base)
+	void SetBase();
 
 	// Builds spline curve and defines key points
-	//	@param base: moving window half-length
-	//	@param summit: returned X,Y coordinates of spliced (smoothed) summit
+	//	@param base[in]: moving window half-length
+	//	@param summit[out]: returned X,Y coordinates of splined (smoothed) summit
 	//	@returns key points: X-coord of highest point, X-coord of right middle hight point
 	fpair GetKeyPoints(fraglen base, dpoint& summit) const;
 
@@ -188,19 +202,23 @@ private:
 	//	@param Mode[in]: X-coordinate of summit
 	//	@param full[in]: if true then correlate from the beginning, otherwiase from summit
 	//	calculated on the basis of the "start of the sequence" – "the first value less than 0.1% of the maximum".
-	void CalcPCC(dind ind, ADParams& dParams, fraglen Mode, bool full = true) const;
+	void CalcPCC(dind ind, ADParams& dParams, int Mode, bool full = true) const;
 
-	// Calculates the best distribution parameters
+	// Calculates the best approximate distribution parameters for a specific type of distribution
 	//	@param ind[in]: inner distribution index
-	//	@param base[in]: moving window half-length
-	//	@param summit[out]: returned X,Y coordinates of best spliced (smoothed) summit
-	void CallParams(dind ind, fraglen base, dpoint& summit);
+	void SetParamsForSpline(dind ind);
 
-	// Prints original distribution specification (flaws)
+	// Calculates the best approximate distribution parameters for a specific type of distribution
+	//	@param ind[in]: inner distribution index
+	//void SetParamsForInterpol(dind ind) {}
+
+	// Calculates the best approximate distribution parameters for a specific type of distribution
+	//	@param ind[in]: inner distribution index
+	void SetParams(dind ind) { SetParamsForSpline(ind); }
+
+	// Prints warnings about poor quality distributions
 	//	@param s: print stream
-	//	@param base: moving window half-length
-	//	@param summit: X,Y coordinates of spliced (smoothed) summit
-	void PrintSpecs(dostream& s, fraglen base, const dpoint& summit);
+	void PrintWarning(dostream& s);
 
 	// Prints original distribution as a set of <value>-<size> pairs
 	//	@param s: print stream

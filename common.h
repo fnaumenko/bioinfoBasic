@@ -96,7 +96,8 @@ typedef chrlen		fraglen;	// type length of fragment
 typedef chrlen		genlen;		// type length of genome
 
 #define	CHRLEN_UNDEF	-1			// undefined length of chromosome
-#define	CHRLEN_MAX		LONG_MAX //-1	// max length of chromosome
+#define	CHRLEN_MAX		LONG_MAX	// max length of chromosome
+#define	FRAGLEN_MAX		LONG_MAX	// max length of chromosome
 //#define CHRLEN_CAPAC	10	// capacity of max chrom length;
 							// may be count by DigitsCountUInt() every time,
 							// but is the same if chrlen defined as int or long,
