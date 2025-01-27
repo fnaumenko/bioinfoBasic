@@ -122,7 +122,7 @@ private:
 			void Print(dostream& s, float maxPCC) const;
 		};
 
-		array<IndexedADP, eDType::CNT>	_setADParams;
+		array<IndexedADP, eDType::CNT>	_indADPs;
 		bool _sorted = false;
 
 		// Returns true if AD parameters set in sorted instance
@@ -132,7 +132,7 @@ private:
 		int SetSortedCount() const;
 
 		// Returns AD Params by combined distribution type
-		ADP& Params(eDType dtype) { return _setADParams[GetDType(dtype)]; }
+		ADP& Params(eDType dtype) { return _indADPs[GetDType(dtype)]; }
 
 		// Sorts in PCC descending order
 		void Sort();
@@ -141,12 +141,13 @@ private:
 		// Default constructor
 		ADPs();
 
-		float GetBestPCC() const { return _setADParams[0].PCC; }
+		float GetBestPCC() const { return _indADPs[0].PCC; }
+
 
 		// Calculates and set approximate distribution parameters by index
 		//	@param ind: inner distribution index
 		//	@param adp: approximate distribution parameters
-		void SetParams(dind ind, const ADP& adp) { _setADParams[ind].Copy(adp); }
+		void SetParams(dind ind, const ADP& adp) { _indADPs[ind].Copy(adp); }
 
 		// Clear normal distribution if its PCC is less then lognorm PCC by the threshold
 		void ClearNormDistBelowThreshold(float thresh) {
@@ -156,7 +157,7 @@ private:
 
 		// Sorts parameters and returns inner index of distribution with the highest PCC
 		//	@returns inner index of distribution with the highest (best) PCC
-		dind GetBestIndex() { Sort(); return _setADParams[0].Index; }
+		dind GetBestIndex() { Sort(); return _indADPs[0].Index; }
 
 		// Prints sorted distibutions params on a new line
 		//	@param s: output stream
@@ -175,7 +176,7 @@ private:
 	static bool IsType(eDType test, eDType excl) { return test & excl; }
 
 	eSpec _spec = eSpec::CLEAR;		// distribution specification
-	ADPs	_setADParams;		// approximate distribution parameters for all type of distributions
+	ADPs	_indADPs;		// approximate distribution parameters for all type of distributions
 	// these two fields are needed to print warnings after calculating the parameters
 	fraglen	_base = FRAGLEN_MAX;	// moving window half-length of best spline
 	dpoint	_summit;				// X,Y coordinates of best splined (smoothed) summit
@@ -200,11 +201,11 @@ private:
 
 	// Compares this sequence with calculated one with given mean&sigma, and returns PCC
 	//	@param ind[in]: inner distribution index
-	//	@param dParams[in, out]: returned PCC, input mean(alpha) & sigma(beta)
+	//	@param adp[in, out]: returned approximate distribution parameters
 	//	@param Mode[in]: X-coordinate of summit
 	//	@param full[in]: if true then correlate from the beginning, otherwiase from summit
 	//	calculated on the basis of the "start of the sequence" – "the first value less than 0.1% of the maximum".
-	void CalcPCC(dind ind, ADP& dParams, int Mode, bool full = true) const;
+	void CalcPCC(dind ind, ADP& adp, int Mode, bool full = true) const;
 
 	// Calculates the best approximate distribution parameters for a specific type of distribution
 	//	@param ind[in]: inner distribution index

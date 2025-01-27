@@ -138,7 +138,7 @@ void Distrib::ADPs::IndexedADP::Print(dostream& s, float maxPCC) const
 bool Distrib::ADPs::IsSetInSorted(eDType dtype) const
 {
 	const dind ind = GetDType(dtype);
-	for (const auto& dp : _setADParams)
+	for (const auto& dp : _indADPs)
 		if (dp.Index == ind)
 			return dp.IsSet();
 	return false;
@@ -147,7 +147,7 @@ bool Distrib::ADPs::IsSetInSorted(eDType dtype) const
 int Distrib::ADPs::SetSortedCount() const
 {
 	int cnt = 0;
-	for (const auto& dp : _setADParams)
+	for (const auto& dp : _indADPs)
 		cnt += dp.IsSet();
 	return cnt;
 }
@@ -155,7 +155,7 @@ int Distrib::ADPs::SetSortedCount() const
 void Distrib::ADPs::Sort()
 {
 	if (!_sorted) {
-		sort(_setADParams.begin(), _setADParams.end(),
+		sort(_indADPs.begin(), _indADPs.end(),
 			[](const ADP& dp1, const ADP& dp2) -> bool
 			{ return dp1 > dp2; }
 		);
@@ -166,7 +166,7 @@ void Distrib::ADPs::Sort()
 Distrib::ADPs::ADPs()
 {
 	int i = 0;
-	for (auto& dp : _setADParams)
+	for (auto& dp : _indADPs)
 		dp.Index = i++;
 }
 
@@ -186,7 +186,7 @@ void Distrib::ADPs::Print(dostream& s)
 	s << LF << UNITAB << " PCC\t";
 	if (notSingle)
 		s << "relPCC\t",
-		maxPCC = _setADParams[0].PCC;
+		maxPCC = _indADPs[0].PCC;
 	if (!isGamma)		s << N[0] << TAB << N[1];
 	else if (notSingle)	s << P[0] << a[0] << TAB << P[1] << a[1];
 	else				s << G[0] << TAB << G[1];
@@ -196,7 +196,7 @@ void Distrib::ADPs::Print(dostream& s)
 
 	// ** print values
 	s << LF;
-	for (const auto& params : _setADParams)
+	for (const auto& params : _indADPs)
 		params.Print(s, maxPCC);
 
 	// ** print note
@@ -390,21 +390,21 @@ fpair Distrib::GetInterpolKeyPoints(dpoint& summit) const
 	return kp;
 }
 
-void Distrib::CalcPCC(dind ind, ADP& dParams, int Mode, bool full) const
+void Distrib::CalcPCC(dind ind, ADP& adp, int Mode, bool full) const
 {
-	const fpair commFactors = ADFs[ind].CommonFactors(dParams.Params);	// two constant terms of the distrib equation
+	const fpair commFactors = ADFs[ind].CommonFactors(adp.Params);	// two constant terms of the distrib equation
 	const auto dVal = ADFs[ind].Value;	// function that calculates the 'type' distribution coordinate
-	const double cutoffY = dVal(dParams.Params, Mode, commFactors) / 1000;	// break when Y became less then 0.1% of max value
+	const double cutoffY = dVal(adp.Params, Mode, commFactors) / 1000;	// break when Y became less then 0.1% of max value
 	double	sumA = 0, sumA2 = 0;	// sum, sum of squares of original values
 	double	sumB = 0, sumB2 = 0;	// sum, sum of squares of calculated values
 	double	sumAB = 0;				// sum of products of original and calculated values
 	UINT	cnt = 0;				// count of points
 
 	// one pass PCC calculation
-	dParams.SetUndefPcc();
+	adp.SetUndefPcc();
 	for (const value_type& f : *this) {
 		if (!full && f.first < Mode)		continue;
-		const double b = dVal(dParams.Params, f.first, commFactors);	// y-coordinate (value) of the calculated sequence
+		const double b = dVal(adp.Params, f.first, commFactors);	// y-coordinate (value) of the calculated sequence
 		if (isNaN(b))						return;
 		if (f.first > Mode && b < cutoffY)	break;
 		const double a = double(f.second);							// y-coordinate (value) of the original sequence
@@ -417,7 +417,7 @@ void Distrib::CalcPCC(dind ind, ADP& dParams, int Mode, bool full) const
 	}
 	float pcc = float((sumAB * cnt - sumA * sumB) /
 		sqrt((sumA2 * cnt - sumA * sumA) * (sumB2 * cnt - sumB * sumB)));
-	if (!isNaN(pcc))	dParams.PCC = pcc;
+	if (!isNaN(pcc))	adp.PCC = pcc;
 }
 
 void Distrib::SetParamsForSpline(dind ind)
@@ -426,7 +426,7 @@ void Distrib::SetParamsForSpline(dind ind)
 	const BYTE failCntLim = 2;	// max count of base's decreasing steps after which PCC is considered only decreasing
 	BYTE failCnt = 0;			// counter of base's decreasing steps after which PCC is considered only decreasing
 	dpoint summit;				// temporary summit
-	ADP dParams0, dParams;	// temporary, final  PCC & mean(alpha) & sigma(beta)
+	ADP adp0, adp;				// temporary, final  approximate distribution parameters
 #ifdef MY_DEBUG
 	int i = 0;					// counter of steps
 #endif
@@ -435,30 +435,30 @@ void Distrib::SetParamsForSpline(dind ind)
 	for (fraglen base = _base; base; base--) {
 		const auto keypts = GetKeyPoints(base, summit);
 
-		calcParams(keypts, dParams0.Params);
-		CalcPCC(ind, dParams0, keypts.first);
+		calcParams(keypts, adp0.Params);
+		CalcPCC(ind, adp0, keypts.first);
 #ifdef MY_DEBUG
 		* _s << setw(4) << setfill(SPACE) << left << ++i;
-		*_s << "base: " << setw(2) << base << "  summitX: " << keypts.first << "\tpcc: " << dParams0.PCC;
-		if (dParams0 > dParams)	*_s << "\t>";
+		*_s << "base: " << setw(2) << base << "  summitX: " << keypts.first << "\tpcc: " << adp0.PCC;
+		if (adp0 > adp)	*_s << "\t>";
 		*_s << LF;
 		if (_fillSpline) { for (dpoint p : _spline)	*_s << p.first << TAB << p.second << LF; _fillSpline = false; }
 #endif
-		if (dParams0 > dParams) {
-			std::swap(dParams, dParams0);
+		if (adp0 > adp) {
+			std::swap(adp, adp0);
 			_summit.swap(summit);
 			failCnt = 0;
 		}
 		else {
-			if (dParams0.PCC > 0)	failCnt++;		// negative PCC is possible in rare cases
-			else if (dParams0.IsUndefPcc()) {
-				dParams.SetUndefPcc();
+			if (adp0.PCC > 0)	failCnt++;		// negative PCC is possible in rare cases
+			else if (adp0.IsUndefPcc()) {
+				adp.SetUndefPcc();
 				break;
 			}
 			if (failCnt > failCntLim)	break;
 		}
 	}
-	_setADParams.SetParams(ind, dParams);
+	_indADPs.SetParams(ind, adp);
 #ifdef MY_DEBUG
 	* _s << LF;
 #endif
@@ -468,11 +468,11 @@ void Distrib::SetParamsForInterpol(dind ind)
 {
 	auto calcParams = ADFs[ind].CalcParams;
 	dpoint summit;				// temporary summit
-	ADP dParams;
+	ADP adp;
 	const auto keypts = GetInterpolKeyPoints(summit);
 
-	calcParams(keypts, dParams.Params);
-	CalcPCC(ind, dParams, keypts.first);
+	calcParams(keypts, adp.Params);
+	CalcPCC(ind, adp, keypts.first);
 }
 
 void Distrib::PrintWarning(dostream& s)
@@ -491,13 +491,13 @@ void Distrib::PrintWarning(dostream& s)
 	else if (begin()->second / _summit.second > 0.5)
 		Err(Spec(eSpec::TRIM)).Warning();
 	else {
-		ADP dParams;
+		ADP adp;
 
-		CalcPCC(_setADParams.GetBestIndex(), dParams, _summit.first, false);	// sorts params
-		const float diffPCC = dParams.PCC - _setADParams.GetBestPCC();
+		CalcPCC(_indADPs.GetBestIndex(), adp, _summit.first, false);	// sorts params
+		const float diffPCC = adp.PCC - _indADPs.GetBestPCC();
 
 #ifdef MY_DEBUG
-		s << "summit: " << summit.first << "\tPCCsummit: " << dParams.PCC << "\tdiff PCC: " << diffPCC << LF;
+		s << "summit: " << summit.first << "\tPCCsummit: " << adp.PCC << "\tdiff PCC: " << diffPCC << LF;
 #endif
 		if (diffPCC > 0.01)
 			Err(Spec(eSpec::DEFECT) + SepSCl + sParams + sInaccurate).Warning();
@@ -543,41 +543,39 @@ using namespace std::chrono;
 void Distrib::CalcADParams(eDType dtype, eSmooth smooth)
 {
 	_smooth = smooth;
+	if (empty())	return;
 
-	if (!empty()) {
-		SetBase();
-		if (_base) {
+	SetBase();
+	if (!_base)		return;
 #ifdef _TIME
-			auto start = high_resolution_clock::now();
-			const int	tmCycleCnt = 1000;
+	auto start = high_resolution_clock::now();
+	const int	tmCycleCnt = 1000;
 #endif			
-			// For optimization purposes, we can initialize base, keypts & summit at the first call of SetParamsForSpline,
-			// and use them on subsequent calls to avoid repeated PCC iterations.
-			// However, the same base (and, as a consequence, keypts & summit) only works well for LNORM and GAMMA.
-			// For the best NORM, base may be less, therefore, for simplicity and reliability, all parameters are always recalculated
+	// For optimization purposes, we can initialize base, keypts & summit at the first call of SetParamsForSpline,
+	// and use them on subsequent calls to avoid repeated PCC iterations.
+	// However, the same base (and, as a consequence, keypts & summit) only works well for LNORM and GAMMA.
+	// For the best NORM, base may be less, therefore, for simplicity and reliability, all parameters are always recalculated
 #ifdef MY_DEBUG
-			_s = &s;
-			if (_fillSpline)	_spline.reserve(size() / 2);
+	_s = &s;
+	if (_fillSpline)	_spline.reserve(size() / 2);
 #endif
 #ifdef _TIME
-			for (int i = 0; i < tmCycleCnt; i++)
+	for (int i = 0; i < tmCycleCnt; i++)
 #endif
-				for (dind i = 0; i < eDType::CNT; i++)
-					if (IsIndex(dtype, i))
-						SetParams(i);
+		for (dind i = 0; i < eDType::CNT; i++)
+			if (IsIndex(dtype, i))
+				SetParams(i);
 #ifdef _TIME
-			auto stop = high_resolution_clock::now();
-			auto duration = duration_cast<microseconds>(stop - start);
-			s << duration.count() / tmCycleCnt << " mcs\n";
+	auto stop = high_resolution_clock::now();
+	auto duration = duration_cast<microseconds>(stop - start);
+	s << duration.count() / tmCycleCnt << " mcs\n";
 #else
-			// check for NORM if LNORM is defined
-			if (IsType(dtype, eDType::LNORM) && !IsType(dtype, eDType::NORM)) {
-				SetParams(GetDType(eDType::NORM));
-				_setADParams.ClearNormDistBelowThreshold(1.02F);	// threshold 2%
-			}
-#endif
-		}
+	// check for NORM if LNORM is defined
+	if (IsType(dtype, eDType::LNORM) && !IsType(dtype, eDType::NORM)) {
+		SetParams(GetDType(eDType::NORM));
+		_indADPs.ClearNormDistBelowThreshold(1.02F);	// threshold 2%
 	}
+#endif
 }
 
 void Distrib::Print(dostream& s, bool prWarning, bool prDistr)
@@ -587,7 +585,7 @@ void Distrib::Print(dostream& s, bool prWarning, bool prDistr)
 	else
 		if (_base) {
 			if (prWarning)	PrintWarning(s);
-			_setADParams.Print(s);
+			_indADPs.Print(s);
 			if (prDistr)	PrintOriginal(s);
 		}
 		else
