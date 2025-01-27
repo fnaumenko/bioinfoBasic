@@ -103,8 +103,8 @@ private:
 		void SetUndefPcc() { PCC = -1; };
 	};
 
-	// 'SetADParams' represents a collection of approximate distribution parameters for all type of distribution
-	class SetADParams
+	// 'ADParamsSet' represents a collection of approximate distribution parameters for all type of distribution
+	class ADParamsSet
 	{
 		// Indexed ADParams: struct ADParams supplied with inner index
 		struct IndADParams : public ADParams
@@ -139,7 +139,7 @@ private:
 
 	public:
 		// Default constructor
-		SetADParams();
+		ADParamsSet();
 
 		float GetBestPCC() const { return _setADParams[0].PCC; }
 
@@ -175,7 +175,7 @@ private:
 	static bool IsType(eDType test, eDType excl) { return test & excl; }
 
 	eSpec _spec = eSpec::CLEAR;		// distribution specification
-	SetADParams	_setADParams;		// approximate distribution parameters for all type of distributions
+	ADParamsSet	_setADParams;		// approximate distribution parameters for all type of distributions
 	// these two fields are needed to print warnings after calculating the parameters
 	fraglen	_base = FRAGLEN_MAX;	// moving window half-length of best spline
 	dpoint	_summit;				// X,Y coordinates of best splined (smoothed) summit
@@ -196,6 +196,8 @@ private:
 	//	@returns key points: X-coord of highest point, X-coord of right middle hight point
 	fpair GetKeyPoints(fraglen base, dpoint& summit) const;
 
+	fpair GetInterpolKeyPoints(dpoint& summit) const;
+
 	// Compares this sequence with calculated one with given mean&sigma, and returns PCC
 	//	@param ind[in]: inner distribution index
 	//	@param dParams[in, out]: returned PCC, input mean(alpha) & sigma(beta)
@@ -210,7 +212,7 @@ private:
 
 	// Calculates the best approximate distribution parameters for a specific type of distribution
 	//	@param ind[in]: inner distribution index
-	void SetParamsForInterpol(dind ind) {}
+	void SetParamsForInterpol(dind ind);
 
 	// Calculates the best approximate distribution parameters for a specific type of distribution
 	//	@param ind[in]: inner distribution index

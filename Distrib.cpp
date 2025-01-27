@@ -97,12 +97,12 @@ static ADF ADFs[Distrib::eDType::CNT] {
 	},
 };
 
-//===== Distrib::SetADParams
+//===== Distrib::ADParamsSet
 
 #define SETW left<<setw(4)
 #define UNITAB SETW<<SPACE<<TAB	// tab stretching 4 spaces to display regardless of tab size (4 or 8)
 
-void Distrib::SetADParams::IndADParams::Print(dostream& s, float maxPCC) const
+void Distrib::ADParamsSet::IndADParams::Print(dostream& s, float maxPCC) const
 {
 	if (IsSet()) {
 		auto& adfs = ADFs[Index];
@@ -135,7 +135,7 @@ void Distrib::SetADParams::IndADParams::Print(dostream& s, float maxPCC) const
 	}
 }
 
-bool Distrib::SetADParams::IsSetInSorted(eDType dtype) const
+bool Distrib::ADParamsSet::IsSetInSorted(eDType dtype) const
 {
 	const dind ind = GetDType(dtype);
 	for (const auto& dp : _setADParams)
@@ -144,7 +144,7 @@ bool Distrib::SetADParams::IsSetInSorted(eDType dtype) const
 	return false;
 }
 
-int Distrib::SetADParams::SetSortedCount() const
+int Distrib::ADParamsSet::SetSortedCount() const
 {
 	int cnt = 0;
 	for (const auto& dp : _setADParams)
@@ -152,7 +152,7 @@ int Distrib::SetADParams::SetSortedCount() const
 	return cnt;
 }
 
-void Distrib::SetADParams::Sort()
+void Distrib::ADParamsSet::Sort()
 {
 	if (!_sorted) {
 		sort(_setADParams.begin(), _setADParams.end(),
@@ -163,14 +163,14 @@ void Distrib::SetADParams::Sort()
 	}
 }
 
-Distrib::SetADParams::SetADParams()
+Distrib::ADParamsSet::ADParamsSet()
 {
 	int i = 0;
 	for (auto& dp : _setADParams)
 		dp.Index = i++;
 }
 
-void Distrib::SetADParams::Print(dostream& s)
+void Distrib::ADParamsSet::Print(dostream& s)
 {
 	static const char* N[] = { "mean", "sigma" };	// normal, lognormal parameters
 	static const char* G[] = { "alpha", "beta" };	// gamma parameters
@@ -335,8 +335,7 @@ void Distrib::SetBase()
 
 fpair Distrib::GetKeyPoints(fraglen base, dpoint& summit) const
 {
-	dpoint p0{ begin()->first, float(begin()->second) };	// previous point
-	dpoint p{};												// current point
+	dpoint p0, p;	// previous, current point
 	SSpliner<dVal_t> spliner(
 #ifdef MY_DEBUG					// to visualize ROUGH or SMOOTH distributions separately
 		eCurveType::ROUGH, 
@@ -350,12 +349,13 @@ fpair Distrib::GetKeyPoints(fraglen base, dpoint& summit) const
 #endif
 
 	summit.second = 0;
-	for (auto& f : *this) {
-		p.first = spliner.CorrectX(f.first);	// X: minus MA & MM base back shift
-		p.second = spliner.Push(f.second);		// Y: splined
+	for (auto& rawp : *this) {
+		p.first = spliner.CorrectX(rawp.first);	// X: minus MA & MM base back shift
+		p.second = spliner.Push(rawp.second);	// Y: splined
 #ifdef MY_DEBUG
 		if (_fillSpline)	_spline.push_back(p);	// to print
 #endif
+
 		if (p.second >= summit.second)
 			p.swap(summit);
 		else {
@@ -382,6 +382,12 @@ fpair Distrib::GetKeyPoints(fraglen base, dpoint& summit) const
 		p0.first + p0.second / (p.second + p0.second)	// half-summit X-coord (proportional)
 	);
 #endif
+}
+
+fpair Distrib::GetInterpolKeyPoints(dpoint& summit) const
+{
+	fpair kp{};
+	return kp;
 }
 
 void Distrib::CalcPCC(dind ind, ADParams& dParams, int Mode, bool full) const
@@ -456,6 +462,17 @@ void Distrib::SetParamsForSpline(dind ind)
 #ifdef MY_DEBUG
 	* _s << LF;
 #endif
+}
+
+void Distrib::SetParamsForInterpol(dind ind)
+{
+	auto calcParams = ADFs[ind].CalcParams;
+	dpoint summit;				// temporary summit
+	ADParams dParams;
+	const auto keypts = GetInterpolKeyPoints(summit);
+
+	calcParams(keypts, dParams.Params);
+	CalcPCC(ind, dParams, keypts.first);
 }
 
 void Distrib::PrintWarning(dostream& s)
