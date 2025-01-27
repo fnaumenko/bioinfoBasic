@@ -1,6 +1,6 @@
 /**********************************************************
 Distrib.cpp
-Last modified: 01/14/2025
+Last modified: 01/27/2025
 ***********************************************************/
 
 #include "Distrib.h"
@@ -97,12 +97,12 @@ static ADF ADFs[Distrib::eDType::CNT] {
 	},
 };
 
-//===== Distrib::ADParamsSet
+//===== Distrib::ADPs
 
 #define SETW left<<setw(4)
 #define UNITAB SETW<<SPACE<<TAB	// tab stretching 4 spaces to display regardless of tab size (4 or 8)
 
-void Distrib::ADParamsSet::IndADParams::Print(dostream& s, float maxPCC) const
+void Distrib::ADPs::IndexedADP::Print(dostream& s, float maxPCC) const
 {
 	if (IsSet()) {
 		auto& adfs = ADFs[Index];
@@ -135,7 +135,7 @@ void Distrib::ADParamsSet::IndADParams::Print(dostream& s, float maxPCC) const
 	}
 }
 
-bool Distrib::ADParamsSet::IsSetInSorted(eDType dtype) const
+bool Distrib::ADPs::IsSetInSorted(eDType dtype) const
 {
 	const dind ind = GetDType(dtype);
 	for (const auto& dp : _setADParams)
@@ -144,7 +144,7 @@ bool Distrib::ADParamsSet::IsSetInSorted(eDType dtype) const
 	return false;
 }
 
-int Distrib::ADParamsSet::SetSortedCount() const
+int Distrib::ADPs::SetSortedCount() const
 {
 	int cnt = 0;
 	for (const auto& dp : _setADParams)
@@ -152,25 +152,25 @@ int Distrib::ADParamsSet::SetSortedCount() const
 	return cnt;
 }
 
-void Distrib::ADParamsSet::Sort()
+void Distrib::ADPs::Sort()
 {
 	if (!_sorted) {
 		sort(_setADParams.begin(), _setADParams.end(),
-			[](const ADParams& dp1, const ADParams& dp2) -> bool
+			[](const ADP& dp1, const ADP& dp2) -> bool
 			{ return dp1 > dp2; }
 		);
 		_sorted = true;
 	}
 }
 
-Distrib::ADParamsSet::ADParamsSet()
+Distrib::ADPs::ADPs()
 {
 	int i = 0;
 	for (auto& dp : _setADParams)
 		dp.Index = i++;
 }
 
-void Distrib::ADParamsSet::Print(dostream& s)
+void Distrib::ADPs::Print(dostream& s)
 {
 	static const char* N[] = { "mean", "sigma" };	// normal, lognormal parameters
 	static const char* G[] = { "alpha", "beta" };	// gamma parameters
@@ -390,7 +390,7 @@ fpair Distrib::GetInterpolKeyPoints(dpoint& summit) const
 	return kp;
 }
 
-void Distrib::CalcPCC(dind ind, ADParams& dParams, int Mode, bool full) const
+void Distrib::CalcPCC(dind ind, ADP& dParams, int Mode, bool full) const
 {
 	const fpair commFactors = ADFs[ind].CommonFactors(dParams.Params);	// two constant terms of the distrib equation
 	const auto dVal = ADFs[ind].Value;	// function that calculates the 'type' distribution coordinate
@@ -426,7 +426,7 @@ void Distrib::SetParamsForSpline(dind ind)
 	const BYTE failCntLim = 2;	// max count of base's decreasing steps after which PCC is considered only decreasing
 	BYTE failCnt = 0;			// counter of base's decreasing steps after which PCC is considered only decreasing
 	dpoint summit;				// temporary summit
-	ADParams dParams0, dParams;	// temporary, final  PCC & mean(alpha) & sigma(beta)
+	ADP dParams0, dParams;	// temporary, final  PCC & mean(alpha) & sigma(beta)
 #ifdef MY_DEBUG
 	int i = 0;					// counter of steps
 #endif
@@ -468,7 +468,7 @@ void Distrib::SetParamsForInterpol(dind ind)
 {
 	auto calcParams = ADFs[ind].CalcParams;
 	dpoint summit;				// temporary summit
-	ADParams dParams;
+	ADP dParams;
 	const auto keypts = GetInterpolKeyPoints(summit);
 
 	calcParams(keypts, dParams.Params);
@@ -491,7 +491,7 @@ void Distrib::PrintWarning(dostream& s)
 	else if (begin()->second / _summit.second > 0.5)
 		Err(Spec(eSpec::TRIM)).Warning();
 	else {
-		ADParams dParams;
+		ADP dParams;
 
 		CalcPCC(_setADParams.GetBestIndex(), dParams, _summit.first, false);	// sorts params
 		const float diffPCC = dParams.PCC - _setADParams.GetBestPCC();

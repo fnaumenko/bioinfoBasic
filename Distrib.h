@@ -2,7 +2,7 @@
 Distrib.h
 2023 Fedor Naumenko (fedor.naumenko@gmail.com)
 -------------------------
-Last modified: 01/14/2025
+Last modified: 01/27/2025
 -------------------------
 Provides value (typically frequency) distribution functionality
 ***********************************************************/
@@ -90,31 +90,31 @@ private:
 
 	const fraglen smoothBase = 1;	// splining base for the smooth distribution
 
-	// Keeps approximate distribution parameters: PCC, mean(alpha), sigma(beta)
-	struct ADParams
+	// 'ADP' keeps Approximate Distribution Parameters: PCC, mean(alpha), sigma(beta)
+	struct ADP
 	{
 		float	PCC = 0;	// Pearson correlation coefficient
 		fpair	Params{};	// mean(alpha), sigma(beta)
 
-		bool operator >(const ADParams& dp) const { return PCC > dp.PCC; }
+		bool operator >(const ADP& dp) const { return PCC > dp.PCC; }
 
 		bool IsUndefPcc() const { return PCC == -1; };
 
 		void SetUndefPcc() { PCC = -1; };
 	};
 
-	// 'ADParamsSet' represents a collection of approximate distribution parameters for all type of distribution
-	class ADParamsSet
+	// 'ADPs' represents a collection of approximate distribution parameters for all type of distribution
+	class ADPs
 	{
-		// Indexed ADParams: struct ADParams supplied with inner index
-		struct IndADParams : public ADParams
+		// 'Indexed ADP': ADP supplied with inner index
+		struct IndexedADP : public ADP
 		{
 			dind	Index;		// inner index
 
 			// Returns true if AD parameters set
 			bool IsSet() const { return PCC; }
 
-			void Copy(const ADParams& dp) { PCC = dp.PCC; Params = dp.Params; }
+			void Copy(const ADP& dp) { PCC = dp.PCC; Params = dp.Params; }
 
 			// Prints AD parameters
 			//	@param s: print stream
@@ -122,7 +122,7 @@ private:
 			void Print(dostream& s, float maxPCC) const;
 		};
 
-		array<IndADParams, eDType::CNT>	_setADParams;
+		array<IndexedADP, eDType::CNT>	_setADParams;
 		bool _sorted = false;
 
 		// Returns true if AD parameters set in sorted instance
@@ -132,21 +132,21 @@ private:
 		int SetSortedCount() const;
 
 		// Returns AD Params by combined distribution type
-		ADParams& Params(eDType dtype) { return _setADParams[GetDType(dtype)]; }
+		ADP& Params(eDType dtype) { return _setADParams[GetDType(dtype)]; }
 
 		// Sorts in PCC descending order
 		void Sort();
 
 	public:
 		// Default constructor
-		ADParamsSet();
+		ADPs();
 
 		float GetBestPCC() const { return _setADParams[0].PCC; }
 
 		// Calculates and set approximate distribution parameters by index
 		//	@param ind: inner distribution index
 		//	@param adp: approximate distribution parameters
-		void SetParams(dind ind, const ADParams& adp) { _setADParams[ind].Copy(adp); }
+		void SetParams(dind ind, const ADP& adp) { _setADParams[ind].Copy(adp); }
 
 		// Clear normal distribution if its PCC is less then lognorm PCC by the threshold
 		void ClearNormDistBelowThreshold(float thresh) {
@@ -175,7 +175,7 @@ private:
 	static bool IsType(eDType test, eDType excl) { return test & excl; }
 
 	eSpec _spec = eSpec::CLEAR;		// distribution specification
-	ADParamsSet	_setADParams;		// approximate distribution parameters for all type of distributions
+	ADPs	_setADParams;		// approximate distribution parameters for all type of distributions
 	// these two fields are needed to print warnings after calculating the parameters
 	fraglen	_base = FRAGLEN_MAX;	// moving window half-length of best spline
 	dpoint	_summit;				// X,Y coordinates of best splined (smoothed) summit
@@ -204,7 +204,7 @@ private:
 	//	@param Mode[in]: X-coordinate of summit
 	//	@param full[in]: if true then correlate from the beginning, otherwiase from summit
 	//	calculated on the basis of the "start of the sequence" – "the first value less than 0.1% of the maximum".
-	void CalcPCC(dind ind, ADParams& dParams, int Mode, bool full = true) const;
+	void CalcPCC(dind ind, ADP& dParams, int Mode, bool full = true) const;
 
 	// Calculates the best approximate distribution parameters for a specific type of distribution
 	//	@param ind[in]: inner distribution index
