@@ -8,32 +8,35 @@ Provides value (typically frequency) distribution functionality
 ***********************************************************/
 #pragma once
 
-#include "DataReader.h"
+#include "common.h"
+#include <map>
 #include <array>
 
 // MY_DEBUG should be managed via DataReader.h
 
-using dVal_t = size_t;	// type of distribution value
+using dVal_t = chrlen;	// type of distribution value
+using dmap = map<int, dVal_t>;	// distribution map
 
 // 'Distrib' represents a value frequency distribution and its approximation by a two-parameter distribution
-class Distrib : map<int, dVal_t>	// sync type with 'rpoint' in  .cpp 
+class Distrib : dmap	// sync type with 'rpoint' in  .cpp 
 {
 public:
 	// combined type of distribution
-	enum /*class*/ eDType {		// not class to have a cast to integer by default
+	enum eDType {		// not class to have a cast to integer by default
 		NORM = 1 << 0,
 		LNORM = 1 << 1,
 		GAMMA = 1 << 2,
 		CNT = 3,
 	};
 
-	// method of smoothing distribution
-	enum eSmooth {
+	// distribution smoothing method
+	enum eDSmooth {
 		SPLINE,		// sliding splining
 		INTERPOL,	// Bezier interpolation
 	};
 
 	static const char* sDistrib;
+	static const fraglen smoothBase = 1;	// splining base for the smooth distribution
 
 	// Default constructor
 	Distrib() {}
@@ -59,7 +62,9 @@ public:
 	// Calculate approximate distribution parameters
 	//	@param type: combined type of distribution
 	//	@param smooth: method of smoothing
-	void CalcADParams(eDType type, eSmooth smooth = eSmooth::SPLINE);
+	void CalcADParams(eDType type, eDSmooth smooth = eDSmooth::SPLINE) {
+		if (!empty())	_indADPs.CalcParams(type, smooth, *this);
+	}
 
 	// Prints approximate distribution parameters on a new line
 	//	@param s[out]: print stream
@@ -68,14 +73,7 @@ public:
 	void Print(dostream& s, bool prWarning, bool prDistr);
 
 private:
-	using dind = BYTE;						// inner distribution index
 	using dpoint = pair<fraglen, float>;	// distribution point 
-
-	// Returns combined distribution type by inner distribution index
-	static eDType GetCType(dind ind) { return eDType(1 << ind); }
-
-	// Returns inner distribution index by combined distribution type
-	const static dind GetDType(eDType dtype) { return RightOnePos(int(dtype)); }
 
 	enum class eSpec {	// distribution specification
 		CLEAR,		// normal quality;	exclusive
@@ -88,100 +86,133 @@ private:
 		DEFECT		// defective; exclusive
 	};
 
-	const fraglen smoothBase = 1;	// splining base for the smooth distribution
-
-	// 'ADP' keeps Approximate Distribution Parameters: PCC, mean(alpha), sigma(beta)
-	struct ADP
-	{
-		float	PCC = 0;	// Pearson correlation coefficient
-		fpair	Params{};	// mean(alpha), sigma(beta)
-
-		bool operator >(const ADP& dp) const { return PCC > dp.PCC; }
-
-		bool IsUndefPcc() const { return PCC == -1; };
-
-		void SetUndefPcc() { PCC = -1; };
-	};
-
 	// 'ADPs' represents a collection of approximate distribution parameters for all type of distribution
 	class ADPs
 	{
-		// 'Indexed ADP': ADP supplied with inner index
-		struct IndexedADP : public ADP
-		{
-			dind	Index;		// inner index
-
-			// Returns true if AD parameters set
-			bool IsSet() const { return PCC; }
-
-			void Copy(const ADP& dp) { PCC = dp.PCC; Params = dp.Params; }
-
-			// Prints AD parameters
-			//	@param s: print stream
-			//	@param maxPCC: masimum PCC to print relative PCC percentage
-			void Print(dostream& s, float maxPCC) const;
+	public:
+		// indexed type of distribution
+		enum eDIndex {
+			iNORM,
+			iLNORM,
+			iGAMMA,
 		};
 
-		array<IndexedADP, eDType::CNT>	_indADPs;
-		bool _sorted = false;
+		// 'ADP' keeps Approximate Distribution Parameters: PCC, mean(alpha), sigma(beta)
+		// The class is nested in ADPs only because of the use of the common 'eDIndex' type
+		struct ADP
+		{
+			float	PCC = 0;	// Pearson correlation coefficient
+			fpair	Params{};	// mean(alpha), sigma(beta)
 
-		// Returns true if AD parameters set in sorted instance
-		bool IsSetInSorted(eDType dtype) const;
+			bool operator >(const ADP& dp) const { return PCC > dp.PCC; }
 
-		// Returns number of AD parameters set in sorted instance
-		int SetSortedCount() const;
+			bool IsUndefPcc() const { return PCC == -1; };
 
-		// Returns AD Params by combined distribution type
-		ADP& Params(eDType dtype) { return _indADPs[GetDType(dtype)]; }
+			void SetUndefPcc() { PCC = -1; };
 
-		// Sorts in PCC descending order
-		void Sort();
+			// Builds splined curve and defines key points
+			//	@param distr: distribution to be splined
+			//	@param base: moving window half-length
+			//	@param summit[out]: returned X,Y coordinates of splined (smoothed) summit
+			//	@returns key points: X-coord of highest point, X-coord of right middle hight point
+			static fpair GetSplineKeyPoints(const dmap& distr, fraglen base, fpair& summit);
 
-	public:
+			// Calculates the best approximate distribution parameters for splined distribution
+			//	@param distr: distribution to be splined
+			//	@param dind: distribution index
+			//	@param keypts[out]: returned key points
+			void SetParamsForSpline(Distrib& distr, eDIndex dind, fpair& keypts);
+
+			// Calculates the best approximate distribution parameters for interpolated distribution
+			//	@param distr: distribution to be interpolated
+			//	@param dind: distribution index
+			//	@param keypts[out]: returned key points
+			void SetParamsForInterpol(Distrib& distr, eDIndex dind, fpair& keypts);
+
+			// Compares the real distribution with calculated one with given params, and sets PCC
+			//	@param distr: compared real distribution
+			//	@param dind: distribution index
+			//	@param Mode: X-coordinate of summit
+			//	@param full: if true then correlate from the beginning, otherwiase from summit
+			//	calculated on the basis of the "start of the sequence" – "the first value less than 0.1% of the maximum".
+			void CalcPCC(const dmap& distr, eDIndex dind, int Mode, bool full = true);
+		};
+
+		// Returns combined distribution type by distribution index
+		//static eDType GetCType(eDIndex dind) { return eDType(1 << dind); }
+
+		// Returns distribution index by combined distribution type
+		const static eDIndex GetDType(eDType dtype) { return eDIndex(RightOnePos(int(dtype))); }
+
 		// Default constructor
 		ADPs();
 
 		float GetBestPCC() const { return _indADPs[0].PCC; }
 
-
-		// Calculates and set approximate distribution parameters by index
-		//	@param ind: inner distribution index
-		//	@param adp: approximate distribution parameters
-		void SetParams(dind ind, const ADP& adp) { _indADPs[ind].Copy(adp); }
-
-		// Clear normal distribution if its PCC is less then lognorm PCC by the threshold
-		void ClearNormDistBelowThreshold(float thresh) {
-			if (Params(eDType::LNORM).PCC / Params(eDType::NORM).PCC > thresh)
-				Params(eDType::NORM).PCC = 0;
-		}
+		// Calculates the best approximate distribution parameters for a specific type of distribution
+		void CalcParams(eDType dtype, eDSmooth smode, Distrib& distr);
 
 		// Sorts parameters and returns inner index of distribution with the highest PCC
 		//	@returns inner index of distribution with the highest (best) PCC
-		dind GetBestIndex() { Sort(); return _indADPs[0].Index; }
+		eDIndex GetBestIndex() { Sort(); return _indADPs[0].DIndex; }
 
 		// Prints sorted distibutions params on a new line
 		//	@param s: output stream
 		void Print(dostream& s);
+
+	private:
+		// 'Indexed ADP': ADP supplied with inner index
+		struct IndexedADP : public ADP
+		{
+			eDIndex	DIndex;
+			bool	IsSet = false;	// true if this distribution approximation is required
+
+			void Copy(const ADP& dp) { PCC = dp.PCC; Params = dp.Params; }
+
+			// Prints AD parameters
+			//	@param s: print stream
+			//	@param maxPCC: maximum PCC to print relative PCC percentage
+			void Print(dostream& s, float maxPCC) const;
+		};
+
+		std::array<IndexedADP, eDType::CNT>	_indADPs;
+		bool _sorted = false;
+
+		// Returns true if inner index is represented in combo cType
+		static bool IsIndex(eDType cType, eDIndex dind) { return cType & (1 << dind); }
+
+		// Returns true if AD parameters set in sorted instance
+		bool IsSetInSorted(eDType dtype) const;
+
+		// Returns number of ADP in sorted instance
+		int SetSortedCount() const;
+
+		// Returns ADP by combined distribution type
+		//ADP& Params(eDType dtype) { return _indADPs[GetDType(dtype)]; }
+
+		// Sorts in PCC descending order
+		void Sort();
+
+		// Sets distribution approximation computational requirement according to combo type
+		//	@param dtype: required distribution types
+		//	@returns: true if normal distribution is absent and added
+		bool SetDTypes(eDType dtype);
+
+		// Calculates and set approximate distribution parameters by index
+		//	@param dind: distribution index
+		//	@param adp: approximate distribution parameters
+		void CopyParams(eDIndex dind, const ADP& adp) { _indADPs[dind].Copy(adp); }
 	};
 
 	// Returns specification string by specification type
 	static const string Spec(eSpec s);
 
-	// Returns true if inner index is represented in combo cType
-	static bool IsIndex(eDType cType, dind ind) { return cType & (1 << ind); }
-
-	// Returns true if exclusive type is represented in combo cType
-	//	@param test: test combo cType
-	//	@param excl: exclusive cType
-	static bool IsType(eDType test, eDType excl) { return test & excl; }
-
 	eSpec _spec = eSpec::CLEAR;		// distribution specification
-	ADPs	_indADPs;		// approximate distribution parameters for all type of distributions
+	ADPs	_indADPs;				// approximate distribution parameters for all type of distributions
 	// these two fields are needed to print warnings after calculating the parameters
 	fraglen	_base = FRAGLEN_MAX;	// moving window half-length of best spline
-	dpoint	_summit;				// X,Y coordinates of best splined (smoothed) summit
-
-	eSmooth	_smooth = eSmooth::SPLINE;
+	//dpoint	_summit;				// X,Y coordinates of best splined (smoothed) summit
+	fpair	_summit;				// X,Y coordinates of best splined (smoothed) summit
 #ifdef MY_DEBUG
 	mutable vector<dpoint> _spline;		// splining curve (container) to visualize splining
 	mutable bool _fillSpline = true;	// true if fill splining curve (container)
@@ -189,35 +220,7 @@ private:
 #endif
 
 	// Set moving window half-length of appropriate spline (estimated base)
-	void SetBase();
-
-	// Builds spline curve and defines key points
-	//	@param base: moving window half-length
-	//	@param summit: returned X,Y coordinates of splined (smoothed) summit
-	//	@returns key points: X-coord of highest point, X-coord of right middle hight point
-	fpair GetKeyPoints(fraglen base, dpoint& summit) const;
-
-	fpair GetInterpolKeyPoints(dpoint& summit) const;
-
-	// Compares this sequence with calculated one with given mean&sigma, and returns PCC
-	//	@param ind[in]: inner distribution index
-	//	@param adp[in, out]: returned approximate distribution parameters
-	//	@param Mode[in]: X-coordinate of summit
-	//	@param full[in]: if true then correlate from the beginning, otherwiase from summit
-	//	calculated on the basis of the "start of the sequence" – "the first value less than 0.1% of the maximum".
-	void CalcPCC(dind ind, ADP& adp, int Mode, bool full = true) const;
-
-	// Calculates the best approximate distribution parameters for a specific type of distribution
-	//	@param ind[in]: inner distribution index
-	void SetParamsForSpline(dind ind);
-
-	// Calculates the best approximate distribution parameters for a specific type of distribution
-	//	@param ind[in]: inner distribution index
-	void SetParamsForInterpol(dind ind);
-
-	// Calculates the best approximate distribution parameters for a specific type of distribution
-	//	@param ind[in]: inner distribution index
-	void SetParams(dind ind) { _smooth == eSmooth::SPLINE ? SetParamsForSpline(ind) : SetParamsForInterpol(ind); }
+	void EstimateSplineBase();
 
 	// Prints warnings about poor quality distributions
 	//	@param s: print stream
