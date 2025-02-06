@@ -2,7 +2,7 @@
 Distrib.h
 2023 Fedor Naumenko (fedor.naumenko@gmail.com)
 -------------------------
-Last modified: 01/27/2025
+Last modified: 02/06/2025
 -------------------------
 Provides value (typically frequency) distribution functionality
 ***********************************************************/

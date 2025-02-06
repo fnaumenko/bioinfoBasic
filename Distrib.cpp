@@ -1,6 +1,6 @@
 /**********************************************************
 Distrib.cpp
-Last modified: 01/27/2025
+Last modified: 02/06/2025
 ***********************************************************/
 
 #include "Distrib.h"
@@ -98,6 +98,11 @@ static ADF ADFs[Distrib::eDType::CNT] {
 	},
 };
 
+// Sets half height X-coordinate on the right slope
+//	@param p0[in,out]: previous point
+//	@param p[in,out]: current point
+//	@param summit[in,out]: summit point
+//	@param halfSummitX[in,out]: returned value
 void SetHalfSummitX(fpair& p0, fpair& p, fpair& summit, float& halfSummitX)
 {
 #ifdef PRINT
