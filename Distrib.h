@@ -2,7 +2,7 @@
 Distrib.h
 2023 Fedor Naumenko (fedor.naumenko@gmail.com)
 -------------------------
-Last modified: 02/06/2025
+Last modified: 02/07/2025
 -------------------------
 Provides value (typically frequency) distribution functionality
 ***********************************************************/
@@ -49,7 +49,7 @@ public:
 	size_t Size() const { return size(); }
 
 	// Increments value frequency
-	void IncrFreq(fraglen val) { (*this)[val]++; }
+	void IncrFreq(int val) { (*this)[val]++; }
 
 	// Returns the value the value of the approximate distribution function at a given point
 	//	@param dtype: type of distribution
@@ -58,6 +58,8 @@ public:
 	//	@param x: X-value of the point
 	//	@returs Y-value of the point
 	static double GetApprValue(eDType dtype, float mean, float sigma, fraglen x);
+
+	fpair	GetADParams() { return _indADPs.GetBestParams(); }
 
 	// Calculate approximate distribution parameters
 	//	@param type: combined type of distribution
@@ -70,7 +72,11 @@ public:
 	//	@param s[out]: print stream
 	//	@param prWarning[in]: if true then print possible warning message
 	//	@param prDistr[in]: if true then print original distribution additionally
-	void Print(dostream& s, bool prWarning, bool prDistr);
+	void ADParamsPrint(dostream& s, bool prWarning, bool prDistr);
+
+	// Prints original sequence as a set of lines of format "X-coord<TAB>Y-value"
+	//	@param s[out]: print stream
+	void Print(dostream& s) const;
 
 private:
 	using dpoint = pair<fraglen, float>;	// distribution point 
@@ -148,6 +154,8 @@ private:
 		ADPs();
 
 		float GetBestPCC() const { return _indADPs[0].PCC; }
+
+		fpair GetBestParams() { Sort(); return _indADPs[0].Params; }
 
 		// Calculates the best approximate distribution parameters for a specific type of distribution
 		void CalcParams(eDType dtype, eDSmooth smode, Distrib& distr);

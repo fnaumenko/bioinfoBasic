@@ -1,6 +1,6 @@
 /**********************************************************
 Distrib.cpp
-Last modified: 02/06/2025
+Last modified: 02/07/2025
 ***********************************************************/
 
 #include "Distrib.h"
@@ -171,6 +171,9 @@ public:
 				break;
 #endif
 		}
+#ifdef PRINT
+		printf("MAX POS: %.1f  HALF POS %.1f:\n", summit.first, halfSummitX);
+#endif
 		return fpair(
 			summit.first,							// summit X-coord
 			halfSummitX
@@ -779,7 +782,7 @@ Distrib::Distrib(const char* fName, dostream& s)
 		s << SepCl << Size() << " records, " << cnt << " items";
 }
 
-void Distrib::Print(dostream& s, bool prWarning, bool prDistr)
+void Distrib::ADParamsPrint(dostream& s, bool prWarning, bool prDistr)
 {
 	if (empty())
 		s << "\nempty " << sDistrib << LF;
@@ -792,4 +795,10 @@ void Distrib::Print(dostream& s, bool prWarning, bool prDistr)
 		else
 			s << "\nDegenerate " << sDistrib << " (only " << size() << " points)\n";
 	std::fflush(stdout);		// when called from a package
+}
+
+void Distrib::Print(dostream& s) const
+{
+	for (auto& f : *this)
+		s << f.first << TAB << f.second << LF;
 }
