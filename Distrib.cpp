@@ -8,6 +8,8 @@ Last modified: 02/07/2025
 #include "DataReader.h"
 #include <algorithm>    // std::sort
 
+//#define PRINT
+
 // square of doubled Pi
 const float SDPI = float(sqrt(3.1415926 * 2));
 // ratio of the summit height to height of the measuring point
@@ -98,29 +100,27 @@ static ADF ADFs[Distrib::eDType::CNT] {
 	},
 };
 
-// Sets half height X-coordinate on the right slope
+// Sets summit and half-summit X-coordinate on the right slope
 //	@param p0[in,out]: previous point
 //	@param p[in,out]: current point
 //	@param summit[in,out]: summit point
-//	@param halfSummitX[in,out]: returned value
-void SetHalfSummitX(fpair& p0, fpair& p, fpair& summit, float& halfSummitX)
+//	@param halfSummitX[in,out]: returned half-summit value
+void SetSummit(fpair& p0, fpair& p, fpair& summit, float& halfSummitX)
 {
 #ifdef PRINT
-	std::printf("%.2f\t%.2f\n", p.first, p.second);
+	if (halfSummitX)	return;	// if PRINT set the method is called but doesn't need
 #endif
 	if (p.second >= summit.second)
 		p.swap(summit);
 	else {
-		if (p.second < summit.second / hRatio) {
-			if (!halfSummitX)
-				halfSummitX = p0.first + p0.second / (p.second + p0.second);
-		}
+		if (p.second < summit.second / hRatio)
+			halfSummitX = p0.first + p0.second / (p.second + p0.second);
 		p.swap(p0);
 	}
 }
 
 //===== Bezier2D
-// 
+
 // Bezier 2D curve
 // https://www.codeproject.com/Articles/25237/Bezier-Curves-Made-Simple
 static class Bezier2D
@@ -134,15 +134,15 @@ public:
 	//	@returns: position of the maximum of the Bezier curve
 	static fpair GetKeyPoints(const dmap& pts, float cutoffThreshold)
 	{
-		map<int, chrlen>::const_iterator it0;	// start it
-		map<int, chrlen>::const_iterator it1;	// end it
-		const auto ptCnt = Trim(pts, it0, it1, cutoffThreshold);
+		auto it0 = pts.begin();		// start it
+		auto it1 = prev(pts.end());	// end it
+		const auto ptCnt = pts.size() > 5 ? Trim(pts, it0, it1, cutoffThreshold) : BYTE(pts.size());
 
 		if (ptCnt > MAX_POINT_CNT)
 			throw range_error("Bezier2D: number of points " + to_string(ptCnt) + " is greater than maximum permissible " + to_string(MAX_POINT_CNT));
 		const USHORT outPtCnt = it1->first - it0->first;
 		const float	step = 1.f / (outPtCnt - 1);
-		float	d = 0;								// distance
+		float distance = 0;
 		fpair summit{};
 		fpair p0;
 		float halfSummitX = 0;
@@ -154,47 +154,42 @@ public:
 		++it1;
 		// Calculate points on curve
 		for (UINT pInd = 0; pInd < outPtCnt; pInd++) {
-			if ((1.f - d) < 5e-6)
-				d = 1.f;
+			if ((1.f - distance) < 5e-6)
+				distance = 1.f;
 			fpair p;		// interpolated point
 			BYTE i = 0;
 			for (auto it = it0; it != it1; it++) {
-				auto basis = Bernstein(ptCnt, i++, d);
+				const auto basis = Bernstein(ptCnt, i++, distance);
 				p.first += basis * it->first;
 				p.second += basis * it->second;
 			}
-			d += step;
+			distance += step;
 
-			SetHalfSummitX(p0, p, summit, halfSummitX);
+#ifdef PRINT
+			std::printf("%.2f\t%.2f\n", p.first, p.second);
+#endif
+			SetSummit(p0, p, summit, halfSummitX);
 #ifndef PRINT
-			if (halfSummitX)
-				break;
+			if (halfSummitX)	break;
 #endif
 		}
-#ifdef PRINT
-		printf("MAX POS: %.1f  HALF POS %.1f:\n", summit.first, halfSummitX);
-#endif
-		return fpair(
-			summit.first,							// summit X-coord
-			halfSummitX
-		);
+		return { summit.first, halfSummitX };
 	}
 
 private:
 	// factorials 'table'
 	static const double factorials[MAX_POINT_CNT + 1];
 
+	// trims the distribution's 'tails'
+	//	@param pts[in]: distribution
+	//	@param it0[in,out]:  distribution's start iterator
+	//	@param it1[in,out]:  distribution's end iterator
+	//	@param cutoffThreshold: minimum cutoff value relative to summit value
 	static BYTE Trim(const dmap& pts,
 		map<int, chrlen>::const_iterator& it0,
 		map<int, chrlen>::const_iterator& it1,
 		float cutoffThreshold)
 	{
-		it0 = pts.begin();		// start it
-		it1 = prev(pts.end());	// end it
-		if (pts.size() <= 5)	return BYTE(pts.size());
-
-		// ** cut off single frequency iterators at the edges
-		// ** trim the distribution's 'tails'
 		// define max value
 		float maxVal = 0;
 		for (const auto& f : pts)
@@ -360,16 +355,12 @@ fpair Distrib::ADPs::ADP::GetSplineKeyPoints(const dmap& distr, fraglen base, fp
 		p.first = spliner.CorrectX(rawp.first);	// X: minus MA & MM base back shift
 		p.second = spliner.Push(rawp.second);	// Y: splined
 
-		SetHalfSummitX(p0, p, summit, halfSummitX);
+		SetSummit(p0, p, summit, halfSummitX);
 #ifndef PRINT
-		if (halfSummitX)
-			break;
+		if (halfSummitX)	break;
 #endif
 	}
-	return fpair(
-		summit.first,							// summit X-coord
-		halfSummitX
-	);
+	return { summit.first, halfSummitX };
 }
 
 void Distrib::ADPs::ADP::SetParamsForSpline(const Distrib& distr, eDIndex dind, fpair& keypts)
@@ -420,12 +411,9 @@ void Distrib::ADPs::ADP::SetParamsForSpline(const Distrib& distr, eDIndex dind, 
 
 void Distrib::ADPs::ADP::SetParamsForInterpol(const Distrib& distr, eDIndex dind, fpair& keypts)
 {
-	auto calcParams = ADFs[dind].CalcParams;
-	ADP adp;
-
 	keypts = Bezier2D::GetKeyPoints(distr, 0.2);
-	calcParams(keypts, adp.Params);
-	adp.CalcPCC(distr, dind, keypts.first);
+	ADFs[dind].CalcParams(keypts, Params);
+	CalcPCC(distr, dind, keypts.first);
 }
 
 void Distrib::ADPs::ADP::CalcPCC(const dmap& distr, eDIndex dind, int Mode, bool full)
@@ -546,7 +534,7 @@ void Distrib::ADPs::CalcParams(eDType dtype, eDSmooth smode, const Distrib& dist
 	eDIndex dind = _indADPs[iLNORM].IsSet ? iLNORM : (_indADPs[iNORM].IsSet ? iNORM : iGAMMA);
 
 	// set params for the preferred distribution type
-	if (smode == eDSmooth::SPLINE)
+	if (smode == eDSmooth::SPLINE || (smode == eDSmooth::AUTO && distr.Size() > 80))
 		adp.SetParamsForSpline(distr, dind, keypts);
 	else
 		adp.SetParamsForInterpol(distr, dind, keypts);
@@ -775,10 +763,13 @@ Distrib::Distrib(const char* fName, dostream& s)
 	size_t cnt = 0;
 
 	for (int x; file.GetNextLine();)
-		if (x = file.UIntField(0))		// returns 0 if zero field is not an integer
-			cnt += (*this)[x] = file.UIntField(1);
+		if (x = file.IntField(0))		// returns 0 if zero field is not an integer
+			cnt += (*this)[x] = file.IntField(1);
 	if (cnt)
-		s << SepCl << Size() << " records, " << cnt << " items";
+		s << SepCl << Size() << " records, " << cnt << " points";
+#ifdef PRINT
+	s << LF;
+#endif
 }
 
 void Distrib::PrintADParams(dostream& s, bool prWarning, bool prDistr) const

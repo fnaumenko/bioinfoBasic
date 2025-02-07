@@ -33,6 +33,7 @@ public:
 	enum eDSmooth {
 		SPLINE,		// sliding splining
 		INTERPOL,	// Bezier interpolation
+		AUTO		// splining if there are enough points, otherwise interpolation 
 	};
 
 	static const char* sDistrib;

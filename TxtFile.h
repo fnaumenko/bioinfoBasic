@@ -2,7 +2,7 @@
 TxtFile.h
 Provides read|write basic bioinfo text files functionality
 2014 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 01/02/2025
+Last modified: 02/07/2025
 ***********************************************************/
 #pragma once
 
@@ -741,7 +741,7 @@ public:
 
 	// Reads integer by field's index from current line without check up
 	//	@param fInd: field index
-	//int IntField(BYTE fInd)	const { return atoi(StrField(fInd)); }
+	int IntField(BYTE fInd)	const { return atoi(StrField(fInd)); }
 
 	// Reads integer by field's index from current line with check up
 	//	@param fInd: field index
