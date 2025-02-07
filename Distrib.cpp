@@ -372,7 +372,7 @@ fpair Distrib::ADPs::ADP::GetSplineKeyPoints(const dmap& distr, fraglen base, fp
 	);
 }
 
-void Distrib::ADPs::ADP::SetParamsForSpline(Distrib& distr, eDIndex dind, fpair& keypts)
+void Distrib::ADPs::ADP::SetParamsForSpline(const Distrib& distr, eDIndex dind, fpair& keypts)
 {
 	auto calcParams = ADFs[dind].CalcParams;
 	const BYTE failCntLim = 2;	// max count of base's decreasing steps after which PCC is considered only decreasing
@@ -384,7 +384,6 @@ void Distrib::ADPs::ADP::SetParamsForSpline(Distrib& distr, eDIndex dind, fpair&
 #endif
 	// calculate the highest PCC by iteratively searching through the 'base' values
 	for (fraglen base = distr._base; base; base--) {
-		//dpoint summit;
 		fpair summit;
 		ADP adp;
 		auto keypts0 = GetSplineKeyPoints(distr, base, summit);
@@ -419,7 +418,7 @@ void Distrib::ADPs::ADP::SetParamsForSpline(Distrib& distr, eDIndex dind, fpair&
 #endif
 }
 
-void Distrib::ADPs::ADP::SetParamsForInterpol(Distrib& distr, eDIndex dind, fpair& keypts)
+void Distrib::ADPs::ADP::SetParamsForInterpol(const Distrib& distr, eDIndex dind, fpair& keypts)
 {
 	auto calcParams = ADFs[dind].CalcParams;
 	ADP adp;
@@ -539,7 +538,7 @@ bool Distrib::ADPs::SetDTypes(eDType dtype)
 	return false;
 }
 
-void Distrib::ADPs::CalcParams(eDType dtype, eDSmooth smode, Distrib& distr)
+void Distrib::ADPs::CalcParams(eDType dtype, eDSmooth smode, const Distrib& distr)
 {
 	ADP adp;
 	fpair keypts;
@@ -632,7 +631,7 @@ const string Distrib::Spec(eSpec s) {
 
 const string sParams = "parameters";
 
-void Distrib::EstimateSplineBase()
+void Distrib::EstimateSplineBase() const
 {
 	using rpoint = pair<int, dVal_t>;	// initial raw sequence point
 	fraglen halfX = 0;
@@ -722,7 +721,7 @@ void Distrib::EstimateSplineBase()
 #endif
 }
 
-void Distrib::PrintWarning(dostream& s)
+void Distrib::PrintWarning(dostream& s) const
 {
 	if (_base == FRAGLEN_MAX)	return;
 
@@ -763,7 +762,7 @@ void Distrib::PrintOriginal(dostream& dos) const
 	const fraglen maxLen = INT_MAX / 10;
 
 	s << "\nOriginal " << sDistrib << COLON << "\nlength\tfrequency\n";
-	for (const value_type& f : *this) {
+	for (auto& f : *this) {
 		if (f.first > maxLen)	break;
 		s << f.first << TAB << f.second << LF;
 	}
@@ -782,7 +781,7 @@ Distrib::Distrib(const char* fName, dostream& s)
 		s << SepCl << Size() << " records, " << cnt << " items";
 }
 
-void Distrib::ADParamsPrint(dostream& s, bool prWarning, bool prDistr)
+void Distrib::PrintADParams(dostream& s, bool prWarning, bool prDistr) const
 {
 	if (empty())
 		s << "\nempty " << sDistrib << LF;

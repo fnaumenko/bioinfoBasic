@@ -59,12 +59,12 @@ public:
 	//	@returs Y-value of the point
 	static double GetApprValue(eDType dtype, float mean, float sigma, fraglen x);
 
-	fpair	GetADParams() { return _indADPs.GetBestParams(); }
+	fpair GetADParams()  const { return _indADPs.GetBestParams(); }
 
 	// Calculate approximate distribution parameters
 	//	@param type: combined type of distribution
 	//	@param smooth: method of smoothing
-	void CalcADParams(eDType type, eDSmooth smooth = eDSmooth::SPLINE) {
+	void CalcADParams(eDType type, eDSmooth smooth = eDSmooth::SPLINE) const {
 		if (!empty())	_indADPs.CalcParams(type, smooth, *this);
 	}
 
@@ -72,7 +72,7 @@ public:
 	//	@param s[out]: print stream
 	//	@param prWarning[in]: if true then print possible warning message
 	//	@param prDistr[in]: if true then print original distribution additionally
-	void ADParamsPrint(dostream& s, bool prWarning, bool prDistr);
+	void PrintADParams(dostream& s, bool prWarning, bool prDistr) const;
 
 	// Prints original sequence as a set of lines of format "X-coord<TAB>Y-value"
 	//	@param s[out]: print stream
@@ -127,13 +127,13 @@ private:
 			//	@param distr: distribution to be splined
 			//	@param dind: distribution index
 			//	@param keypts[out]: returned key points
-			void SetParamsForSpline(Distrib& distr, eDIndex dind, fpair& keypts);
+			void SetParamsForSpline(const Distrib& distr, eDIndex dind, fpair& keypts);
 
 			// Calculates the best approximate distribution parameters for interpolated distribution
 			//	@param distr: distribution to be interpolated
 			//	@param dind: distribution index
 			//	@param keypts[out]: returned key points
-			void SetParamsForInterpol(Distrib& distr, eDIndex dind, fpair& keypts);
+			void SetParamsForInterpol(const Distrib& distr, eDIndex dind, fpair& keypts);
 
 			// Compares the real distribution with calculated one with given params, and sets PCC
 			//	@param distr: compared real distribution
@@ -158,7 +158,7 @@ private:
 		fpair GetBestParams() { Sort(); return _indADPs[0].Params; }
 
 		// Calculates the best approximate distribution parameters for a specific type of distribution
-		void CalcParams(eDType dtype, eDSmooth smode, Distrib& distr);
+		void CalcParams(eDType dtype, eDSmooth smode, const Distrib& distr);
 
 		// Sorts parameters and returns inner index of distribution with the highest PCC
 		//	@returns inner index of distribution with the highest (best) PCC
@@ -215,12 +215,11 @@ private:
 	// Returns specification string by specification type
 	static const string Spec(eSpec s);
 
-	eSpec _spec = eSpec::CLEAR;		// distribution specification
-	ADPs	_indADPs;				// approximate distribution parameters for all type of distributions
-	// these two fields are needed to print warnings after calculating the parameters
-	fraglen	_base = FRAGLEN_MAX;	// moving window half-length of best spline
-	//dpoint	_summit;				// X,Y coordinates of best splined (smoothed) summit
-	fpair	_summit;				// X,Y coordinates of best splined (smoothed) summit
+	mutable ADPs	_indADPs;				// approximate distribution parameters for all type of distributions
+	// these fields are needed for the SPLINE instance only to print warnings
+	mutable eSpec _spec = eSpec::CLEAR;		// distribution specification
+	mutable fraglen	_base = FRAGLEN_MAX;	// moving window half-length of best spline
+	mutable fpair	_summit;				// X,Y coordinates of best splined (smoothed) summit
 #ifdef MY_DEBUG
 	mutable vector<dpoint> _spline;		// splining curve (container) to visualize splining
 	mutable bool _fillSpline = true;	// true if fill splining curve (container)
@@ -228,11 +227,11 @@ private:
 #endif
 
 	// Set moving window half-length of appropriate spline (estimated base)
-	void EstimateSplineBase();
+	void EstimateSplineBase() const;
 
 	// Prints warnings about poor quality distributions
 	//	@param s: print stream
-	void PrintWarning(dostream& s);
+	void PrintWarning(dostream& s) const;
 
 	// Prints original distribution as a set of <value>-<size> pairs
 	//	@param s: print stream
