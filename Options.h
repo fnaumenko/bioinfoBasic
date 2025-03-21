@@ -2,7 +2,7 @@
 Options.h
 Provides managing executable options
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 01/04/2025
+Last modified: 03/21/2025
 ***********************************************************/
 #pragma once
 
@@ -27,6 +27,7 @@ private:
 		tPR_INT,	// tPAIR_INT pair of integers value
 		tPR_FL,		// tPAIR_FL pair of floats value
 		tHELP,		// help value
+		tHHELP,		// hidden help value
 		tVERS,		// version value
 		tSUMM,		// special value used to call a program from another program
 	};
@@ -92,10 +93,10 @@ private:
 		int CheckOblig() const;
 
 		// Prints option if it's obligatory
-		void PrintOblig() const { if (Sign.Is(tOpt::OBLIG)) Print(false); }
+		void PrintOblig() const { if (Sign.Is(tOpt::OBLIG)) Print(false, false); }
 
 		// Prints option if it belongs to a group g
-		void PrintGroup(BYTE g) const { if (OptGroup == g) Print(true); }
+		void PrintGroup(BYTE g, bool hidden) const { if (OptGroup == g) Print(true, hidden); }
 
 		// Returns option name and value optionally
 		//	@param prVal: if true then print value
@@ -103,9 +104,10 @@ private:
 		string ToStr(bool prVal = false) const;
 
 		// Prints option in full or short way.
-		//	@param descr: if true, prints in full way: 
+		//	@param descr: if true then prints in full way: 
 		//	signature, description (marks as Required if needed), default value, otherwise signature only
-		void Print(bool descr) const;
+		//	@param hidden: if true then prints hidden option
+		void Print(bool descr, bool hidden) const;
 
 #ifdef DEBUG
 		void Print() const;
@@ -193,7 +195,7 @@ private:
 		const char* ParDescr;	// description of prog parameter that should be printed in Usage
 
 		// Prints Usage params
-		void Print(Option* opts) const;
+		void Print(Option* opts, bool hidden) const;
 	};
 
 	// common options tip and help line
@@ -204,11 +206,13 @@ private:
 	static const char* sTime;
 	static const char* sVers;
 	static const char* sHelp;
+	static const char* sHHelp;
 
 	static const char* sHelpChrom;		// summary string printed in help
 	static const char* sHelpSummary;	// summary string printed in help
 	static const char* sHelpTime;		// run time string printed in help
 	static const char* sHelpUsage;		// usage string printed in help
+	static const char* sHHelpUsage;		// hidden usage string printed in help
 	static const char* sHelpVersion;	// version string printed in help
 	static const char* TypeNames[];		// names of option value types in help
 	static const char* OptGroups[];		// names of option groups in help
@@ -279,9 +283,10 @@ public:
 
 
 	// Prints 'usage' information
-	//	@param title: if true prints title before information
+	//	@param title: if true then prints title before information
+	//	@param hidden: if true then prints hidden options
 	//	@returns: 1 if title is settinf to true, 0 otherwise
-	static int PrintUsage(bool title);
+	static int PrintUsage(bool title, bool hidden = false);
 
 	// Returns option name [and value]
 	//	@param opt: option
