@@ -93,7 +93,7 @@ private:
 		int CheckOblig() const;
 
 		// Prints option if it's obligatory
-		void PrintOblig() const { if (Sign.Is(tOpt::OBLIG)) Print(false, false); }
+		void PrintOblig() const { if (Sign.Is(tOpt::OBLIG)) Print(false); }
 
 		// Prints option if it belongs to a group g
 		void PrintGroup(BYTE g, bool hidden) const { if (OptGroup == g) Print(true, hidden); }
@@ -107,7 +107,7 @@ private:
 		//	@param descr: if true then prints in full way: 
 		//	signature, description (marks as Required if needed), default value, otherwise signature only
 		//	@param hidden: if true then prints hidden option
-		void Print(bool descr, bool hidden) const;
+		void Print(bool descr, bool hidden = false) const;
 
 #ifdef DEBUG
 		void Print() const;
