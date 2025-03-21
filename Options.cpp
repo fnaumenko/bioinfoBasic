@@ -1,6 +1,6 @@
 /**********************************************************
 Options.cpp
-Last modified: 01/04/2025
+Last modified: 03/21/2025
 ***********************************************************/
 #include "Options.h"
 
@@ -22,11 +22,13 @@ const char* Options::sSumm = "summ";		// to invoke app from bioStat
 const char* Options::sTime = "time";
 const char* Options::sVers = "version";
 const char* Options::sHelp = "help";
+const char* Options::sHHelp = "hhelp";
 
 const char* Options::sHelpChrom = "treat specified chromosome only";
 const char* Options::sHelpSummary = "print program's summary";
 const char* Options::sHelpTime = "print run time";
 const char* Options::sHelpUsage = "print usage information";
+const char* Options::sHHelpUsage = "print hidden usage information";
 const char* Options::sHelpVersion = "print program's version";
 //const char* Options::Booleans[] = { "OFF","ON" };
 const char* Options::TypeNames[] = {
@@ -148,6 +150,7 @@ int Options::Option::SetVal(const char* opt, bool isword, char* val, char* nextI
 		SetTriedFloat(float(atof(val)), MinNVal, MaxNVal) :
 		1;
 	case tHELP:	return PrintUsage(true);
+	case tHHELP:return PrintUsage(true, true);
 	case tSUMM:	return PrintSummary(false);
 	case tVERS:	return PrintVersion();
 	default:	return SetPair(noRealVal ? NULL : val, ValType == tPR_INT);	// tPR_INT, tPR_FL
@@ -285,9 +288,9 @@ string Options::Option::ToStr(bool prVal) const
 	return res;
 }
 
-void Options::Option::Print(bool descr) const
+void Options::Option::Print(bool descr, bool hidden) const
 {
-	if (Sign.Is(tOpt::HIDDEN))	return;
+	if (Sign.Is(tOpt::HIDDEN) && !hidden)	return;
 
 	const BYTE	TabLEN = 8;
 	const bool	fixValType = ValType == tENUM || ValType == tCOMB;
@@ -406,10 +409,10 @@ void Options::Option::Print() const
 }
 #endif
 
-void Options::Usage::Print(Option* opts) const
+void Options::Usage::Print(Option* opts, bool hidden) const
 {
 	if (Opt != NO_DEF)	// output option value
-		opts[Opt].Print(false);
+		opts[Opt].Print(false, hidden);
 	else if (Par) {		// output parameter
 		if (IsParOblig)	cout << SPACE << Par;
 		else			PRINT_IN_PRTHS(Par);
@@ -491,7 +494,7 @@ Options::fpairLimits::fpairLimits(float val1, float val2, float min1, float min2
 }
 
 
-int Options::PrintUsage(bool title)
+int Options::PrintUsage(bool title, bool hidden)
 {
 	BYTE i, k;
 	if (title)		PrintSummary(true), cout << LF;
@@ -504,7 +507,7 @@ int Options::PrintUsage(bool title)
 		for (i = 0; i < OptCount; i++)
 			List[i].PrintOblig();
 		// input parameters
-		Usages[k].Print(List);
+		Usages[k].Print(List, hidden);
 	}
 	cout << endl;
 
@@ -513,7 +516,7 @@ int Options::PrintUsage(bool title)
 	for (k = 0; k < GroupCount; k++) {
 		if (OptGroups[k])	cout << OptGroups[k] << ":\n";
 		for (i = 0; i < OptCount; i++)
-			List[i].PrintGroup(k);
+			List[i].PrintGroup(k, hidden);
 	}
 	return int(title);
 }
