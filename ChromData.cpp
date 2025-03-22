@@ -1,6 +1,6 @@
 /**********************************************************
 ChromData.cpp
-Last modified: 05/22/2024
+Last modified: 03/22/2025
 ***********************************************************/
 
 #include "ChromData.h"
@@ -112,8 +112,8 @@ ChromSizes::ChromSizes(const char* gName, bool prMsg, const char* sPath, bool ch
 			_sPath = FS::DirName(gName, true);
 		}
 		if (Chrom::SetUserCID()) {
-			TreateAll(false);
-			TreateChrom(Chrom::UserCID());
+			TreatedAll(false);
+			TreatedChrom(Chrom::UserCID());
 		}
 	}
 	else if (sPath)
@@ -131,7 +131,7 @@ void ChromSizes::Init(const string& headerSAM)
 		);
 }
 
-void ChromSizes::TreateAll(bool treate)
+void ChromSizes::TreatedAll(bool treate)
 {
 	//for (auto it = Begin(); it != End(); it++)
 	//	it->second.Treated = treate;
