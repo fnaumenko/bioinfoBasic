@@ -1,6 +1,6 @@
 /**********************************************************
 Options.cpp
-Last modified: 03/21/2025
+Last modified: 03/22/2025
 ***********************************************************/
 #include "Options.h"
 
@@ -22,7 +22,7 @@ const char* Options::sSumm = "summ";		// to invoke app from bioStat
 const char* Options::sTime = "time";
 const char* Options::sVers = "version";
 const char* Options::sHelp = "help";
-const char* Options::sHHelp = "hhelp";
+const char* Options::sHHelp = "hh";
 
 const char* Options::sHelpChrom = "treat specified chromosome only";
 const char* Options::sHelpSummary = "print program's summary";

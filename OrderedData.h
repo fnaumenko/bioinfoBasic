@@ -2,7 +2,7 @@
 OrderedData.h
 Provides chromosomally sorted data functionality
 2022 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 11/09/2024
+Last modified: 02/22/2025
 ***********************************************************/
 #pragma once
 
@@ -338,7 +338,6 @@ protected:
 	//	@param dim: number of data (dimension); should be 1 (total only), 2 (strands only) or 3 (total and strands)
 	OrderedData(const ChromSizes& cSizes, BYTE dim) : _dim(dim), _primer(*this)
 	{
-		assert(dim);
 		_chromsData.reset(new ChromDataSet<DATA>(cSizes, dim));
 	}
 
