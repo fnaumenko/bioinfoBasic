@@ -2,7 +2,7 @@
 ChromData.h
 Provides chromosomes data functionality
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 07/31/2024
+Last modified: 03/22/2025
 ***********************************************************/
 #pragma once
 
@@ -274,10 +274,10 @@ public:
 	chrlen operator[] (chrid cID) const { return At(cID).Data.Real; }
 
 	// Sets all chromosomes as treated or untreated
-	void TreateAll(bool treate = true);
+	void TreatedAll(bool treate = true);
 
 	// Sets chromosome as treated or untreated
-	void TreateChrom(chrid cID, bool treated = true) { At(cID).Treated = treated; }
+	void TreatedChrom(chrid cID, bool treated = true) { At(cID).Treated = treated; }
 
 	// Gets total size of genome
 	genlen GenSize() const;
