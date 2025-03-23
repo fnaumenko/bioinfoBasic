@@ -1,6 +1,6 @@
 /**********************************************************
 ChromData.cpp
-Last modified: 03/22/2025
+Last modified: 03/23/2025
 ***********************************************************/
 
 #include "ChromData.h"
@@ -133,8 +133,6 @@ void ChromSizes::Init(const string& headerSAM)
 
 void ChromSizes::TreatedAll(bool treate)
 {
-	//for (auto it = Begin(); it != End(); it++)
-	//	it->second.Treated = treate;
 	for (auto& c : Chroms::Container())
 		c.second.Treated = treate;
 }
@@ -145,6 +143,13 @@ genlen ChromSizes::GenSize() const
 		for (const auto& c : *this)
 			_gsize += c.second.Data.Real;
 	return _gsize;
+}
+
+void ChromSizes::SetTreated(const tChromsOccurrs& chrOccurrs, BYTE occursCnt)
+{
+	TreatedAll(false);
+	for (auto& c : chrOccurrs)
+		TreatedChrom(c.first, c.second == occursCnt);
 }
 
 #ifdef MY_DEBUG
