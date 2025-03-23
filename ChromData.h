@@ -2,7 +2,7 @@
 ChromData.h
 Provides chromosomes data functionality
 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 03/22/2025
+Last modified: 03/23/2025
 ***********************************************************/
 #pragma once
 
@@ -188,6 +188,11 @@ struct ChromSize
 	ChromSize(chrlen size = 0) : Real(size) {}
 };
 
+// Chromosomes occurrence counter
+// Stores each chromosome occurrence (the number of similar operations in which each chromosome is involved)
+// Used to set the chromosome as treated only if it's involved in all similar operations (reading, writing, etc.)
+using tChromsOccurrs = map<chrid, BYTE>;
+
 // 'ChromSizes' represented chrom sizes with additional file system binding attributes
 // Holds path to reference genome and to service files
 class ChromSizes : public Chroms<ChromSize>
@@ -225,6 +230,12 @@ class ChromSizes : public Chroms<ChromSize>
 
 	// returns true if service path is defined
 	bool IsServAvail() const { return _sPath.size(); }
+
+	// Sets all chromosomes as treated or untreated
+	void TreatedAll(bool treate = true);
+
+	// Sets chromosome as treated or untreated
+	void TreatedChrom(chrid cID, bool treated = true) { At(cID).Treated = treated; }
 
 protected:
 	chrlen Length(cIter it) const { return Data(it).Real; }
@@ -273,14 +284,13 @@ public:
 
 	chrlen operator[] (chrid cID) const { return At(cID).Data.Real; }
 
-	// Sets all chromosomes as treated or untreated
-	void TreatedAll(bool treate = true);
-
-	// Sets chromosome as treated or untreated
-	void TreatedChrom(chrid cID, bool treated = true) { At(cID).Treated = treated; }
-
 	// Gets total size of genome
 	genlen GenSize() const;
+
+	// Sets each chromosome as treated if its actual occurrence matches the declared one
+	//	@param chrOccurrs: external chromosomes occurrence counter
+	//	@param occursCnt: count of declared chromosomes occurrences
+	void SetTreated(const tChromsOccurrs& chrOccurrs, BYTE occursCnt);
 
 #ifdef MY_DEBUG
 	void Print() const;
