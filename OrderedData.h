@@ -421,7 +421,7 @@ public:
 	//	@param reverse: true if read is reversed (neg strand)
 	void AddFrag(const Region& frag, bool reverse) {
 		AddFrag(frag);
-		if (_data->Strands())
+		if (_data->HasStrands())
 			_data->StrandDataByInd(reverse).AddRegion(frag);
 	}
 
