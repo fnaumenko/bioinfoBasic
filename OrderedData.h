@@ -2,7 +2,7 @@
 OrderedData.h
 Provides chromosomally sorted data functionality
 2022 Fedor Naumenko (fedor.naumenko@gmail.com)
-Last modified: 02/22/2025
+Last modified: 04/04/2025
 ***********************************************************/
 #pragma once
 
@@ -303,7 +303,7 @@ public:
 	}
 
 	// Returnes true if strands are defined
-	bool Strands() const { return _data.size() > 1; }
+	bool HasStrands() const { return _data.size() > 1; }
 };
 
 // 'OrderedData' keeps the chromosome datasets and optionally the set of writers these datasets to file.
